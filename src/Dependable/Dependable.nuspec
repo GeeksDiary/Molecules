@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <title>$id$</title>
+    <version>$version$</version>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <iconUrl>http://dependableproject.github.io/dependable/assets/images/Dependable.64.png</iconUrl>
+    <projectUrl>http://dependableproject.github.io/dependable/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright © Dependable Team 2014</copyright>
+    <tags>Jobs Scheduling Background</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+</package>
