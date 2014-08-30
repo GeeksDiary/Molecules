@@ -1,0 +1,264 @@
+<h3>Introduction<a name="introduction"></h3>
+
+<h3>Installation via nuget</h3>
+<div class="highlight"><pre><code class="language-sh" data-lang="sh">install-package dependable
+</code></pre></div>
+<h3>Creating a job</h3>
+
+<p>Dependable jobs are convention based. Simply create class with a method named <code>Run</code> and return type of <code>Task</code>.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">BackgroundJob</span> 
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">Run</span><span class="p">()</span>
+    <span class="p">{</span>        
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3>Creating a scheduler</h3>
+
+<p>You will need a scheduler to run your jobs. Use <code>DependableConfiguration</code> to create one. Typically you would run this code during application start-up and store this instance as a static instance.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="kt">var</span> <span class="n">scheduler</span> <span class="p">=</span> <span class="k">new</span> <span class="n">DependableConfiguration</span><span class="p">().</span><span class="n">CreateScheduler</span><span class="p">();</span>
+<span class="n">scheduler</span><span class="p">.</span><span class="n">Start</span><span class="p">();</span>
+</code></pre></div>
+<h3>Scheduling jobs</h3>
+
+<p>Once scheduler is started, you can schedule your jobs using <code>Schedule()</code> method.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="n">scheduler</span><span class="p">.</span><span class="n">Schedule</span><span class="p">&lt;</span><span class="n">BackgroundJob</span><span class="p">&gt;();</span>
+</code></pre></div>
+<h3>Jobs with arguments</h3>
+
+<p>Run method can receive one argument of any type. Then you can specify the argument while scheduling. Currently, if you want to pass multiple values to the job, you will need to create a type wrapping them up.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">Run</span><span class="p">(</span><span class="kt">string</span> <span class="n">token</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+
+<span class="n">scheduler</span><span class="p">.</span><span class="n">Schedule</span><span class="p">&lt;</span><span class="n">BackgroundJob</span><span class="p">&gt;(</span><span class="s">&quot;my token value&quot;</span><span class="p">);</span>
+</code></pre></div>
+<h2>Configuration</h2>
+
+<p>That&#39;s all pretty basic. Let&#39;s look at how to leverage Dependable&#39;s reliability features.</p>
+
+<h3>Retry</h3>
+
+<p>When a job fails, you can configure to retry them. Retry configuration takes place in two places. Firsly you need to tell depdendable how many times you should retry and interval used calculate the due time. You can configure these values globally for all jobs or for specific ones or both.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="c1">// Setting retry settings globally</span>
+<span class="kt">var</span> <span class="n">scheduler</span> <span class="p">=</span> <span class="k">new</span> <span class="n">DependableConfiguration</span><span class="p">()</span>
+                    <span class="p">.</span><span class="n">SetDefaultRetryCount</span><span class="p">(</span><span class="m">1</span><span class="p">)</span>
+                    <span class="p">.</span><span class="n">SetDefaultRetryDelay</span><span class="p">(</span><span class="n">TimeSpan</span><span class="p">.</span><span class="n">FromSeconds</span><span class="p">(</span><span class="m">5</span><span class="p">))</span>
+                    <span class="p">.</span><span class="n">CreateScheduler</span><span class="p">();</span>
+
+<span class="c1">// Setting retry settings for a specific job</span>
+<span class="kt">var</span> <span class="n">scheduler</span> <span class="p">=</span> <span class="k">new</span> <span class="n">DependableConfiguration</span><span class="p">()</span>
+                    <span class="p">.</span><span class="n">Job</span><span class="p">&lt;</span><span class="n">BackgroundJob</span><span class="p">&gt;(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span>
+                        <span class="p">.</span><span class="n">WithRetryCount</span><span class="p">(</span><span class="m">1</span><span class="p">)</span>
+                        <span class="p">.</span><span class="n">WithRetryDelay</span><span class="p">(</span><span class="n">TimeSpan</span><span class="p">.</span><span class="n">FromSeconds</span><span class="p">(</span><span class="m">5</span><span class="p">))</span>                        
+                    <span class="p">)</span>
+                    <span class="p">.</span><span class="n">CreateScheduler</span><span class="p">();</span>
+</code></pre></div>
+<p>Scheduler periodically scans for due items and executes the ready ones. By default this scanning process takes place once every minute. However, you can change that in the configuration.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="kt">var</span> <span class="n">scheduler</span> <span class="p">=</span> <span class="k">new</span> <span class="n">DependableConfiguration</span><span class="p">()</span>
+                    <span class="p">.</span><span class="n">SetRetryTimerInterval</span><span class="p">(</span><span class="n">TimeSpan</span><span class="p">.</span><span class="n">FromSeconds</span><span class="p">(</span><span class="m">5</span><span class="p">))</span>
+                    <span class="p">.</span><span class="n">CreateScheduler</span><span class="p">();</span>
+</code></pre></div>
+<h3>Detecting retry attempts</h3>
+
+<p>Sometimes it&#39;s essential for a job to know if it has been executed for the first time or not. <code>Run</code> method can receive an argument of type <code>JobContext</code> which contains the <code>DispatchCount</code> property indicating how many times the job has been executed.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">Run</span><span class="p">(</span><span class="kt">string</span> <span class="n">token</span><span class="p">,</span> <span class="n">JobContext</span> <span class="n">context</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">DispatchCount</span> <span class="p">&gt;</span> <span class="m">0</span><span class="p">)</span>
+    <span class="p">{</span>   
+        <span class="c1">// do something special</span>
+    <span class="p">}</span>
+<span class="p">}</span>    
+</code></pre></div>
+<h3>What to do when all bets are off</h3>
+
+<p>Sometimes no matter how many times you attempt to run a job, it could always end-up failing. When maximum number of retry count is reached for a job, dependable will consider it as a poisoned job. If you would like to do something when a job becomes poisoned you could simply add a function called <code>Poison</code> which returns a <code>bool</code>. Later we will see how return value of this function can be used to do some cool stuff but for the time being let&#39;s say we always return false.</p>
+
+<p>Similar to <code>Run</code> method, <code>Poison</code> method can receive optional arguments. If you ask for <code>JobContext</code>, you can check <code>Exception</code> property for the exception causing the job to poison.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="c1">// Simple Poison function</span>
+<span class="k">public</span> <span class="kt">bool</span> <span class="nf">Poison</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">false</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="c1">// Poison function with job state</span>
+<span class="k">public</span> <span class="kt">bool</span> <span class="nf">Poison</span><span class="p">(</span><span class="kt">string</span> <span class="n">token</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="k">false</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="c1">// Poison function with context</span>
+<span class="k">public</span> <span class="kt">bool</span> <span class="nf">Poison</span><span class="p">(</span><span class="n">JobContext</span> <span class="n">context</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="k">false</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="c1">// Poison function with both job state and context</span>
+<span class="k">public</span> <span class="kt">bool</span> <span class="nf">Poison</span><span class="p">(</span><span class="kt">string</span> <span class="n">token</span><span class="p">,</span> <span class="n">JobContext</span> <span class="n">context</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="k">false</span><span class="p">;</span> <span class="p">}</span>
+</code></pre></div>
+<p>One small caveat you have to be aware of when using <code>JobContext.Exception</code> is that it always contains the exception occurred during last job execution and in rare cicumstances may not be available. Later we will explore another feature that can reliably give you complete visibility to job&#39;s lifecycle.</p>
+
+<h3>Long running workflows and that compensation problem</h3>
+
+<p>Dependable setup we&#39;ve seen so far works well for simple jobs we want to run in the background. Truth is things are not always that simple. Sometimes background processing can involve running multiple jobs in a certain order. Sounds like a &#39;workflow&#39; right? Exactly! To make things worse, sometimes we want to compensate for the jobs we completed higher up in the workflow if something goes wrong down below. Well the good news is, you can now let Dependable handle the hairy coordination problem and focus on individual job implementations.</p>
+
+<p>To spin-up a child job once a job is completed, you simply change your <code>Run</code> method&#39;s return type from <code>Task</code> to <code>Task&lt;Awaiter&gt;</code> or <code>Task&lt;IEnumerable&lt;Awaiter&gt;&gt;</code>. </p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="c1">// Wait for one job</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">Awaiter</span><span class="p">&gt;</span> <span class="n">LongRunningJob</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">Awaiter</span><span class="p">.</span><span class="n">For</span><span class="p">&lt;</span><span class="n">AnotherLongRunningJob</span><span class="p">&gt;();</span>
+<span class="p">}</span>
+
+<span class="c1">// Wait for more than one job</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Awaiter</span><span class="p">&gt;&gt;</span> <span class="n">LongRunningJob</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="p">[]</span> 
+        <span class="p">{</span> 
+            <span class="n">Awaiter</span><span class="p">.</span><span class="n">For</span><span class="p">&lt;</span><span class="n">ChildJobA</span><span class="p">&gt;(),</span> 
+            <span class="n">Awaiter</span><span class="p">.</span><span class="n">For</span><span class="p">&lt;</span><span class="n">ChildJobB</span><span class="p">&gt;()</span> 
+        <span class="p">};</span>  
+<span class="p">}</span>
+</code></pre></div>
+<p>Let&#39;s take a look at a more concrete example. Imagine we are building a travel booking system and we have the following Job setup to process a booking request.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">BookTrip</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Awaiter</span><span class="p">&gt;&gt;</span> <span class="n">Run</span><span class="p">(</span><span class="n">BookingDetails</span> <span class="n">details</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span><span class="p">[]</span> 
+        <span class="p">{</span>
+            <span class="n">Awaiter</span><span class="p">.</span><span class="n">For</span><span class="p">&lt;</span><span class="n">BookFlight</span><span class="p">&gt;(</span><span class="n">details</span><span class="p">.</span><span class="n">Flight</span><span class="p">),</span>
+            <span class="n">Awaiter</span><span class="p">.</span><span class="n">For</span><span class="p">&lt;</span><span class="n">BookHotel</span><span class="p">&gt;(</span><span class="n">details</span><span class="p">.</span><span class="n">Hotel</span><span class="p">),</span>
+            <span class="n">Awaiter</span><span class="p">.</span><span class="n">For</span><span class="p">&lt;</span><span class="n">BookCar</span><span class="p">&gt;(</span><span class="n">details</span><span class="p">.</span><span class="n">Car</span><span class="p">)</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">BookFlight</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">Run</span><span class="p">(</span><span class="n">Flight</span> <span class="n">flight</span><span class="p">)</span>
+    <span class="p">{</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">BookHotel</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">Run</span><span class="p">(</span><span class="n">Hotel</span> <span class="n">hotel</span><span class="p">)</span>
+    <span class="p">{</span> 
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">BookCar</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">Run</span><span class="p">(</span><span class="n">Car</span> <span class="n">car</span><span class="p">)</span>
+    <span class="p">{</span>    
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Now if any one of these bookings fail, we probably would want to cancel the successfully completed bookings (reality of this process is probably lot more involved than that, but let&#39;s assume this is the case for the purpose of this discussion).</p>
+
+<p>To notify Dependable that successful jobs should be compensated, <code>BookFlight</code>,  <code>BookHotel</code> and <code>BookCar</code> jobs can implement the <code>Poison</code> method and return <code>true</code>.</p>
+
+<p>In addition to that, each one of those jobs will also have a new method called <code>Compensate</code> with logic for reversing the action it performed. Our modified jobs will look like this:</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">BookTrip</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Awaiter</span><span class="p">&gt;&gt;</span> <span class="n">Run</span><span class="p">(</span><span class="n">BookingDetails</span> <span class="n">details</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span><span class="p">[]</span> 
+        <span class="p">{</span>
+            <span class="n">Awaiter</span><span class="p">.</span><span class="n">For</span><span class="p">&lt;</span><span class="n">BookFlight</span><span class="p">&gt;(</span><span class="n">details</span><span class="p">.</span><span class="n">Flight</span><span class="p">),</span>
+            <span class="n">Awaiter</span><span class="p">.</span><span class="n">For</span><span class="p">&lt;</span><span class="n">BookHotel</span><span class="p">&gt;(</span><span class="n">details</span><span class="p">.</span><span class="n">Hotel</span><span class="p">),</span>
+            <span class="n">Awaiter</span><span class="p">.</span><span class="n">For</span><span class="p">&lt;</span><span class="n">BookCar</span><span class="p">&gt;(</span><span class="n">details</span><span class="p">.</span><span class="n">Car</span><span class="p">)</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">BookFlight</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">Run</span><span class="p">(</span><span class="n">Flight</span> <span class="n">flight</span><span class="p">)</span>
+    <span class="p">{</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">book</span> <span class="nf">Poison</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">true</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Compensate</span><span class="p">(</span><span class="n">Flight</span> <span class="n">flight</span><span class="p">)</span>
+    <span class="p">{</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">BookHotel</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">Run</span><span class="p">(</span><span class="n">Hotel</span> <span class="n">hotel</span><span class="p">)</span>
+    <span class="p">{</span> 
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">book</span> <span class="nf">Poison</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">true</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Compensate</span><span class="p">(</span><span class="n">Hotel</span> <span class="n">hotel</span><span class="p">)</span>
+    <span class="p">{</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">BookCar</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">Run</span><span class="p">(</span><span class="n">Car</span> <span class="n">car</span><span class="p">)</span>
+    <span class="p">{</span>    
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">book</span> <span class="nf">Poison</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">true</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Compensate</span><span class="p">(</span><span class="n">Car</span> <span class="n">car</span><span class="p">)</span>
+    <span class="p">{</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3>Tracking</h3>
+
+<p>You don&#39;t want to kick off background work and hope for the best. Dependable provides a comprehensive view of your job execution with an extensible framework to get that information in a monitoring system of your like. We will look at these extensibility options in a later section and for now you can enable built-in console based monitoring in the configuration.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="kt">var</span> <span class="n">scheduler</span> <span class="p">=</span> <span class="k">new</span> <span class="n">DependableConfiguration</span><span class="p">()</span>
+                    <span class="p">.</span><span class="n">UseConsoleEventLogger</span><span class="p">()</span>
+                    <span class="p">.</span><span class="n">CreateScheduler</span><span class="p">();</span>                    
+</code></pre></div>
+<p>Sometimes events emitted by Dependable could be too verbose and you may be only interested in certain kind of events. You can configure <code>ConsoleEventLogger</code> to log just the events you are intersted in.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="kt">var</span> <span class="n">scheduler</span> <span class="p">=</span> <span class="k">new</span> <span class="n">DependableConfiguration</span><span class="p">()</span>
+                    <span class="p">.</span><span class="n">UseConsoleEventLogger</span><span class="p">(</span><span class="n">EventType</span><span class="p">.</span><span class="n">JobStatusChanged</span> <span class="p">|</span> <span class="n">EventType</span><span class="p">.</span><span class="n">Exception</span><span class="p">)</span>
+                    <span class="p">.</span><span class="n">CreateScheduler</span><span class="p">();</span>                    
+</code></pre></div>
+<h2>Persistence</h2>
+
+<p>Dependable has a built-in volatile persistence store. This is great if you don&#39;t want to recover jobs after a system failure. If you want your jobs to resume even after an event like that you could use a extension to persist jobs to an external storage. Just like Tracking system, Persistence system in Dependable is also extensible. It&#39;s built with document based storage in mind. At the moment you can use SQL server based storage by using SQL server persistance extension.</p>
+
+<h3>Installation via nuget</h3>
+<div class="highlight"><pre><code class="language-sh" data-lang="sh">install-package dependable.extensions.persistence.sql
+</code></pre></div>
+<h3>Configuration</h3>
+
+<p>Once you add a reference to the package you can create the persistence table using the following helper method</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="n">DependableJobsTable</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="s">&quot;connectionstring&quot;</span><span class="p">);</span>
+</code></pre></div>
+<p>After that change dependable configuration to use Sql persistence.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="kt">var</span> <span class="n">scheduler</span> <span class="p">=</span> <span class="k">new</span> <span class="n">DependableConfiguration</span><span class="p">()</span>
+                    <span class="p">.</span><span class="n">UseSqlRepositoryProvider</span><span class="p">(</span><span class="s">&quot;ConnectionStringConfigurationName&quot;</span><span class="p">,</span> <span class="s">&quot;InstanceA&quot;</span><span class="p">)</span>
+                    <span class="p">.</span><span class="n">CreateScheduler</span><span class="p">();</span>
+</code></pre></div>
+<p>Second argument to <code>UseSqlRepositoryProvider</code> has a special purpose. Dependable relies on the fact that each scheduler has it&#39;s own storage. This could introduce problems in environments where you have a shared database for multiple systems running background jobs. You can get around this problem by specifying a unique instance name.</p>
+
+<h3>Throttling and that queue length problem</h3>
+
+<p>Sometimes jobs we scheduler could be resource intensive and we have limited amount of resources to spare. For example, number of CPU intensive jobs you can perform simultaniously is limited to the number of cores you have. As another example, number of concurrent calls you can make to to an external service might be limited by the agreement you have with the service provider.</p>
+
+<p>When configuring jobs, you can specify the maximum number of job instances that Dependable can execute at point in time. </p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="kt">var</span> <span class="n">scheduler</span> <span class="p">=</span> <span class="k">new</span> <span class="n">DependableConfiguration</span><span class="p">()</span>
+                    <span class="p">.</span><span class="n">Job</span><span class="p">&lt;</span><span class="n">LongRunningJob</span><span class="p">&gt;(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span><span class="p">.</span><span class="n">WithMaxWorkers</span><span class="p">(</span><span class="m">8</span><span class="p">))</span>
+                    <span class="p">.</span><span class="n">CreateScheduler</span><span class="p">();</span>
+</code></pre></div>
+<p>Internally, Dependable has a queuing system to control the execution of your jobs. One potential problem with applying a throttle is that if you queue work faster than your can process them, Dependable could exhaust your memory due to increasing queue length. To get around that problem, Dependable sets the max queue length to 1000 jobs by default. As soon as it reaches this limit it will start flushing jobs to persistence system. You can control this queue length for specific jobs in the configuration.</p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="kt">var</span> <span class="n">scheduler</span> <span class="p">=</span> <span class="k">new</span> <span class="n">DependableConfiguration</span><span class="p">()</span>
+                    <span class="p">.</span><span class="n">Job</span><span class="p">&lt;</span><span class="n">LongRunningJob</span><span class="p">&gt;(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span><span class="p">.</span><span class="n">WithMaxQueueLength</span><span class="p">(</span><span class="m">2000</span><span class="p">))</span>
+                    <span class="p">.</span><span class="n">CreateScheduler</span><span class="p">();</span>
+</code></pre></div>
+<h2>Composition</h2>
+
+<p>Real world job implementations can be quite significant and you may want to use composition techniques you are familiar with when building them. Dependable has extension two extension points to hook your IoC container to use all the composition goodness. </p>
+<div class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">public</span> <span class="k">interface</span> <span class="n">IDependencyResolver</span> <span class="p">:</span> <span class="n">IDisposable</span>
+<span class="p">{</span>
+    <span class="n">IDependencyScope</span> <span class="nf">BeginScope</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">interface</span> <span class="n">IDependencyScope</span> <span class="p">:</span> <span class="n">IDisposable</span>
+<span class="p">{</span>
+    <span class="kt">object</span> <span class="nf">GetService</span><span class="p">(</span><span class="n">Type</span> <span class="n">type</span><span class="p">);</span>
+
+    <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="kt">object</span><span class="p">&gt;</span> <span class="n">GetServices</span><span class="p">(</span><span class="n">Type</span> <span class="n">type</span><span class="p">);</span>
+
+    <span class="kt">bool</span> <span class="nf">TryGetService</span><span class="p">(</span><span class="n">Type</span> <span class="n">type</span><span class="p">,</span> <span class="k">out</span> <span class="kt">object</span> <span class="n">service</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
