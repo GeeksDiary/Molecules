@@ -152,7 +152,7 @@ public async Task<IEnumerable<Awaiter>> LongRunningJob()
         };  
 }
 ```
-One important thing to notice is that when a job returns an ```Task<IEnumerable<Awaiter>>``` those jobs are scheduled and executed parallely. 
+One important thing to notice is that when a job returns an ```Task<IEnumerable<Awaiter>>``` they are scheduled and executed parallely. 
 
 Let's take a look at a more concrete example. Imagine we are building a travel booking system and we have the following Job setup to process a booking request.
 
