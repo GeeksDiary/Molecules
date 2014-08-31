@@ -130,11 +130,9 @@ Dependable setup we've seen so far discussed simple jobs we want to run in the b
 
 Our ```Run``` method's return type indicates what type of a job it is.
 
-Return Type                       |     Meaning
------------                             -------
-```Task```                        |     Simple job to perform one task
-```Task<Awaiter>```               |     Job that does something and waits for another job to finish.
-```Task<IEnumerable<Awaiter>>```  |     Job that does something and waits for few other jobs to finish.
+- ```Task``` - Simple job to perform one task
+- ```Task<Awaiter>``` - Job that does something and waits for another job to finish.
+- ```Task<IEnumerable<Awaiter>>``` - Job that does something and waits for few other jobs to finish.
 
 
 ```csharp
