@@ -56,7 +56,6 @@ public class SendEmail
     public async Task Run(EmailMessage message) { }    
 }
 
-
 scheduler.Schedule<SendEmail>(new EmailMessage 
     { 
         To = "smith@dependable.org", 
@@ -85,7 +84,7 @@ var scheduler = new DependableConfiguration()
 ```
 
 
-Scheduler periodically scans for due items and executes the ready ones. By default this scanning process takes place once every minute. However, you can change that in the configuration.
+The other piece in retry process is what we call Retry Timer. It periodically scans for due items in Dependable internal structures and executes the ready ones. By default this scanning process takes place once every minute. However, we can change that in the configuration.
 
 ```csharp
 var scheduler = new DependableConfiguration()
@@ -94,10 +93,10 @@ var scheduler = new DependableConfiguration()
 ```
 
 ### Detecting retry attempts
-Sometimes it's essential for a job to know if it has been executed for the first time or not. ```Run``` method can receive an argument of type ```JobContext``` which contains the ```DispatchCount``` property indicating how many times the job has been executed.
+Sometimes it's essential for a job to know if it has been executed for the first time or not. This is usually the case we want to make sure executing a job once or many times yields the same result (a.k.a idempotent functions). Our ```Run``` method can receive an argument of type ```Dependable.JobContext``` which contains ```DispatchCount``` property to indicate how many times the job has been executed.
 
 ```csharp
-public async Task Run(string token, JobContext context)
+public async Task Run(EmailMessage message, JobContext context)
 {
     if(context.DispatchCount > 0)
     {   
@@ -107,29 +106,36 @@ public async Task Run(string token, JobContext context)
 ```
 
 ## <a name="poison" class="anchor"></a>Poison
-Sometimes no matter how many times you attempt to run a job, it could always end-up failing. When maximum number of retry count is reached for a job, dependable will consider it as a poisoned job. If you would like to do something when a job becomes poisoned you could simply add a function called ```Poison``` which returns a ```bool```. Later we will see how return value of this function can be used to do some cool stuff but for the time being let's say we always return false.
+Sometimes no matter how many times we attempt to run a job, it could always end-up failing. This kind of behavior could be a result of a bug in job implementation or prolonged failure in infrastructure such as network connectivity. When maximum number of retry count is reached for a job, Dependable will consider it as a poisoned job. If we want to do something when a job becomes poisoned we could add a function called ```Poison``` which returns a ```bool``` to our job class. We will discuss the meaning of this return value in the next section but for the time being let's say we always return false.
 
-Similar to ```Run``` method, ```Poison``` method can receive optional arguments. If you ask for ```JobContext```, you can check ```Exception``` property for the exception causing the job to poison.
+Similar to ```Run``` method, ```Poison``` method can receive optional arguments. If we ask for ```JobContext```, we could use ```Exception``` property for the exception causing the job to poison.
 
 ```csharp
 // Simple Poison function
 public bool Poison() { return false; }
 
 // Poison function with job state
-public bool Poison(string token) { return false; }
+public bool Poison(EmailMessage message) { return false; }
 
 // Poison function with context
 public bool Poison(JobContext context) { return false; }
 
 // Poison function with both job state and context
-public bool Poison(string token, JobContext context) { return false; }
+public bool Poison(EmailMessage message, JobContext context) { return false; }
 ```
-One small caveat you have to be aware of when using ```JobContext.Exception``` is that it always contains the exception occurred during last job execution and in rare cicumstances may not be available. Later we will explore another feature that can reliably give you complete visibility to job's lifecycle.
+One small caveat we have to be aware of when using ```JobContext.Exception``` is that it always contains the exception occurred during last job execution and in rare cicumstances may not be available. Later we will explore Dependable's [tracking]({{ site.url }}tracking.html) feature that can reliably give you complete visibility to job's lifecycle.
 
 ## <a name="job-trees" class="anchor"></a>Job Trees
-Dependable setup we've seen so far works well for simple jobs we want to run in the background. Truth is things are not always that simple. Sometimes background processing can involve running multiple jobs in a certain order. Sounds like a 'workflow' right? Exactly! To make things worse, sometimes we want to compensate for the jobs we completed higher up in the workflow if something goes wrong down below. Well the good news is, you can now let Dependable handle the hairy coordination problem and focus on individual job implementations.
+Dependable setup we've seen so far discussed simple jobs we want to run in the background. Truth is things are not always that simple. Sometimes background processing can involve running multiple jobs in a certain order. To make things worse, sometimes we want to compensate for the jobs we completed higher up in the workflow if something goes wrong down below. Well the good news is, you can now let Dependable handle the hairy coordination problem and focus on individual job implementations.
 
-To spin-up a child job once a job is completed, you simply change your ```Run``` method's return type from ```Task``` to ```Task<Awaiter>``` or ```Task<IEnumerable<Awaiter>>```. 
+Our ```Run``` method's return type indicates what type of a job it is.
+
+Return Type                       |     Meaning
+-----------                             -------
+```Task```                        |     Simple job to perform one task
+```Task<Awaiter>```               |     Job that does something and waits for another job to finish.
+```Task<IEnumerable<Awaiter>>```  |     Job that does something and waits for few other jobs to finish.
+
 
 ```csharp
 // Wait for one job
@@ -148,6 +154,7 @@ public async Task<IEnumerable<Awaiter>> LongRunningJob()
         };  
 }
 ```
+One important thing to notice is that when a job returns an ```Task<IEnumerable<Awaiter>>``` those jobs are scheduled and executed parallely. 
 
 Let's take a look at a more concrete example. Imagine we are building a travel booking system and we have the following Job setup to process a booking request.
 
@@ -190,7 +197,7 @@ public class BookCar
 ## <a name="compensation" class="anchor"></a>Compensation
 Now if any one of these bookings fail, we probably would want to cancel the successfully completed bookings (reality of this process is probably lot more involved than that, but let's assume this is the case for the purpose of this discussion).
 
-To notify Dependable that successful jobs should be compensated, ```BookFlight```,  ```BookHotel``` and ```BookCar``` jobs can implement the ```Poison``` method and return ```true```.
+To notify Dependable that successful jobs should be compensated, ```BookFlight```, ```BookHotel``` and ```BookCar``` jobs can implement the ```Poison``` method and return ```true```.
 
 In addition to that, each one of those jobs will also have a new method called ```Compensate``` with logic for reversing the action it performed. Our modified jobs will look like this:
 
@@ -247,3 +254,5 @@ public class BookCar
     }
 }
 ```
+
+Current compensation model in Dependable leaves the decision making process to individual jobs. More sophisticated workflows may require that decision making process to be escalated to jobs in different levels in the tree. As with everything else, Dependable had to start small and it's goal is to provide wider range of options like this as it grows up.
