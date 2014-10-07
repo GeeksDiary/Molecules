@@ -1,11 +1,8 @@
 ## <a name="introduction" class="anchor"></a>Introduction
-Running jobs in the background is a problem we come across more often than we would like as developers. It usually starts out as simple as running some code in a separate thread (e.g. ```Task.Run(() => {})```. Then we improve it a little bit by adding a try\catch block around it in case it throws an exception. Soon we are adding more sophistication do more things like retrying and tracking.
+Dependable is a .NET library aiming to solve reliable workflow execution problem in a more general purpose fashion. It aims to provide
 
-In some scenarios we have to run a series of jobs in background. A series is normally started by a single job which creates more jobs based on some logic and those jobs can create more jobs inturn and the story goes on. It may not be desirable or an overkill to re-run all jobs in the series in case of a failure, therefore we have to build state tracking and orchestration mechanics into the application.
-
-Dependable is a .NET library aiming to solve this problem in a more general purpose fashion by providing
-
-- An easy composable programming model to keep us focused on implementation of jobs
+- An expressive, composable programming model
+- Abstraction of complex task of coordination
 - Robust, scalable and extensible runtime 
 
 ## <a name="installation" class="anchor"></a>Installation
@@ -13,59 +10,125 @@ Core functionality of Dependable is available in a single module which has no de
 ```sh
 install-package dependable
 ```
-## <a name="creating-a-job" class="anchor"></a>Creating a Job
-Job is a unit of work that we would like perform in background. Sending an email, generating a PDF, scaling images and calling an external web service are some classic examples. Dependable uses a handful of conventions to recognise jobs. Simplest convention is a class with a method named ```Run``` and return type of ```Task```.
+## <a name="creating-an-activity" class="anchor"></a>Creating an Activity
+An Activity is a unit of work that we would like to perform in a workflow. Sending an email, generating a PDF, scaling images and calling an external web service are some classic examples. They can be created from any method in a class that returns a ```Task``` or ```Task<Activity>```.
 
 ```csharp
-public class SendEmail 
+public class Notify 
 {
-    public async Task Run()
+    public async Task Email(string from, string to, string body)
     {        
     }
 }
+
+var email = Activity.Run<Notify>(a => a.Email("alice@me.com", "bob@me.com", "hello"));
 ```
 
+Dependable also provides handful of methods to compose larger worflows out of smaller activities.
+
+### Some examples of composition
+```csharp
+// Runs A.Foo() and then B.Bar()
+Activity.Run<A>(a => a.Foo()).Then<B>(b => b.Bar());
+
+// Runs B.Bar() if A.Foo() fails (after specified number of retry attempts).
+Activity.Run<A>(a => a.Foo()).WhenFailed(Activity.Run<B>(b => b.Bar()));
+
+// Runs B.Bar() everytime A.Foo() throws an exception.
+Activity.Run<A>(a => a.Foo()).WithExceptionFilter<B>((exception, b) => b.Bar(exception));
+
+// Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar();
+Activity
+    .Sequence(
+        Activity.Run<A>(a => a.Foo()), 
+        Activity.Run<B>(b = b.Bar()))
+    .WhenAnyFailed(Activity.Run<C>(c => c.FooBar()));
+
+// Runs A.Foo() and then B.bar(). If all of them fails runs C.FooBar()
+Activity
+    .Sequence(
+        Activity.Run<A>(a => a.Foo()), 
+        Activity.Run<B>(b = b.Bar()))
+    .WhenAllFailed(Activity.Run<C>(c => c.FooBar()));    
+
+
+// Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar().
+// If both of them fail runs D.Jar().
+Activity
+    .Sequence(
+        Activity.Run<A>(a => a.Foo()), 
+        Activity.Run<B>(b = b.Bar()))
+    .WhenAnyFailed(Activity.Run<C>(c => c.FooBar()))
+    .WhenAllFailed(Activity.Run<D>(c => d.Jar()));
+
+// Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar();
+// Otherwise runs D.Jar().
+Activity
+    .Sequence(
+        Activity.Run<A>(a => a.Foo()), 
+        Activity.Run<B>(b = b.Bar()))
+    .WhenAnyFailed(Activity.Run<C>(c => c.FooBar()))
+    .Then<D>(d => d.Jar());
+
+// Runs A.Foo() and then B.Bar(). When an exception is thrown from either of them
+// or any child activity they create, invoke C.Jar with exception details.
+Activity
+    .Sequence(
+        Activity.Run<A>(a => a.Foo()), 
+        Activity.Run<B>(b = b.Bar()))
+    .WithExceptionFilter<C>((exception, c) => c.Jar(exception));
+
+// Alternatively use Activity.Parallel instead of Activity.Sequence
+// run specified activites in parallel.
+
+// Runs A.Foo and B.Bar() in parallel. When both of them are complete
+// runs D.Jar().
+Activity
+    .Parallel(
+        Activity.Run<A>(a => a.Foo()), 
+        Activity.Run<B>(b = b.Bar()))
+    .Then<D>(d => d.Jar());
+```
+
+Activities can generate more activities. Dependable will not consider an activity as complete until all activities generated by that activity and their children and... well the whole activity tree :-) is complete.
+This allows us to program activities with constructs provided in our programming language.
+
+```csharp
+public class LoanApproval
+{
+    public async Task<Activity> Approve(int applicantId, bool positiveCreditCheck, decimal amount)
+    {
+        var applicant = _repository.Load(applicantId);
+
+        if(!positiveCreditCheck || amount > 100)        
+            return Activity.Run<Notify>(n => n.Email("manager-bob@mybank.com", "info@mybank.com", "Verify"));
+        else
+            return Activity
+                .Run<Transactions>(t => t.Credit(amount))
+                .Then<Notify>(n => n.Email(applicant.Email, "info@mybank.com", "you have your money"));
+    }
+}
+
+``` 
+
 ## <a name="creating-a-scheduler" class="anchor"></a>Creating a Scheduler
-Mechanics of executing jobs is in Dependable's scheduler. We can use ```DependableConfiguration``` to create one with desired configuration options. Typically we would run this code during application start-up and store this instance at the appdomain level. Invoking ```Scheduler.Start``` will make scheduler wait for jobs and start processing them when they are available.
+Mechanics of executing activities is in Dependable's scheduler. We can use ```DependableConfiguration``` to create one with desired configuration options. Typically we would run this code during application start-up and store this instance at the appdomain level. Invoking ```Scheduler.Start``` will make scheduler wait for activities and start processing them when they are available.
 
 ```csharp
 var scheduler = new DependableConfiguration().CreateScheduler();
 scheduler.Start();
 ```
 
-## <a name="scheduling-jobs" class="anchor"></a>Scheduling Jobs
-Once we have a job and a scheduler, we can tell Dependable to schedule an instance of that job type using ```Schedule()``` method. When we invoke this method, it queues a request to execute that job at some point later. In other words, calling thread of this method is not going to be blocked until the work is done because the intension is to run it in the background.
+## <a name="scheduling-activities" class="anchor"></a>Scheduling Activities
+Once we have an activity and a scheduler, we can tell Dependable to schedule an instance of that activity using ```Schedule()``` method. When we invoke this method, it captures the arguments we specify in the method call expression and queues a request to execute that activity at some point later. In other words, calling thread of this method is not going to be blocked until the work is done because the intension is to run it in the background.
 
 ```csharp
-scheduler.Schedule<SendEmail>();
-```
-
-## <a name="passing-arguments-to-a-job" class="anchor"></a>Passing Arguments to a Job
- Typically, jobs will require some state to perform it's designated task correctly. For example, our ```SendEmail``` job may require a recipient address, subject and the body. We can create a type to represent this structure and pass an instance of that type at the time we schedule the job.
-
-```csharp
-public class EmailMessage
-{
-    public string To { get; set; }
-    public string Subject { get; set; }
-    public string body { get; set; }
-}
-
-public class SendEmail
-{
-    public async Task Run(EmailMessage message) { }    
-}
-
-scheduler.Schedule<SendEmail>(new EmailMessage 
-    { 
-        To = "smith@dependable.org", 
-        Subject = "Hello",
-        Body = "world"
-    });
+var email = Activity.Run<Notify>(a => a.Email("alice@me.com", "bob@me.com", "hello"));
+scheduler.Schedule(email);
 ```
 
 ## <a name="retry" class="anchor"></a>Retry
-When a job fails, we can configure Dependable to retry it. Retry configuration takes place in two places. Firsly we should tell depdendable how many times the job should be retried and interval used calculate the due time (i.e. the lag between the failure and next execution of ```Run``` method). We can configure these values globally for all jobs or for specific ones or both.
+When an activity fails, we can configure Dependable to retry it. Retry configuration takes place in two places. Firsly we should tell depdendable how many times the activity should be retried and interval used calculate the due time (i.e. the lag between the failure and next execution of activity). We can configure these values globally for all activities or for specific ones or both.
 
 ```csharp
 // Setting retry settings globally
@@ -76,7 +139,7 @@ var scheduler = new DependableConfiguration()
 
 // Setting retry settings for a specific job
 var scheduler = new DependableConfiguration()
-                    .Job<BackgroundJob>(c => c
+                    .Activity<Notify>(c => c
                         .WithRetryCount(1)
                         .WithRetryDelay(TimeSpan.FromSeconds(5))                        
                     )
@@ -91,166 +154,3 @@ var scheduler = new DependableConfiguration()
                     .SetRetryTimerInterval(TimeSpan.FromSeconds(5))
                     .CreateScheduler();
 ```
-
-### Detecting retry attempts
-Sometimes it's essential for a job to know if it has been executed for the first time or not. This is usually the case we want to make sure executing a job once or many times yields the same result (a.k.a idempotent functions). Our ```Run``` method can receive an argument of type ```Dependable.JobContext``` which contains ```DispatchCount``` property to indicate how many times the job has been executed.
-
-```csharp
-public async Task Run(EmailMessage message, JobContext context)
-{
-    if(context.DispatchCount > 0)
-    {   
-        // do something special
-    }
-}    
-```
-
-## <a name="poison" class="anchor"></a>Poison
-Sometimes no matter how many times we attempt to run a job, it could always end-up failing. This kind of behavior could be a result of a bug in job implementation or prolonged failure in infrastructure such as network connectivity. When maximum number of retry count is reached for a job, Dependable will consider it as a poisoned job. If we want to do something when a job becomes poisoned we could add a function called ```Poison``` which returns a ```bool``` to our job class. We will discuss the meaning of this return value in the next section but for the time being let's say we always return false.
-
-Similar to ```Run``` method, ```Poison``` method can receive optional arguments. If we ask for ```JobContext```, we could use ```Exception``` property for the exception causing the job to poison.
-
-```csharp
-// Simple Poison function
-public bool Poison() { return false; }
-
-// Poison function with job state
-public bool Poison(EmailMessage message) { return false; }
-
-// Poison function with context
-public bool Poison(JobContext context) { return false; }
-
-// Poison function with both job state and context
-public bool Poison(EmailMessage message, JobContext context) { return false; }
-```
-One small caveat we have to be aware of when using ```JobContext.Exception``` is that it always contains the exception occurred during last job execution and in rare cicumstances may not be available. Later we will explore Dependable's [tracking]({{ site.url }}tracking.html) feature that can reliably give you complete visibility to job's lifecycle.
-
-## <a name="job-trees" class="anchor"></a>Job Trees
-Dependable setup we've seen so far discussed simple jobs we want to run in the background. Truth is things are not always that simple. Sometimes background processing can involve running multiple jobs in a certain order. To make things worse, sometimes we want to compensate for the jobs we completed higher up in the workflow if something goes wrong down below. Well the good news is, you can now let Dependable handle the hairy coordination problem and focus on individual job implementations.
-
-Our ```Run``` method's return type indicates what type of a job it is.
-
-- ```Task``` - Simple job to perform one task
-- ```Task<Awaiter>``` - Job that does something and waits for another job to finish.
-- ```Task<IEnumerable<Awaiter>>``` - Job that does something and waits for few other jobs to finish.
-
-
-```csharp
-// Wait for one job
-public async Task<Awaiter> LongRunningJob()
-{
-    return Awaiter.For<AnotherLongRunningJob>();
-}
-
-// Wait for more than one job
-public async Task<IEnumerable<Awaiter>> LongRunningJob()
-{
-    return new [] 
-        { 
-            Awaiter.For<ChildJobA>(), 
-            Awaiter.For<ChildJobB>() 
-        };  
-}
-```
-One important thing to notice is that when a job returns an ```Task<IEnumerable<Awaiter>>``` they are scheduled and executed parallely. 
-
-Let's take a look at a more concrete example. Imagine we are building a travel booking system and we have the following Job setup to process a booking request.
-
-```csharp
-public class BookTrip
-{
-    public async Task<IEnumerable<Awaiter>> Run(BookingDetails details)
-    {
-        return new[] 
-        {
-            Awaiter.For<BookFlight>(details.Flight),
-            Awaiter.For<BookHotel>(details.Hotel),
-            Awaiter.For<BookCar>(details.Car)
-        };
-    }
-}
-
-public class BookFlight
-{
-    public async Task Run(Flight flight)
-    {
-    }
-}
-
-public class BookHotel
-{
-    public async Task Run(Hotel hotel)
-    { 
-    }
-}
-
-public class BookCar
-{
-    public async Task Run(Car car)
-    {    
-    }
-}
-```
-
-## <a name="compensation" class="anchor"></a>Compensation
-Now if any one of these bookings fail, we probably would want to cancel the successfully completed bookings (reality of this process is probably lot more involved than that, but let's assume this is the case for the purpose of this discussion).
-
-To notify Dependable that successful jobs should be compensated, ```BookFlight```, ```BookHotel``` and ```BookCar``` jobs can implement the ```Poison``` method and return ```true```.
-
-In addition to that, each one of those jobs will also have a new method called ```Compensate``` with logic for reversing the action it performed. Our modified jobs will look like this:
-
-```csharp
-public class BookTrip
-{
-    public async Task<IEnumerable<Awaiter>> Run(BookingDetails details)
-    {
-        return new[] 
-        {
-            Awaiter.For<BookFlight>(details.Flight),
-            Awaiter.For<BookHotel>(details.Hotel),
-            Awaiter.For<BookCar>(details.Car)
-        };
-    }
-}
-
-public class BookFlight
-{
-    public async Task Run(Flight flight)
-    {
-    }
-
-    public book Poison() { return true; }
-
-    public void Compensate(Flight flight)
-    {
-    }
-}
-
-public class BookHotel
-{
-    public async Task Run(Hotel hotel)
-    { 
-    }
-
-    public book Poison() { return true; }
-
-    public void Compensate(Hotel hotel)
-    {
-    }
-}
-
-public class BookCar
-{
-    public async Task Run(Car car)
-    {    
-    }
-
-    public book Poison() { return true; }
-
-    public void Compensate(Car car)
-    {
-    }
-}
-```
-
-Current compensation model in Dependable leaves the decision making process to individual jobs. More sophisticated workflows may require that decision making process to be escalated to jobs in different levels in the tree. As with everything else, Dependable had to start small and it's goal is to provide wider range of options like this as it grows up.
