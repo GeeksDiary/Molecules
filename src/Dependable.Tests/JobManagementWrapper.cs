@@ -45,6 +45,12 @@ namespace Dependable.Tests
             return this;
         }
 
+        public JobManagementWrapper OfType<T>()
+        {
+            _job = Clone(type: typeof (T));
+            return this;
+        }
+
         public JobStatus Status
         {
             get { return _job.Status; }

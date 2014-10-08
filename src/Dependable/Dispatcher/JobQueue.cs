@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dependable.Persistence;
-using Dependable.Recovery;
 using Dependable.Tracking;
 using Dependable.Utilities;
 
@@ -16,10 +15,12 @@ namespace Dependable.Dispatcher
         void Write(Job job);
 
         ActivityConfiguration Configuration { get; set; }
+        
+        Job[] Initialize(Job[] recoverableJobs);
     }
 
     /// <summary>
-    /// In memory queue for storing job descriptions.
+    /// In memory queue for storing jobs.
     /// Assumes there's only one reader and multiple/concurrent
     /// writers.
     /// </summary>
@@ -34,12 +35,12 @@ namespace Dependable.Dispatcher
         TaskCompletionSource<Job> _reader;
 
         int _suspendedCount;
+        bool _initialized; 
 
         public JobQueue(
             ActivityConfiguration configuration,
             IPersistenceStore persistenceStore,
-            IEventStream eventStream,
-            IJobQueueRecovery recovery)
+            IEventStream eventStream)
         {
             if (configuration == null) throw new ArgumentNullException("configuration");
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
@@ -47,23 +48,40 @@ namespace Dependable.Dispatcher
 
             Configuration = configuration;
             _persistenceStore = persistenceStore;
-            _eventStream = eventStream;
+            _eventStream = eventStream;            
+        }
 
-            var recoveredState = recovery.Recover(configuration.JobType);
+        public ActivityConfiguration Configuration { get; set; }
 
-            foreach (var job in recoveredState.Jobs)
+        public Job[] Initialize(Job[] recoverableJobs)
+        {
+            if (recoverableJobs == null) throw new ArgumentNullException("recoverableJobs");
+
+            if (_initialized)
+                throw new InvalidOperationException("Queue is already initialized.");
+
+            if(Configuration.JobType != null)
+                _suspendedCount = _persistenceStore.CountSuspended(Configuration.JobType);
+
+            var allMatchingItems = recoverableJobs.Where(j => j.Type == (Configuration.JobType ?? j.Type)).ToArray();
+
+            var consumableItems = (Configuration.JobType != null
+                ? allMatchingItems.Take(Configuration.MaxQueueLength)
+                : allMatchingItems);
+
+            foreach (var job in consumableItems)            
                 _items.Enqueue(job);
 
-            _suspendedCount = recoveredState.SuspendedCount;
+            _initialized = true;
 
-            eventStream.Publish<JobQueue>(
+            _eventStream.Publish<JobQueue>(
                 EventType.Activity,
                 EventProperty.ActivityName("JobQueueRecovered"),
                 EventProperty.Named("JobCount", _items.Count),
                 EventProperty.Named("SuspendedCount", _suspendedCount));
-        }
 
-        public ActivityConfiguration Configuration { get; set; }
+            return recoverableJobs.Except(allMatchingItems).ToArray();
+        }
 
         public async Task<Job> Read()
         {
@@ -149,7 +167,7 @@ namespace Dependable.Dispatcher
         }
 
         public void Write(Job job)
-        {
+        {            
             job.Suspended = false;
 
             var suspendedCount = 0;

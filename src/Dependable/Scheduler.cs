@@ -32,7 +32,8 @@ namespace Dependable
             IRecoverableAction recoverableAction,
             IJobPump jobPump,
             IJobRouter router,
-            IActivityToContinuationConverter activityToContinuationConverter)
+            IActivityToContinuationConverter activityToContinuationConverter,
+            IJobQueueRecovery jobQueueRecovery)
         {
             if (configuration == null) throw new ArgumentNullException("configuration");
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
@@ -43,6 +44,7 @@ namespace Dependable
             if (router == null) throw new ArgumentNullException("router");
             if (activityToContinuationConverter == null)
                 throw new ArgumentNullException("activityToContinuationConverter");
+            if (jobQueueRecovery == null) throw new ArgumentNullException("jobQueueRecovery");
 
             _persistenceStore = persistenceStore;
             _now = now;
@@ -52,13 +54,15 @@ namespace Dependable
 
             _router = router;
             _activityToContinuationConverter = activityToContinuationConverter;
+
+            jobQueueRecovery.Recover();
         }
 
         public async Task Start()
         {
             if (_hasStarted)
                 throw new InvalidOperationException("This scheduler is already started.");
-
+            
             _hasStarted = true;
 
             _failedJobQueue.Monitor();
@@ -72,6 +76,8 @@ namespace Dependable
 
         public Guid Schedule(Activity activity, Guid? correlationId = null)
         {
+            if (activity == null) throw new ArgumentNullException("activity");
+
             if (correlationId != null)
             {
                 var existing = _persistenceStore.LoadBy(correlationId.Value);

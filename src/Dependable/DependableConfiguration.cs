@@ -103,8 +103,8 @@ namespace Dependable
 
             var eventStream = new EventStream(_eventSinks, _exceptionLogger, now);
             var delegatingPersistenceStore = new DelegatingPersistenceStore(_persistenceProvider);
-            var jobQueueRecovery = new JobQueueRecovery(delegatingPersistenceStore);
-            var router = new JobRouter(this, c => new JobQueue(c, delegatingPersistenceStore, eventStream, jobQueueRecovery));
+            var router = new JobRouter(this, c => new JobQueue(c, delegatingPersistenceStore, eventStream));
+            var jobQueueRecovery = new JobQueueRecovery(delegatingPersistenceStore, router);            
             var methodBinder = new MethodBinder();
             var recoverableAction = new RecoverableAction(this, eventStream);
 
@@ -151,7 +151,8 @@ namespace Dependable
                 recoverableAction,
                 jobPump,
                 router,
-                activityToContinuationConverter);
+                activityToContinuationConverter,
+                jobQueueRecovery);
         }
 
         TimeSpan IDependableConfiguration.RetryTimerInterval

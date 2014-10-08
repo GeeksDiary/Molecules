@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Dependable.Dispatcher;
-using Dependable.Recovery;
 using NSubstitute;
 using Xunit;
 
@@ -10,6 +9,105 @@ namespace Dependable.Tests.Dispatcher
 {
     public class JobQueueFacts
     {
+        public class Initialize
+        {
+            readonly World _world = new World();
+            readonly Job _matchingJob;
+            readonly Job _otherJob;
+            readonly ActivityConfiguration _throttledConfiguration = new ActivityConfiguration(typeof(string));
+            readonly ActivityConfiguration _defaultConfiguration = new ActivityConfiguration();
+
+            public Initialize()
+            {
+                _matchingJob = _world.NewJob.OfType<string>().In(JobStatus.Ready);
+                _otherJob = _world.NewJob.OfType<int>().In(JobStatus.Ready);
+                _throttledConfiguration.WithMaxQueueLength(1);
+            }
+
+            [Fact]
+            public async Task ShouldEnqueueMatchingItems()
+            {
+                var q = _world.NewJobQueue(_throttledConfiguration);
+                var next = _world.NewJob.OfType<string>().In(JobStatus.Ready);
+
+                q.Initialize(new[] { _matchingJob, _otherJob });
+                
+                Assert.Equal(_matchingJob, await q.Read());
+
+                q.Write(next);
+                Assert.Equal(next, await q.Read());
+            }
+
+            [Fact]
+            public async Task ShouldNotEnqueueMoreItemsThanMaxQueueLength()
+            {
+                var q = _world.NewJobQueue(_throttledConfiguration);
+                var extra = _world.NewJob.OfType<string>().In(JobStatus.Ready);
+                var next = _world.NewJob.OfType<string>().In(JobStatus.Ready);
+
+                q.Initialize(new[] { _matchingJob, extra, _otherJob });
+
+                Assert.Equal(_matchingJob, await q.Read());
+
+                q.Write(next);
+                Assert.Equal(next, await q.Read());
+            }
+
+            [Fact]
+            public void ShouldNotReturnMatchingItemsEvenIfTheyWereNotConsumed()
+            {
+                var q = _world.NewJobQueue(_throttledConfiguration);
+                var extra = _world.NewJob.OfType<string>().In(JobStatus.Ready);
+
+                var rest = q.Initialize(new[] { _matchingJob, extra, _otherJob });
+
+                Assert.Equal(_otherJob, rest.Single());
+            }
+
+            [Fact]
+            public async Task ShouldEnqueueAllItemsForDefaultQueue()
+            {
+                var q = _world.NewJobQueue(_defaultConfiguration);
+                var extra = _world.NewJob.OfType<string>().In(JobStatus.Ready);
+
+                var rest = q.Initialize(new[] { _matchingJob, extra });
+
+                Assert.Equal(_matchingJob, await q.Read());
+                Assert.Equal(extra, await q.Read());
+                Assert.Empty(rest);
+            }
+
+            [Fact]
+            public void ShouldReturnUnconsumedItems()
+            {
+                var q = _world.NewJobQueue(_throttledConfiguration);
+
+                var rest = q.Initialize(new[] { _matchingJob, _otherJob });
+
+                Assert.Equal(_otherJob, rest.Single());
+            }
+
+            [Fact]
+            public void ShouldThrowAnExceptionIfItIsAlreadyInitialized()
+            {
+                var q = _world.NewJobQueue(new ActivityConfiguration(typeof(string)));
+
+                q.Initialize(new Job[0]);
+
+                Assert.Throws<InvalidOperationException>(() => q.Initialize(new Job[0]));
+            }
+
+            [Fact]
+            public void ShouldInitializeSuspendedCount()
+            {
+                var q = _world.NewJobQueue(new ActivityConfiguration(typeof(string)));
+
+                q.Initialize(new Job[0]);
+
+                _world.PersistenceStore.Received(1).CountSuspended(typeof(string));
+            }
+        }
+
         public class Reads
         {
             readonly World _world = new World();
@@ -132,10 +230,13 @@ namespace Dependable.Tests.Dispatcher
         }
 
         public class ExcessWrites
-        {
+        {            
             readonly World _world = new World();
+
             readonly ActivityConfiguration _configuration = new ActivityConfiguration(typeof (string)).WithMaxQueueLength(1);
+
             readonly Job _excessItem;
+
             readonly JobQueue _queue;
 
             public ExcessWrites()
@@ -240,56 +341,15 @@ namespace Dependable.Tests.Dispatcher
                     Assert.Equal(job, readJob);
                 }
             }
-
-            public class Creation
-            {
-                readonly World _world = new World();
-
-                [Fact]
-                public async Task ShouldInitializeTheQueueWithRecoveredItems()
-                {
-                    var job = _world.NewJob;
-
-                    _world.JobQueueRecovery.Recover(typeof (string))
-                        .Returns(new RecoveredQueueState(new Job[] {job}, 0));
-
-                    var q = _world.NewJobQueue(new ActivityConfiguration(typeof (string)), false);
-
-                    Assert.Equal(job, await q.Read());
-                }
-
-                [Fact]
-                public void ShouldSuspendNewItemsIfInitializedWithSuspendedItems()
-                {
-                    _world.JobQueueRecovery.Recover(typeof (string))
-                        .Returns(new RecoveredQueueState(Enumerable.Empty<Job>(), 1));
-
-                    var q = _world.NewJobQueue(new ActivityConfiguration(typeof (string)), false);
-
-                    var job = (Job)_world.NewJob;
-
-                    q.Write(job);
-
-                    Assert.True(job.Suspended);
-                }
-            }
         }
     }
 
 
     public partial class WorldExtensions
     {
-        public static JobQueue NewJobQueue(this World world, ActivityConfiguration configuration = null,
-            bool setupRecovery = true)
+        public static JobQueue NewJobQueue(this World world, ActivityConfiguration configuration = null)
         {
-            if (setupRecovery)
-            {
-                world.JobQueueRecovery.Recover(null)
-                    .ReturnsForAnyArgs(new RecoveredQueueState(Enumerable.Empty<Job>(), 0));
-            }
-                
-            return new JobQueue(configuration ?? new ActivityConfiguration(), world.PersistenceStore, world.EventStream,
-                world.JobQueueRecovery);
+            return new JobQueue(configuration ?? new ActivityConfiguration(), world.PersistenceStore, world.EventStream);
         }
     }
 }

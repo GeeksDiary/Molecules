@@ -1,25 +1,30 @@
 ﻿using System;
 using System.Linq;
+using Dependable.Dispatcher;
 using Dependable.Persistence;
 
 namespace Dependable.Recovery
 {
     public interface IJobQueueRecovery
     {
-        RecoveredQueueState Recover(Type type);
+        void Recover();
     }
 
     public class JobQueueRecovery : IJobQueueRecovery
     {
         readonly IPersistenceStore _persistenceStore;
+        readonly IJobRouter _router;
 
-        public JobQueueRecovery(IPersistenceStore persistenceStore)
+        public JobQueueRecovery(IPersistenceStore persistenceStore, IJobRouter router)
         {
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
+            if (router == null) throw new ArgumentNullException("router");
+
             _persistenceStore = persistenceStore;
+            _router = router;
         }
 
-        public RecoveredQueueState Recover(Type type)
+        public void Recover()
         {
             var readyItems = _persistenceStore.LoadBy(JobStatus.Ready).ToArray();
             var runningItems = _persistenceStore.LoadBy(JobStatus.Running).ToArray();
@@ -30,12 +35,15 @@ namespace Dependable.Recovery
                 _persistenceStore.LoadBy(JobStatus.ReadyToComplete)
                 .Concat(_persistenceStore.LoadBy(JobStatus.ReadyToPoison)).ToArray();
 
-            var suspendedCount = type == null ? 0 : _persistenceStore.CountSuspended(type);
+            var all =
+                partiallyCompletedItems.Concat(readyItems)
+                    .Concat(failedItems)
+                    .Concat(waitingForChildren)
+                    .Concat(runningItems)
+                    .ToArray();
 
-            return
-                new RecoveredQueueState(
-                    partiallyCompletedItems.Concat(readyItems).Concat(failedItems).Concat(waitingForChildren).Concat(runningItems).Where(j => j.Type == (type ?? j.Type)),
-                    suspendedCount);
+            all = _router.SpecificQueues.Values.Aggregate(all, (current, q) => q.Initialize(current));
+            _router.DefaultQueue.Initialize(all);
         }
     }
 }
