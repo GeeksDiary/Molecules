@@ -70,7 +70,6 @@
     <Compile Include="Dispatcher\JobQueue.cs" />
     <Compile Include="Dispatcher\Dispatcher.cs" />
     <Compile Include="Dispatcher\JobPump.cs" />
-    <Compile Include="Recovery\RecoveredQueueState.cs" />
     <Compile Include="Utilities\ExceptionUtility.cs" />
     <Compile Include="JobContext.cs" />
     <Compile Include="Dispatcher\ErrorHandlingPolicy.cs" />

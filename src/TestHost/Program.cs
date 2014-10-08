@@ -103,6 +103,7 @@ namespace TestHost
     {
         public async Task Run(Person person)
         {
+            Thread.Sleep(5000);
             Console.WriteLine("Hello {0} {1}", person.FirstName, person.LastName);
         }
     }
