@@ -302,5 +302,25 @@ namespace Dependable.Tests.Dispatcher
 
             Assert.Empty(pending);
         }
+
+        [Fact]
+        public void ShouldReturnAnyFailedHandlerWhenAnyItemFailsInSequence()
+        {
+            var continuation = new Continuation
+            {
+                Type = ContinuationType.Sequence,
+                Children = new[]
+                {
+                    new Continuation {Status = JobStatus.Completed},
+                    new Continuation {Status = JobStatus.Poisoned},
+                    new Continuation {Status = JobStatus.Created}
+                },
+                OnAnyFailed = new Continuation()
+            };
+
+            var pending = continuation.PendingContinuations();
+
+            Assert.Equal(continuation.OnAnyFailed, pending.Single());
+        }
     }
 }

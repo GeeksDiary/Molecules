@@ -39,7 +39,8 @@ namespace Dependable.Dispatcher
                 foreach (var child in item.Children)
                 {
                     var children = child.PendingContinuations().ToArray();
-                    if (children.Any() || !child.CanContinue()) return children;
+                    if (children.Any()) return children;
+                    if (!child.CanContinue()) break;
                 }
             }
             
