@@ -120,7 +120,7 @@ scheduler.Start();
 ```
 
 ## <a name="scheduling-activities" class="anchor"></a>Scheduling Activities
-Once we have an activity and a scheduler, we can tell Dependable to schedule an instance of that activity using ```Schedule()``` method. When we invoke this method, it captures the arguments we specify in the method call expression and queues a request to execute that activity at some point later. In other words, calling thread of this method is not going to be blocked until the work is done because the intension is to run it in the background.
+Once we have an activity and a scheduler, we can tell Dependable to schedule an instance of that activity using ```Schedule()``` method. When we invoke this method, it captures the arguments we specify in the method call expression and queues a request to execute that activity at some point later. In other words, calling thread of this method is not going to be blocked until the work is done because the intention is to run it in the background.
 
 ```csharp
 var email = Activity.Run<Notify>(a => a.Email("alice@me.com", "bob@me.com", "hello"));
@@ -128,7 +128,7 @@ scheduler.Schedule(email);
 ```
 
 ## <a name="retry" class="anchor"></a>Retry
-When an activity fails, we can configure Dependable to retry it. Retry configuration takes place in two places. Firsly we should tell depdendable how many times the activity should be retried and interval used calculate the due time (i.e. the lag between the failure and next execution of activity). We can configure these values globally for all activities or for specific ones or both.
+When an activity fails, we can configure Dependable to retry it. Retry configuration takes place in two places. Firstly we should tell dependable how many times the activity should be retried and interval used calculate the due time (i.e. the lag between the failure and next execution of activity). We can configure these values globally for all activities or for specific ones or both.
 
 ```csharp
 // Setting retry settings globally
