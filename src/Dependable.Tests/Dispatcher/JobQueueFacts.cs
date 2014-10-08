@@ -39,29 +39,15 @@ namespace Dependable.Tests.Dispatcher
             }
 
             [Fact]
-            public async Task ShouldNotEnqueueMoreItemsThanMaxQueueLength()
+            public async Task ShouldEnqueueAllMatchingItemsDespiteMaxQueueLengthValue()
             {
                 var q = _world.NewJobQueue(_throttledConfiguration);
                 var extra = _world.NewJob.OfType<string>().In(JobStatus.Ready);
-                var next = _world.NewJob.OfType<string>().In(JobStatus.Ready);
-
+              
                 q.Initialize(new[] { _matchingJob, extra, _otherJob });
 
                 Assert.Equal(_matchingJob, await q.Read());
-
-                q.Write(next);
-                Assert.Equal(next, await q.Read());
-            }
-
-            [Fact]
-            public void ShouldNotReturnMatchingItemsEvenIfTheyWereNotConsumed()
-            {
-                var q = _world.NewJobQueue(_throttledConfiguration);
-                var extra = _world.NewJob.OfType<string>().In(JobStatus.Ready);
-
-                var rest = q.Initialize(new[] { _matchingJob, extra, _otherJob });
-
-                Assert.Equal(_otherJob, rest.Single());
+                Assert.Equal(extra, await q.Read());
             }
 
             [Fact]

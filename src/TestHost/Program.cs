@@ -25,18 +25,24 @@ namespace TestHost
                 .SetRetryTimerInterval(TimeSpan.FromSeconds(1))
                 .UseSqlPersistenceProvider("Default", "TestHost")
                 .UseConsoleEventLogger(EventType.JobStatusChanged | EventType.Exception)
-                .Activity<Greet>(c => c.WithMaxWorkers(1))
+                .Activity<Greet>(c => c.WithMaxWorkers(1).WithMaxQueueLength(1))
                 .CreateScheduler();
 
             _scheduler.Start();
 
-            var sequence = Activity
-                .Sequence(
-                    Activity.Run<Greet>(g => g.Run("a", "b")),
-                    Activity.Run<Greet>(g => g.Run("c", "d")))
-                .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"));
+            //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("alice", "cooper")));
+            //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("bob", "jane")));
+            //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("kyle", "simpson")));
+            //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("andrew", "matthews")));
 
-            sequence.WhenAnyFailed(Activity.Run<Greet>(g => g.Run("e", "f")));
+
+            //var sequence = Activity
+            //    .Sequence(
+            //        Activity.Run<Greet>(g => g.Run("a", "b")),
+            //        Activity.Run<Greet>(g => g.Run("c", "d")))
+            //    .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"));
+
+            //sequence.WhenAnyFailed(Activity.Run<Greet>(g => g.Run("e", "f")));
 
             //_scheduler.Schedule(sequence);
             //_scheduler.Schedule(

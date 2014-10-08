@@ -63,12 +63,8 @@ namespace Dependable.Dispatcher
             if(Configuration.JobType != null)
                 _suspendedCount = _persistenceStore.CountSuspended(Configuration.JobType);
 
-            var allMatchingItems = recoverableJobs.Where(j => j.Type == (Configuration.JobType ?? j.Type)).ToArray();
-
-            var consumableItems = (Configuration.JobType != null
-                ? allMatchingItems.Take(Configuration.MaxQueueLength)
-                : allMatchingItems);
-
+            var consumableItems = recoverableJobs.Where(j => j.Type == (Configuration.JobType ?? j.Type)).ToArray();
+            
             foreach (var job in consumableItems)            
                 _items.Enqueue(job);
 
@@ -80,7 +76,7 @@ namespace Dependable.Dispatcher
                 EventProperty.Named("JobCount", _items.Count),
                 EventProperty.Named("SuspendedCount", _suspendedCount));
 
-            return recoverableJobs.Except(allMatchingItems).ToArray();
+            return recoverableJobs.Except(consumableItems).ToArray();
         }
 
         public async Task<Job> Read()
