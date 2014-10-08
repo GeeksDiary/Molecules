@@ -283,5 +283,24 @@ namespace Dependable.Tests.Dispatcher
 
             Assert.Equal(continuation.Children.ElementAt(1), pending.Single());
         }
+
+        [Fact]
+        public void ShouldNotReturnNextInSequenceIfCurrentIsFailed()
+        {
+            var continuation = new Continuation
+            {
+                Type = ContinuationType.Sequence,
+                Children = new[]
+                {
+                    new Continuation {Status = JobStatus.Completed},
+                    new Continuation {Status = JobStatus.Poisoned},
+                    new Continuation {Status = JobStatus.Created}
+                }
+            };
+
+            var pending = continuation.PendingContinuations();
+
+            Assert.Empty(pending);
+        }
     }
 }
