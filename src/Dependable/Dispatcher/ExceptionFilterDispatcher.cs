@@ -41,6 +41,9 @@ namespace Dependable.Dispatcher
                 var exceptionContext = argument as ExceptionContext;
                 if (exceptionContext != null)
                 {
+                    exceptionContext.ActivityType = context.ActivityType;
+                    exceptionContext.Method = context.Method;
+                    exceptionContext.Arguments = context.Arguments;
                     exceptionContext.Exception = exception;
                     exceptionContext.DispatchCount = context.DispatchCount;
                 }

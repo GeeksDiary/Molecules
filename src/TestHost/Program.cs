@@ -25,7 +25,7 @@ namespace TestHost
                 .SetRetryTimerInterval(TimeSpan.FromSeconds(1))
                 .UseSqlPersistenceProvider("Default", "TestHost")
                 .UseConsoleEventLogger(EventType.JobStatusChanged | EventType.Exception)
-                .Activity<Greet>(c => c.WithMaxWorkers(1).WithMaxQueueLength(1))
+                //.Activity<Greet>(c => c.WithMaxWorkers(1).WithMaxQueueLength(1))
                 .CreateScheduler();
 
             _scheduler.Start();
@@ -83,9 +83,9 @@ namespace TestHost
 
             //_scheduler.Schedule(group.WhenAnyFailed(Activity.Run<Greet>(a => a.Run("a", "b"))));
 
-            //_scheduler.Schedule(
-            //    Activity.Run<GreetMany>(g => g.Run(new[] { "c" }))
-            //    .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "interesting")));
+            _scheduler.Schedule(
+                Activity.Run<GreetMany>(g => g.Run(new[] { "c" }))
+                .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "interesting")));
 
             //for (var i = 0; i < 1000; i++)
             //{
@@ -94,7 +94,6 @@ namespace TestHost
             //    var activity = Activity.Run<GreetMany>(a => a.Run(new[] { nameA, nameB }));
             //    Task.Run(() => _scheduler.Schedule(activity));
             //}
-
             Console.ReadLine();
         }
     }
@@ -187,7 +186,7 @@ namespace TestHost
     {
         public void Log(ExceptionContext context, string message)
         {
-            Console.WriteLine(message);
+            Console.WriteLine(context.ActivityType);
         }
     }
 }

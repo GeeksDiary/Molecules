@@ -8,10 +8,19 @@ namespace Dependable
         {
             if(job == null) throw new ArgumentNullException("job");
 
+            ActivityType = job.Type;
+            Method = job.Method;
+            Arguments = job.Arguments;
             Id = job.Id;
             CorrelationId = job.CorrelationId;
             DispatchCount = job.DispatchCount;
         }
+
+        public Type ActivityType { get; set; }
+
+        public string Method { get; set; }
+
+        public object[] Arguments { get; set; }
 
         public Guid Id { get; private set; }
 
