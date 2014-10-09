@@ -25,7 +25,7 @@ namespace Dependable.Dispatcher
         readonly IRecoverableAction _recoverableAction;
 
         readonly IStatusChanger _statusChanger;
-        readonly IContinuationLiveness _continuationDispatcher;
+        readonly IContinuationLiveness _continuationLiveness;
         readonly IExceptionFilterDispatcher _exceptionFilterDispatcher;
 
         public Dispatcher(IDependencyResolver dependencyResolver,
@@ -54,7 +54,7 @@ namespace Dependable.Dispatcher
             _eventStream = eventStream;
             _recoverableAction = recoverableAction;
             _statusChanger = statusChanger;
-            _continuationDispatcher = continuationLiveness;
+            _continuationLiveness = continuationLiveness;
             _exceptionFilterDispatcher = exceptionFilterDispatcher;
         }
 
@@ -69,7 +69,7 @@ namespace Dependable.Dispatcher
                     await Run(job);
                     break;
                 case JobStatus.WaitingForChildren:
-                    _jobCoordinator.Run(job, () => _continuationDispatcher.Verify(job));
+                    _jobCoordinator.Run(job, () => _continuationLiveness.Verify(job));
                     break;
                 case JobStatus.ReadyToComplete:
                     _jobCoordinator.Run(job, () => _statusChanger.Change(job, JobStatus.Completed));
