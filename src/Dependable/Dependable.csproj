@@ -45,10 +45,12 @@
     <Compile Include="Dispatcher\ExceptionFilterDispatcher.cs" />
     <Compile Include="Dispatcher\FailedTransition.cs" />
     <Compile Include="Dispatcher\EndTransition.cs" />
+    <Compile Include="Dispatcher\JobQueueFactory.cs" />
     <Compile Include="Dispatcher\JobResult.cs" />
     <Compile Include="Dispatcher\ContinuationExtensions.cs" />
     <Compile Include="Dispatcher\PrimitiveStatusChanger.cs" />
     <Compile Include="Dispatcher\ContinuationLiveness.cs" />
+    <Compile Include="Dispatcher\QueueConfiguration.cs" />
     <Compile Include="Dispatcher\RunningTransition.cs" />
     <Compile Include="Dispatcher\WaitForChildrenTransition.cs" />
     <Compile Include="ExceptionFilter.cs" />
@@ -75,7 +77,6 @@
     <Compile Include="Dispatcher\ErrorHandlingPolicy.cs" />
     <Compile Include="Dispatcher\JobRouter.cs" />
     <Compile Include="Recovery\RecoverableAction.cs" />
-    <Compile Include="Recovery\JobQueueRecovery.cs" />
     <Compile Include="Recovery\FailedJobQueue.cs" />
     <Compile Include="Scheduler.cs" />
     <Compile Include="Activity.cs" />

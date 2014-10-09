@@ -53,11 +53,19 @@ namespace Dependable.Persistence
             }
         }
 
-        public IEnumerable<Job> LoadSuspended(Type type, int max)
+        public IEnumerable<Job> LoadSuspended(Type forActivityType, int max)
         {
             using (var persistenceStore = _persistenceProvider.CreateStore())
             {
-                return persistenceStore.LoadSuspended(type, max);
+                return persistenceStore.LoadSuspended(forActivityType, max);
+            }
+        }
+
+        public IEnumerable<Job> LoadSuspended(IEnumerable<Type> excludeActivityTypes, int max)
+        {
+            using (var persistenceStore = _persistenceProvider.CreateStore())
+            {
+                return persistenceStore.LoadSuspended(excludeActivityTypes, max);
             }
         }
 

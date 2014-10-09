@@ -92,7 +92,7 @@ namespace Dependable.Extensions.Persistence.Sql
             Insert(jobs);
         }
 
-        public IEnumerable<Job> LoadSuspended(Type type, int max)
+        public IEnumerable<Job> LoadSuspended(Type forActivityType, int max)
         {
             return
                 _connection.Query(
@@ -101,7 +101,29 @@ namespace Dependable.Extensions.Persistence.Sql
                         "where Type = @Type and suspended = 1 and InstanceName = @InstanceName order by CreatedOn",
                         max,
                         Columns),
-                    new {Type = SerializationUtilities.PersistedTypeName(type), InstanceName = _instanceName})
+                        new
+                        {
+                            Type = SerializationUtilities.PersistedTypeName(forActivityType), 
+                            InstanceName = _instanceName
+                        })
+                    .Select(Deserialize);
+        }
+
+        public IEnumerable<Job> LoadSuspended(IEnumerable<Type> excludeActivityTypes, int max)
+        {
+            return
+                _connection.Query(
+                    string.Format(
+                        "select top {0} {1} from DependableJobs " +
+                        "where Type not in (@Exclude) and suspended = 1 and " + 
+                        "InstanceName = @InstanceName order by CreatedOn",
+                        max,
+                        Columns),
+                        new
+                        {
+                            Exclude = excludeActivityTypes,
+                            InstanceName = _instanceName
+                        })
                     .Select(Deserialize);
         }
 
@@ -110,8 +132,12 @@ namespace Dependable.Extensions.Persistence.Sql
             return
                 _connection.ExecuteScalar<int>(
                     "select count(*) from DependableJobs " +
-                    "where Type = @Type and suspended = 1 and InstanceName = @InstanceName",
-                    new {Type = SerializationUtilities.PersistedTypeName(type), InstanceName = _instanceName});
+                    "where Type = COALESCE(@Type, Type) and suspended = 1 and InstanceName = @InstanceName",
+                    new
+                    {
+                        Type =  type != null ? SerializationUtilities.PersistedTypeName(type) : null, 
+                        InstanceName = _instanceName
+                    });
         }
 
         static Job Deserialize(dynamic record)

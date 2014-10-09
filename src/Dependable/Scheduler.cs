@@ -10,6 +10,7 @@ namespace Dependable
     public interface IScheduler
     {
         Task Start();
+
         Guid Schedule(Activity activity, Guid? correlationId = null);
     }
 
@@ -17,6 +18,7 @@ namespace Dependable
     {
         readonly IJobRouter _router;
         readonly IActivityToContinuationConverter _activityToContinuationConverter;
+        readonly QueueConfiguration _queueConfiguration;
         readonly IPersistenceStore _persistenceStore;
         readonly Func<DateTime> _now;
         readonly IFailedJobQueue _failedJobQueue;
@@ -25,16 +27,18 @@ namespace Dependable
 
         bool _hasStarted;
 
-        public Scheduler(IDependableConfiguration configuration,
+        public Scheduler(
+            QueueConfiguration queueConfiguration,
+            IDependableConfiguration configuration,
             IPersistenceStore persistenceStore,
             Func<DateTime> now,
             IFailedJobQueue failedJobQueue,
             IRecoverableAction recoverableAction,
             IJobPump jobPump,
             IJobRouter router,
-            IActivityToContinuationConverter activityToContinuationConverter,
-            IJobQueueRecovery jobQueueRecovery)
+            IActivityToContinuationConverter activityToContinuationConverter)
         {
+            if (queueConfiguration == null) throw new ArgumentNullException("queueConfiguration");
             if (configuration == null) throw new ArgumentNullException("configuration");
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
             if (now == null) throw new ArgumentNullException("now");
@@ -44,8 +48,8 @@ namespace Dependable
             if (router == null) throw new ArgumentNullException("router");
             if (activityToContinuationConverter == null)
                 throw new ArgumentNullException("activityToContinuationConverter");
-            if (jobQueueRecovery == null) throw new ArgumentNullException("jobQueueRecovery");
 
+            _queueConfiguration = queueConfiguration;
             _persistenceStore = persistenceStore;
             _now = now;
             _failedJobQueue = failedJobQueue;
@@ -54,8 +58,6 @@ namespace Dependable
 
             _router = router;
             _activityToContinuationConverter = activityToContinuationConverter;
-
-            jobQueueRecovery.Recover();
         }
 
         public async Task Start()
@@ -68,8 +70,8 @@ namespace Dependable
             _failedJobQueue.Monitor();
             _recoverableAction.Monitor();
 
-            var tasks = _router.SpecificQueues.Values.Select(q => _jobPump.Start(q)).ToList();
-            tasks.Add(_jobPump.Start(_router.DefaultQueue));
+            var tasks = _queueConfiguration.ActivitySpecificQueues.Values.Select(q => _jobPump.Start(q)).ToList();
+            tasks.Add(_jobPump.Start(_queueConfiguration.Default));
 
             await Task.WhenAny(tasks);
         }

@@ -23,7 +23,7 @@ namespace Dependable.Tests
             RecoverableAction = Substitute.For<IRecoverableAction>();
             StatusChanger = Substitute.For<IStatusChanger>();            
             Configuration = Substitute.For<IDependableConfiguration>();
-            JobQueueRecovery = Substitute.For<IJobQueueRecovery>();
+            JobQueueFactory = Substitute.For<IJobQueueFactory>();
             ContinuationDispatcher = Substitute.For<IContinuationDispatcher>();
             ActivityToContinuationConverter = Substitute.For<IActivityToContinuationConverter>();
 
@@ -75,7 +75,7 @@ namespace Dependable.Tests
 
         public IPersistenceProvider PersistenceProvider { get; set; }
         
-        public IJobQueueRecovery JobQueueRecovery { get; set; }
+        public IJobQueueFactory JobQueueFactory { get; set; }
 
         public IContinuationDispatcher ContinuationDispatcher { get; set; }
 

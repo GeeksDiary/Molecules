@@ -15,7 +15,9 @@ namespace Dependable.Persistence
 
         void Store(IEnumerable<Job> jobs);
 
-        IEnumerable<Job> LoadSuspended(Type type, int max);
+        IEnumerable<Job> LoadSuspended(Type forActivityType, int max);
+
+        IEnumerable<Job> LoadSuspended(IEnumerable<Type> excludeActivityTypes, int max);
 
         int CountSuspended(Type type);
     }

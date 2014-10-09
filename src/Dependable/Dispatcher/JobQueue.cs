@@ -14,9 +14,7 @@ namespace Dependable.Dispatcher
 
         void Write(Job job);
 
-        ActivityConfiguration Configuration { get; set; }
-        
-        Job[] Initialize(Job[] recoverableJobs);
+        ActivityConfiguration Configuration { get; set; }        
     }
 
     /// <summary>
@@ -28,57 +26,39 @@ namespace Dependable.Dispatcher
     {
         readonly IPersistenceStore _persistenceStore;
         readonly IEventStream _eventStream;
-        readonly Queue<Job> _items = new Queue<Job>();
+        readonly Queue<Job> _items;
 
         readonly object _queueAccess = new object();
 
         TaskCompletionSource<Job> _reader;
 
         int _suspendedCount;
-        bool _initialized; 
+        readonly IEnumerable<ActivityConfiguration> _allActivityConfiguration;
 
-        public JobQueue(
-            ActivityConfiguration configuration,
+        public JobQueue(IEnumerable<Job> items, 
+            int suspendedCount,
+            ActivityConfiguration configuration,    
+            IEnumerable<ActivityConfiguration> allActivityConfiguration,
             IPersistenceStore persistenceStore,
             IEventStream eventStream)
         {
+            if (items == null) throw new ArgumentNullException("items");
             if (configuration == null) throw new ArgumentNullException("configuration");
+            if (allActivityConfiguration == null) throw new ArgumentNullException("allActivityConfiguration");
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
             if (eventStream == null) throw new ArgumentNullException("eventStream");
 
             Configuration = configuration;
+
+            _suspendedCount = suspendedCount;
+            _allActivityConfiguration = allActivityConfiguration;
             _persistenceStore = persistenceStore;
-            _eventStream = eventStream;            
+            _eventStream = eventStream;
+            _items = new Queue<Job>(items);
         }
 
         public ActivityConfiguration Configuration { get; set; }
-
-        public Job[] Initialize(Job[] recoverableJobs)
-        {
-            if (recoverableJobs == null) throw new ArgumentNullException("recoverableJobs");
-
-            if (_initialized)
-                throw new InvalidOperationException("Queue is already initialized.");
-
-            if(Configuration.JobType != null)
-                _suspendedCount = _persistenceStore.CountSuspended(Configuration.JobType);
-
-            var consumableItems = recoverableJobs.Where(j => j.Type == (Configuration.JobType ?? j.Type)).ToArray();
-            
-            foreach (var job in consumableItems)            
-                _items.Enqueue(job);
-
-            _initialized = true;
-
-            _eventStream.Publish<JobQueue>(
-                EventType.Activity,
-                EventProperty.ActivityName("JobQueueRecovered"),
-                EventProperty.Named("JobCount", _items.Count),
-                EventProperty.Named("SuspendedCount", _suspendedCount));
-
-            return recoverableJobs.Except(consumableItems).ToArray();
-        }
-
+        
         public async Task<Job> Read()
         {
             var job = await ReadOne();
@@ -107,8 +87,13 @@ namespace Dependable.Dispatcher
             {
                 try
                 {
-                    var items =
-                        _persistenceStore.LoadSuspended(Configuration.JobType, Configuration.MaxQueueLength).ToArray();
+                    var max = Configuration.MaxQueueLength;
+
+                    var items = 
+                        (Configuration.Type != null ?
+                        _persistenceStore.LoadSuspended(Configuration.Type, max) :
+                        _persistenceStore.LoadSuspended(_allActivityConfiguration.Select(c => c.Type), max))
+                        .ToArray();
 
                     _eventStream.Publish<JobQueue>(EventType.Activity,
                         EventProperty.ActivityName("LoadSuspendedItemsStarted"),
@@ -174,8 +159,7 @@ namespace Dependable.Dispatcher
                     return;
 
                 // Suspend if this is not the default job queue and this is currently overlfowed.
-                if (Configuration.JobType != null &&
-                    (_suspendedCount > 0 || _items.Count >= Configuration.MaxQueueLength))
+                if ((_suspendedCount > 0 || _items.Count >= Configuration.MaxQueueLength))
                 {
                     _suspendedCount++;
                     job.Suspended = true;

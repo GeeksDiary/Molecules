@@ -16,7 +16,7 @@ namespace Dependable
 
         ActivityConfiguration DefaultActivityConfiguration { get; }
 
-        IEnumerable<ActivityConfiguration> JobConfigurations { get; }
+        IEnumerable<ActivityConfiguration> ActivityConfiguration { get; }
 
         TimeSpan RetryTimerInterval { get; }
     }
@@ -32,13 +32,8 @@ namespace Dependable
 
         readonly ActivityConfiguration _defaultActivityConfiguration = new ActivityConfiguration();
 
-        readonly Dictionary<Type, ActivityConfiguration> _jobConfigurations =
+        readonly Dictionary<Type, ActivityConfiguration> _activityConfiguration =
             new Dictionary<Type, ActivityConfiguration>();
-
-        public DependableConfiguration()
-        {
-            _defaultActivityConfiguration.WithMaxQueueLength(Defaults.MaxQueueLength);
-        }
 
         public DependableConfiguration UseExceptionLogger(IExceptionLogger exceptionLogger)
         {
@@ -74,7 +69,7 @@ namespace Dependable
 
             configurator(configuration);
 
-            _jobConfigurations[typeof (T)] = configuration;
+            _activityConfiguration[typeof (T)] = configuration;
 
             return this;
         }
@@ -97,14 +92,22 @@ namespace Dependable
             return this;
         }
 
+        public DependableConfiguration SetDefaultMaxQueueLength(int length)
+        {
+            _defaultActivityConfiguration.WithMaxQueueLength(length);
+            return this;
+        }
+
         public IScheduler CreateScheduler()
         {
             Func<DateTime> now = () => DateTime.Now;
 
             var eventStream = new EventStream(_eventSinks, _exceptionLogger, now);
             var delegatingPersistenceStore = new DelegatingPersistenceStore(_persistenceProvider);
-            var router = new JobRouter(this, c => new JobQueue(c, delegatingPersistenceStore, eventStream));
-            var jobQueueRecovery = new JobQueueRecovery(delegatingPersistenceStore, router);            
+
+            var queueConfiguration = new JobQueueFactory(delegatingPersistenceStore, this, eventStream).Create();
+
+            var router = new JobRouter(queueConfiguration);
             var methodBinder = new MethodBinder();
             var recoverableAction = new RecoverableAction(this, eventStream);
 
@@ -144,6 +147,7 @@ namespace Dependable
             var jobPump = new JobPump(jobDispatcher, eventStream);
 
             return new Scheduler(
+                queueConfiguration,
                 this,
                 delegatingPersistenceStore,
                 now,
@@ -151,8 +155,7 @@ namespace Dependable
                 recoverableAction,
                 jobPump,
                 router,
-                activityToContinuationConverter,
-                jobQueueRecovery);
+                activityToContinuationConverter);
         }
 
         TimeSpan IDependableConfiguration.RetryTimerInterval
@@ -164,7 +167,7 @@ namespace Dependable
         {
             ActivityConfiguration configuration;
 
-            return _jobConfigurations.TryGetValue(type, out configuration)
+            return _activityConfiguration.TryGetValue(type, out configuration)
                 ? configuration
                 : _defaultActivityConfiguration;
         }
@@ -174,9 +177,9 @@ namespace Dependable
             get { return _defaultActivityConfiguration; }
         }
 
-        IEnumerable<ActivityConfiguration> IDependableConfiguration.JobConfigurations
+        IEnumerable<ActivityConfiguration> IDependableConfiguration.ActivityConfiguration
         {
-            get { return _jobConfigurations.Values; }
+            get { return _activityConfiguration.Values; }
         }
     }
 }

@@ -48,7 +48,7 @@
     <Compile Include="Dispatcher\ActivityToContinuationConverterFacts.cs" />
     <Compile Include="Dispatcher\ContinuationDispatcherFacts.cs" />
     <Compile Include="Dispatcher\FindFacts.cs" />
-    <Compile Include="Dispatcher\JobQueueRecoveryFacts.cs" />
+    <Compile Include="Dispatcher\JobQueueFactoryFacts.cs" />
     <Compile Include="Dispatcher\PendingContinuationsExtensionFacts.cs" />
     <Compile Include="Dispatcher\CanContinueExtensionFacts.cs" />
     <Compile Include="Dispatcher\StatusChangerFacts.cs" />

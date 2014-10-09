@@ -24,8 +24,7 @@ namespace TestHost
                 .SetDefaultRetryDelay(TimeSpan.FromSeconds(1))
                 .SetRetryTimerInterval(TimeSpan.FromSeconds(1))
                 .UseSqlPersistenceProvider("Default", "TestHost")
-                .UseConsoleEventLogger(EventType.JobStatusChanged | EventType.Exception)
-                //.Activity<Greet>(c => c.WithMaxWorkers(1).WithMaxQueueLength(1))
+                .UseConsoleEventLogger(EventType.JobStatusChanged | EventType.Exception | EventType.Activity)
                 .CreateScheduler();
 
             _scheduler.Start();
@@ -34,7 +33,6 @@ namespace TestHost
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("bob", "jane")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("kyle", "simpson")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("andrew", "matthews")));
-
 
             //var sequence = Activity
             //    .Sequence(
@@ -50,8 +48,8 @@ namespace TestHost
             //    .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "ouch"))
             //    .WhenFailed(Activity.Run<Greet>(g => g.Run("a", "b"))));
 
-            //var person = new Person {FirstName = "Alice", LastName = "Cooper"};
-            //_scheduler.Schedule(Activity.Run<GreetEx>(a => a.Run(person)));
+            var person = new Person { FirstName = "Allen", LastName = "Jones" };
+            _scheduler.Schedule(Activity.Run<GreetEx>(a => a.Run(person)));
 
             // _scheduler.Schedule(Activity.Run<DueSchedule>(a => a.Run()));
 
@@ -83,11 +81,11 @@ namespace TestHost
 
             //_scheduler.Schedule(group.WhenAnyFailed(Activity.Run<Greet>(a => a.Run("a", "b"))));
 
-            _scheduler.Schedule(
-                Activity.Run<GreetMany>(g => g.Run(new[] { "c" }))
-                .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "interesting")));
+            //_scheduler.Schedule(
+            //    Activity.Run<GreetMany>(g => g.Run(new[] { "c" }))
+            //    .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "interesting")));
 
-            //for (var i = 0; i < 1000; i++)
+            //for (var i = 0; i < 1000000; i++)
             //{
             //    var nameA = "a" + i;
             //    var nameB = "b" + i;

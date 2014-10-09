@@ -4,20 +4,27 @@ namespace Dependable
 {
     public class ActivityConfiguration
     {
-        public ActivityConfiguration(Type jobType = null, ActivityConfiguration @default = null)
+        public ActivityConfiguration(Type type = null, ActivityConfiguration @default = null)
         {   
-            JobType = jobType;
-            
-            if(@default == null) 
-                return;
-            
-            MaxWorkers = @default.MaxWorkers;
-            RetryDelay = @default.RetryDelay;
-            RetryCount = @default.RetryCount;
-            MaxQueueLength = @default.MaxQueueLength;
+            Type = type;
+
+            if (@default == null)
+            {
+                MaxWorkers = Defaults.MaxWorkers;
+                RetryDelay = Defaults.RetryDelay;
+                RetryCount = Defaults.RetryCount;
+                MaxQueueLength = Defaults.MaxQueueLength;
+            }
+            else
+            {
+                MaxWorkers = @default.MaxWorkers;
+                RetryDelay = @default.RetryDelay;
+                RetryCount = @default.RetryCount;
+                MaxQueueLength = @default.MaxQueueLength;    
+            }                                       
         }
 
-        public Type JobType { get; private set; }
+        public Type Type { get; private set; }
 
         public int MaxWorkers { get; private set; }
 
