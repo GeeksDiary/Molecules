@@ -13,7 +13,7 @@ namespace Dependable.Tests.Dispatcher
 
         public JobCoordinatorFacts()
         {
-            _world.RecoverableAction.WhenForAnyArgs(r => r.Run(null, null)).Do(c => ((Action) c.Args()[0])());
+            _world.RecoverableAction.WhenForAnyArgs(r => r.Run(null)).Do(c => ((Action) c.Args()[0])());
         }
 
         [Fact]

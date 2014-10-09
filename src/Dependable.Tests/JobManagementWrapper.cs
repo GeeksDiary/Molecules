@@ -22,12 +22,12 @@ namespace Dependable.Tests
         {
             _job = Clone(rootId: parent.RootId, parentId: parent.Id);
 
-            var currentAwait = parent.Continuation ?? new Continuation { Children = Enumerable.Empty<Continuation>() };
+            var continuation = parent.Continuation ?? new Continuation { Children = Enumerable.Empty<Continuation>() };
 
             parent.Continuation = new Continuation
             {
-                ContinueAfterHandlingFailure = currentAwait.ContinueAfterHandlingFailure,
-                Children = currentAwait.Children.Concat(new []
+                ContinueAfterHandlingFailure = continuation.ContinueAfterHandlingFailure,
+                Children = continuation.Children.Concat(new []
                 {
                     new Continuation
                     {

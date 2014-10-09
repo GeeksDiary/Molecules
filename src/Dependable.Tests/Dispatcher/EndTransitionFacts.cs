@@ -121,18 +121,6 @@ namespace Dependable.Tests.Dispatcher
                 endTransition.Transit(childB, JobStatus.Completed);
                 Assert.Equal(JobStatus.Completed, parent.Status);
             }
-
-            [Fact]
-            public void ShouldNotCompleteReadyToCompleteParentIfChildrenAreNotComplete()
-            {
-                var parent = _world.NewJob.In(JobStatus.ReadyToComplete);
-                _world.NewJob.In(JobStatus.ReadyToComplete).AsChildOf(parent, JobStatus.Completed);
-
-                _world.NewEndTransition().Transit(parent, JobStatus.Completed);
-
-                Assert.Equal(JobStatus.ReadyToComplete, parent.Status);
-            }
-
         }
     }
 

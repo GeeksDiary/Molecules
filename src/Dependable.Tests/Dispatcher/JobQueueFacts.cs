@@ -106,7 +106,7 @@ namespace Dependable.Tests.Dispatcher
             }
 
             [Fact]
-            public async void ShouldReturnTheFirstItemInTheQueue()
+            public async Task ShouldReturnTheFirstItemInTheQueue()
             {
                 var jobA = _world.NewJob.In(JobStatus.Ready);
                 var jobB = _world.NewJob.In(JobStatus.Ready);
@@ -119,7 +119,7 @@ namespace Dependable.Tests.Dispatcher
             }
 
             [Fact]
-            public async void ShouldSignalTheAwaitersWhenNewItemsAreAdded()
+            public async Task ShouldSignalTheAwaitersWhenNewItemsAreAdded()
             {
                 var q = _world.NewJobQueue();
                 var t = q.Read();
