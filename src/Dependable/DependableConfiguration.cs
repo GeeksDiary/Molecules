@@ -98,6 +98,12 @@ namespace Dependable
             return this;
         }
 
+        public DependableConfiguration SetDefaultMaxWorkers(int count)
+        {
+            _defaultActivityConfiguration.WithMaxWorkers(count);
+            return this;
+        }
+
         public IScheduler CreateScheduler()
         {
             Func<DateTime> now = () => DateTime.Now;

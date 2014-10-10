@@ -121,7 +121,7 @@ namespace Dependable.Extensions.Persistence.Sql
                         Columns),
                         new
                         {
-                            Exclude = excludeActivityTypes,
+                            Exclude = excludeActivityTypes.Select(SerializationUtilities.PersistedTypeName),
                             InstanceName = _instanceName
                         })
                     .Select(Deserialize);

@@ -22,9 +22,10 @@ namespace TestHost
             _scheduler = new DependableConfiguration()
                 .SetDefaultRetryCount(1)
                 .SetDefaultRetryDelay(TimeSpan.FromSeconds(1))
-                .SetRetryTimerInterval(TimeSpan.FromSeconds(1))
+                .SetRetryTimerInterval(TimeSpan.FromSeconds(1))                
                 .UseSqlPersistenceProvider("Default", "TestHost")
                 .UseConsoleEventLogger(EventType.JobStatusChanged | EventType.Exception | EventType.Activity)
+                .Activity<Greet>(c => c.WithMaxQueueLength(1).WithMaxWorkers(1))
                 .CreateScheduler();
 
             _scheduler.Start();
@@ -48,8 +49,8 @@ namespace TestHost
             //    .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "ouch"))
             //    .WhenFailed(Activity.Run<Greet>(g => g.Run("a", "b"))));
 
-            var person = new Person { FirstName = "Allen", LastName = "Jones" };
-            _scheduler.Schedule(Activity.Run<GreetEx>(a => a.Run(person)));
+            //var person = new Person { FirstName = "Allen", LastName = "Jones" };
+            //_scheduler.Schedule(Activity.Run<GreetEx>(a => a.Run(person)));
 
             // _scheduler.Schedule(Activity.Run<DueSchedule>(a => a.Run()));
 
@@ -106,7 +107,6 @@ namespace TestHost
     {
         public async Task Run(Person person)
         {
-            Thread.Sleep(5000);
             Console.WriteLine("Hello {0} {1}", person.FirstName, person.LastName);
         }
     }
