@@ -46,6 +46,7 @@ h1, h3{
 pre{
     background-color: #f8f8f8;
     border: none;
+    font-size: 1.1em;
 }
 
 .footer{
@@ -80,4 +81,17 @@ pre{
     top: -160px;
     height: 1px;
     display: block;
+}
+
+.example-caption{
+    width: 100%;
+    background: antiquewhite;
+    padding: 6px;
+    margin-top:10px;
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }

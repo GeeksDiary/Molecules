@@ -21,68 +21,94 @@ public class Notify
     }
 }
 
-var email = Activity.Run<Notify>(a => a.Email("alice@me.com", "bob@me.com", "hello"));
+var email = Activity.Run<Notify>(
+    a => a.Email("alice@me.com", "bob@me.com", "hello"));
 ```
+### Composing Workflows
+Dependable also provides handful of methods to compose larger worflows out of smaller activities. Here are some examples.
 
-Dependable also provides handful of methods to compose larger worflows out of smaller activities.
-
-### Some examples of composition
+<div class="example-caption">
+    Runs A.Foo() and then B.Bar()     
+</div>
 ```csharp
-// Runs A.Foo() and then B.Bar()
 Activity.Run<A>(a => a.Foo()).Then<B>(b => b.Bar());
-
-// Runs B.Bar() if A.Foo() fails (after specified number of retry attempts).
-Activity.Run<A>(a => a.Foo()).WhenFailed(Activity.Run<B>(b => b.Bar()));
-
-// Runs B.Bar() everytime A.Foo() throws an exception.
-Activity.Run<A>(a => a.Foo()).WithExceptionFilter<B>((exception, b) => b.Bar(exception));
-
-// Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar();
+```
+<div class="example-caption">
+    Runs B.Bar() if A.Foo() fails (after specified number of retry attempts).
+</div>
+```csharp
+Activity.Run<A>(a => a.Foo()).Failed<B>(b => b.Bar());
+```
+<div class="example-caption">
+    Runs B.Bar() everytime A.Foo() throws an exception.     
+</div>
+```csharp
+Activity
+    .Run<A>(a => a.Foo())
+    .ExceptionFilter<B>((exception, b) => b.Bar(exception));
+```
+<div class="example-caption">
+    Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar()     
+</div>
+```csharp
 Activity
     .Sequence(
         Activity.Run<A>(a => a.Foo()), 
         Activity.Run<B>(b = b.Bar()))
-    .WhenAnyFailed(Activity.Run<C>(c => c.FooBar()));
-
-// Runs A.Foo() and then B.bar(). If all of them fails runs C.FooBar()
+    .AnyFailed<C>(c => c.FooBar());
+```
+<div class="example-caption">
+    Runs A.Foo() and then B.bar(). If all of them fails runs C.FooBar()
+</div>
+```csharp
 Activity
     .Sequence(
         Activity.Run<A>(a => a.Foo()), 
         Activity.Run<B>(b = b.Bar()))
-    .WhenAllFailed(Activity.Run<C>(c => c.FooBar()));    
-
-
-// Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar().
-// If both of them fail runs D.Jar().
+    .AllFailed<C>(c => c.FooBar());    
+```
+<div class="example-caption">
+    Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar().
+    If both of them fail runs D.Jar().
+</div>
+```csharp
 Activity
     .Sequence(
         Activity.Run<A>(a => a.Foo()), 
         Activity.Run<B>(b = b.Bar()))
-    .WhenAnyFailed(Activity.Run<C>(c => c.FooBar()))
-    .WhenAllFailed(Activity.Run<D>(c => d.Jar()));
-
-// Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar();
-// Otherwise runs D.Jar().
+    .AnyFailed<C>(c => c.FooBar())
+    .AllFailed<D>(d => d.Jar());
+```
+<div class="example-caption">
+    Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar();
+    Otherwise runs D.Jar().
+</div>
+```csharp
 Activity
     .Sequence(
         Activity.Run<A>(a => a.Foo()), 
         Activity.Run<B>(b = b.Bar()))
-    .WhenAnyFailed(Activity.Run<C>(c => c.FooBar()))
-    .Then<D>(d => d.Jar());
-
-// Runs A.Foo() and then B.Bar(). When an exception is thrown from either of them
-// or any child activity they create, invoke C.Jar with exception details.
+    .AnyFailed<C>(c => c.FooBar())
+    .Then<D>(d => d.Jar());        
+```
+<div class="example-caption">
+    Runs A.Foo() and then B.Bar(). When an exception is thrown from either of them
+    or any child activity they create, invoke C.Jar with exception details.
+</div>
+```csharp
 Activity
     .Sequence(
         Activity.Run<A>(a => a.Foo()), 
         Activity.Run<B>(b = b.Bar()))
     .WithExceptionFilter<C>((exception, c) => c.Jar(exception));
-
-// Alternatively use Activity.Parallel instead of Activity.Sequence
-// run specified activites in parallel.
-
-// Runs A.Foo and B.Bar() in parallel. When both of them are complete
-// runs D.Jar().
+```
+<div class="example-caption">
+    Alternatively use Activity.Parallel instead of Activity.Sequence
+    run specified activites in parallel.
+    Runs A.Foo and B.Bar() in parallel. When both of them are complete
+    runs D.Jar().
+</div>
+```csharp
 Activity
     .Parallel(
         Activity.Run<A>(a => a.Foo()), 
@@ -100,15 +126,20 @@ public class LoanApproval
     {
         var applicant = _repository.Load(applicantId);
 
-        if(!positiveCreditCheck || amount > 100)        
-            return Activity.Run<Notify>(n => n.Email("manager-bob@mybank.com", "info@mybank.com", "Verify"));
+        if(!positiveCreditCheck || amount > 100)
+        {
+            return Activity.Run<Notify>(
+                n => n.Email("manager-bob@mybank.com", "info@mybank.com", "Verify"));
+        }        
         else
+        {
             return Activity
                 .Run<Transactions>(t => t.Credit(amount))
-                .Then<Notify>(n => n.Email(applicant.Email, "info@mybank.com", "you have your money"));
+                .Then<Notify>(
+                    n => n.Email(applicant.Email, "info@mybank.com", "Approved!"));
+        }
     }
 }
-
 ``` 
 
 ## <a name="creating-a-scheduler" class="anchor"></a>Creating a Scheduler
