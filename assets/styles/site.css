@@ -1,41 +1,12 @@
-@font-face {
-  font-family: 'Open Sans';
-  font-weight: normal;
-  src: url(../fonts/OpenSans-Regular.ttf);
-}
-
-@font-face {
-  font-family: 'Open Sans Condensed';
-  font-weight: normal;
-  src: url(../fonts/OpenSans-CondLight.ttf);
-}
-
-@font-face {
-  font-family: 'Oswald';
-  font-weight: normal;
-  src: url(../fonts/Oswald-Regular.ttf);
-}
-
 body {
-  font-family: 'Open Sans';
-  font-size: 16px;
+  font-family: 'Ubuntu Condensed', sans-serif;
+  font-size: 21px;
+  line-height: 28px;
   background-color: #ECF0F1;
 }
 
 h2, h3, h4{
-    font-family: 'Open Sans Condensed';
-}
-
-h2 {
-    font-size: 2em;
-}
-
-h3 {
-    font-size: 1.7em;
-}
-
-h4{
-    font-size: 1.5em;
+    font-family: 'Ubuntu Condensed', sans-serif;
 }
 
 h1, h3{
@@ -45,8 +16,7 @@ h1, h3{
 
 pre{
     background-color: #f8f8f8;
-    border: none;
-    font-size: 1.1em;
+    border: none;    
 }
 
 .footer{
