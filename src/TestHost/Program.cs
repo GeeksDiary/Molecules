@@ -30,69 +30,63 @@ namespace TestHost
 
             _scheduler.Start();
 
-            //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("alice", "cooper")));
-            //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("bob", "jane")));
-            //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("kyle", "simpson")));
-            //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("andrew", "matthews")));
+            _scheduler.Schedule(Activity.Run<Greet>(g => g.Run("alice", "cooper")));
+            _scheduler.Schedule(Activity.Run<Greet>(g => g.Run("bob", "jane")));
+            _scheduler.Schedule(Activity.Run<Greet>(g => g.Run("kyle", "simpson")));
+            _scheduler.Schedule(Activity.Run<Greet>(g => g.Run("andrew", "matthews")));
 
-            //var sequence = Activity
-            //    .Sequence(
-            //        Activity.Run<Greet>(g => g.Run("a", "b")),
-            //        Activity.Run<Greet>(g => g.Run("c", "d")))
-            //    .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"));
+            var sequence = Activity
+                .Sequence(
+                    Activity.Run<Greet>(g => g.Run("a", "b")),
+                    Activity.Run<Greet>(g => g.Run("c", "d")))
+                .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"));
 
-            //sequence.WhenAnyFailed(Activity.Run<Greet>(g => g.Run("e", "f")));
+            sequence.AnyFailed(Activity.Run<Greet>(g => g.Run("e", "f")));
 
-            //_scheduler.Schedule(sequence);
-            //_scheduler.Schedule(
-            //    Activity.Run<Greet>(g => g.Run("c", "d"))
-            //    .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "ouch"))
-            //    .WhenFailed(Activity.Run<Greet>(g => g.Run("a", "b"))));
+            _scheduler.Schedule(sequence);
+            _scheduler.Schedule(
+                Activity.Run<Greet>(g => g.Run("c", "d"))
+                .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "ouch"))
+                .Failed<Greet>(g => g.Run("a", "b")));
 
-            //var person = new Person { FirstName = "Allen", LastName = "Jones" };
-            //_scheduler.Schedule(Activity.Run<GreetEx>(a => a.Run(person)));
+            var person = new Person { FirstName = "Allen", LastName = "Jones" };
+            _scheduler.Schedule(Activity.Run<GreetEx>(a => a.Run(person)));
 
-            // _scheduler.Schedule(Activity.Run<DueSchedule>(a => a.Run()));
+            _scheduler.Schedule(Activity.Run<DueSchedule>(a => a.Run()));
 
-            //var parallel = Activity.Parallel(
-            //    Activity.Run<Greet>(g => g.Run("a", "b")), 
-            //    Activity.Run<Greet>(g => g.Run("d", "e")));
+            var parallel = Activity.Parallel(
+                Activity.Run<Greet>(g => g.Run("a", "b")),
+                Activity.Run<Greet>(g => g.Run("d", "e")));
 
-            //_scheduler.Schedule(parallel);
+            _scheduler.Schedule(parallel);
 
-            //_scheduler.Schedule(
-            //    Activity
-            //        .Run<Greet>(g => g.Run("buddhike", "de silva"))
-            //        .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "something was wrong")));
+            _scheduler.Schedule(
+                Activity
+                    .Run<Greet>(g => g.Run("buddhike", "de silva"))
+                    .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "something was wrong")));
 
-            // _scheduler.Schedule(Activity.Run<GreetMany>(a => a.Run(new[] { "a", "b" })));
+            _scheduler.Schedule(Activity.Run<GreetMany>(a => a.Run(new[] { "a", "b" })));
 
-            //var step1 = Activity.Run<Download>(a => a.Run())
-            //    .WhenFailed(Activity.Run<Greet>(a => a.Run("bud", "lite")))
-            //    .ThenContinue();
+            var group = Activity
+                .Parallel(
+                Activity.Run<Greet>(a => a.Run("a", "b")),
+                Activity.Run<Greet>(a => a.Run("a", "b")),
+                Activity.Run<Greet>(a => a.Run("a", "b")))
+                .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "something went wrong"));
 
-            //_scheduler.Schedule(step1.Then<Greet>(a => a.Run("c", "d")));
+            _scheduler.Schedule(group.AnyFailed<Greet>(a => a.Run("a", "b")));
 
-            //var group = Activity
-            //    .Parallel(
-            //    Activity.Run<Greet>(a => a.Run("a", "b")),
-            //    Activity.Run<Greet>(a => a.Run("a", "b")),
-            //    Activity.Run<Greet>(a => a.Run("a", "b")))
-            //    .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "something went wrong"));
+            _scheduler.Schedule(
+                Activity.Run<GreetMany>(g => g.Run(new[] { "c" }))
+                .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "interesting")));
 
-            //_scheduler.Schedule(group.WhenAnyFailed(Activity.Run<Greet>(a => a.Run("a", "b"))));
-
-            //_scheduler.Schedule(
-            //    Activity.Run<GreetMany>(g => g.Run(new[] { "c" }))
-            //    .WithExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "interesting")));
-
-            //for (var i = 0; i < 1000000; i++)
-            //{
-            //    var nameA = "a" + i;
-            //    var nameB = "b" + i;
-            //    var activity = Activity.Run<GreetMany>(a => a.Run(new[] { nameA, nameB }));
-            //    Task.Run(() => _scheduler.Schedule(activity));
-            //}
+            for (var i = 0; i < 1000000; i++)
+            {
+                var nameA = "a" + i;
+                var nameB = "b" + i;
+                var activity = Activity.Run<GreetMany>(a => a.Run(new[] { nameA, nameB }));
+                Task.Run(() => _scheduler.Schedule(activity));
+            }
             Console.ReadLine();
         }
     }

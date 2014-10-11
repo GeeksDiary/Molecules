@@ -36,6 +36,8 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActivityExtensions.cs" />
+    <Compile Include="ActivityGroup.cs" />
     <Compile Include="Defaults.cs" />
     <Compile Include="Dispatcher\ActivityToContinuationConverter.cs" />
     <Compile Include="Dispatcher\ContinuationDispatcher.cs" />
@@ -72,6 +74,7 @@
     <Compile Include="Dispatcher\JobQueue.cs" />
     <Compile Include="Dispatcher\Dispatcher.cs" />
     <Compile Include="Dispatcher\JobPump.cs" />
+    <Compile Include="SingleActivity.cs" />
     <Compile Include="Utilities\ExceptionUtility.cs" />
     <Compile Include="JobContext.cs" />
     <Compile Include="Dispatcher\ErrorHandlingPolicy.cs" />

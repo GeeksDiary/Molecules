@@ -61,7 +61,7 @@ namespace Dependable.Dispatcher
             {
                 Id = job.Id,
                 Type = ContinuationType.Single,
-                ContinueAfterHandlingFailure = singleActivity.CanContinue
+                ContinueAfterHandlingFailure = singleActivity.CanContinueAfterHandlingFailure
             };
 
             var onNext = ConvertCore(singleActivity.Next, parent, inheritedExceptionFilters);
@@ -96,7 +96,7 @@ namespace Dependable.Dispatcher
             var continuation = new Continuation
             {
                 Type = activityGroup.IsParallel ? ContinuationType.Parallel : ContinuationType.Sequence,
-                ContinueAfterHandlingFailure = activityGroup.CanContinue,
+                ContinueAfterHandlingFailure = activityGroup.CanContinueAfterHandlingFailure,
                 Children = convertedItems.Select(c => c.Continuation)
             };
 

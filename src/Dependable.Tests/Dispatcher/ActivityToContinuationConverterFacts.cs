@@ -97,7 +97,7 @@ namespace Dependable.Tests.Dispatcher
         [Fact]
         public void CreatesJobsForOnAnyFailedActivity()
         {
-            var activity = Activity.Run<Test>(t => t.Run()).WhenFailed(Activity.Run<Test>(t => t.Run()));
+            var activity = Activity.Run<Test>(t => t.Run()).Failed(Activity.Run<Test>(t => t.Run()));
 
             var converted = _world.NewActivityToContinuationConverter().Convert(activity, _parent);
 
@@ -109,7 +109,7 @@ namespace Dependable.Tests.Dispatcher
         {
             var activity =
                 Activity.Run<Test>(t => t.RunWithArguments("a"))
-                    .WhenFailed(Activity.Run<Test>(t => t.RunWithArguments("b")));
+                    .Failed(Activity.Run<Test>(t => t.RunWithArguments("b")));
 
             var converted = _world.NewActivityToContinuationConverter().Convert(activity, _parent);
 
@@ -122,7 +122,7 @@ namespace Dependable.Tests.Dispatcher
         public void CreatesJobForOnAllFailedActivity()
         {
             var activity =
-                Activity.Parallel(Activity.Run<Test>(t => t.Run())).WhenAllFailed(Activity.Run<Test>(t => t.Run()));
+                Activity.Parallel(Activity.Run<Test>(t => t.Run())).AllFailed(Activity.Run<Test>(t => t.Run()));
 
             var converted = _world.NewActivityToContinuationConverter().Convert(activity, _parent);
 
@@ -134,7 +134,7 @@ namespace Dependable.Tests.Dispatcher
         {
             var activity =
                 Activity.Parallel(Activity.Run<Test>(t => t.RunWithArguments("a")))
-                    .WhenAllFailed(Activity.Run<Test>(t => t.RunWithArguments("b")));
+                    .AllFailed(Activity.Run<Test>(t => t.RunWithArguments("b")));
 
             var converted = _world.NewActivityToContinuationConverter().Convert(activity, _parent);
 
