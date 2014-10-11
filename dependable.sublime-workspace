@@ -1,1 +1,721 @@
-{}
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"overr",
+				"overridenSort"
+			],
+			[
+				"relative",
+				"relative_path"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 400.0,
+		"selected_items":
+		[
+			[
+				"html",
+				"Set Syntax: HTML"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"list pack",
+				"Package Control: List Packages"
+			],
+			[
+				"install pac",
+				"Package Control: Install Package"
+			],
+			[
+				"install pack",
+				"Package Control: Install Package"
+			],
+			[
+				"colo",
+				"Colorsublime: Install Theme"
+			],
+			[
+				"color",
+				"Colorsublime: Install Theme"
+			],
+			[
+				"install ",
+				"Package Control: Install Package"
+			],
+			[
+				"htmlPrett",
+				"HTMLPrettify"
+			],
+			[
+				"rem",
+				"Package Control: Remove Package"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"list",
+				"Package Control: List Packages"
+			],
+			[
+				"package",
+				"Package Control: List Packages"
+			],
+			[
+				"format",
+				"Format: Javascript"
+			],
+			[
+				"indent",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"javascr",
+				"Set Syntax: JavaScript"
+			],
+			[
+				"edito",
+				"Set Syntax: EditorConfig"
+			],
+			[
+				"editor",
+				"Set Syntax: EditorConfig"
+			],
+			[
+				"code folder",
+				"Code Folding: Fold Tag Attributes"
+			],
+			[
+				"colla",
+				"Code Folding: Unfold All"
+			],
+			[
+				"inde",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"in",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"inden",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"ind",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"reinde",
+				"Preferences: Settings - Default"
+			],
+			[
+				"lint",
+				"JSLint"
+			],
+			[
+				"xml",
+				"Set Syntax: XML"
+			],
+			[
+				"json",
+				"Pretty JSON: Reformat (Pretty Print) JSON"
+			],
+			[
+				"javascri",
+				"Set Syntax: JavaScript"
+			]
+		],
+		"width": 538.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"import urllib2,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404' + 'e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); os.makedirs( ipp ) if not os.path.exists(ipp) else None; urllib2.install_opener( urllib2.build_opener( urllib2.ProxyHandler()) ); by = urllib2.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); open( os.path.join( ipp, pf), 'wb' ).write(by) if dh == h else None; print('Error validating download (got %s instead of %s), please try manual install' % (dh, h) if dh != h else 'Please restart Sublime Text to finish installation')",
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404' + 'e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)",
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/buddhike/Projects/dependable",
+		"/Users/buddhike/Projects/dependable/_includes",
+		"/Users/buddhike/Projects/dependable/_layouts"
+	],
+	"file_history":
+	[
+		"/Users/buddhike/Projects/dependable/_layouts/default.html",
+		"/Users/buddhike/Projects/dependable/_includes/basics.md",
+		"/Users/buddhike/Projects/geeksdiary/geeksdiary.sublime-project",
+		"/Users/buddhike/Projects/geeksdiary/app/about.html",
+		"/Users/buddhike/Projects/geeksdiary/app/_layouts/default.html",
+		"/Users/buddhike/Projects/geeksdiary/app/_scss/site.scss",
+		"/Users/buddhike/Projects/geeksdiary/app/_bower_components/modernizr/test/caniuse_files/svg-img.svg",
+		"/Users/buddhike/Projects/geeksdiary/app/_includes/scripts.html",
+		"/Users/buddhike/Projects/geeksdiary/node_modules/grunt-contrib-imagemin/node_modules/image-min/node_modules/mout/date/dayOfTheYear.js",
+		"/Users/buddhike/Projects/geeksdiary/node_modules/grunt-contrib-imagemin/node_modules/image-min/node_modules/mout/date/isLeapYear.js",
+		"/Users/buddhike/Projects/geeksdiary/app/_bower_components/fontawesome/less/larger.less",
+		"/Users/buddhike/Projects/geeksdiary/node_modules/grunt-build-control/LICENSE",
+		"/Users/buddhike/Projects/geeksdiary/app/index.html",
+		"/Users/buddhike/Projects/geeksdiary/app/frontend.html",
+		"/Users/buddhike/Projects/geeksdiary/app/backend.html",
+		"/Users/buddhike/Projects/geeksdiary/app/cloud.html",
+		"/Users/buddhike/Projects/geeksdiary/app/websites.html",
+		"/Users/buddhike/Projects/geeksdiary/app/hosting.html",
+		"/Users/buddhike/Projects/geeksdiary/.gitignore",
+		"/Users/buddhike/Projects/geeksdiary/app/contact.html",
+		"/Users/buddhike/Projects/geeksdiary/node_modules/grunt-contrib-uglify/node_modules/uglify-js/node_modules/source-map/build/suffix-utils.jsm",
+		"/Users/buddhike/Projects/geeksdiary/node_modules/grunt/internal-tasks/subgrunt.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/Gruntfile.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/templates/layouts/layout.hbs",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/scripts/routeConfigurationProviderFacts.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/routeConfigurationProvider.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/search/quickSearchControllerFacts.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/integration/uspto/scripts/app.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/signin/scripts/app.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/search/scripts/app.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/reports/scripts/app.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/portal/scripts/app.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/diagnostics/scripts/app.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/case/scripts/app.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/styles/ace-part2.min.css",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/controls/autocomplete.html",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/grid/gridAdjustment.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/search/scripts/quickSearchController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test-e2e/specs/search/quickSearch.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/dynamic/quickSearchHandler.js",
+		"/Users/buddhike/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/responder.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/scripts/layoutSpec.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/templates/partials/start.hbs",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/dynamic/caseDetailsHandler.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/dynamic/integration/uspto/inboxHandler.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/dynamic/main/mainViewHandler.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/case/case.html",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/batchEventUpdate/scripts/caseState.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/bootstrap/less/component-animations.less",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test-e2e/conf.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/search/quick-search.html",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/knockout/build/tools/searchReplace.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/priorart/scripts/evidenceSearchViewModel.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/grid/sizeAdjustmentExtension.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test-e2e/start_chrome_e2e.bat",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/dynamic/caseSummaryHandler.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/dynamic/integration/uspto/schedulesHandler.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/dynamic/integration/uspto/scheduleHandler.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/modernizr/feature-detects/custom-protocol-handler.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/http/errorHandlingInterceptor.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/datejs/build/i18n/hy-AM.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/templates/partials/head.hbs",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/grid/manipulationHookExtension.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/portal/main.html",
+		"/Users/buddhike/Projects/inprotechkaizen/client/bower.json",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/jquery/test/data/offset/body.html",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test-e2e/start_selenium.cmd",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/jquery/test/data/statusText.php",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/styles/spinner.css",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/case/scripts/caseController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/portal/scripts/mainController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/shell/menuController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/reports/scripts/controllers/mainController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/case/caseControllerFacts.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/es5-shim/CONTRIBUTORS.md",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/modernizr/feature-detects/css-objectfit.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/inprotech.sublime-project",
+		"/Users/buddhike/Projects/inprotechkaizen/client/.out/bower_components/es5-shim/CONTRIBUTORS.md",
+		"/Users/buddhike/Projects/inprotechkaizen/client/.out/bower_components/modernizr/feature-detects/css-objectfit.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/templates/partials/footer.hbs",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/templates/partials/navbar.hbs",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test-e2e/shared/helpers.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/knockout/build/tools/normaliseAllFiles.ps1",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/grid/ngGridBuilder.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/jquery/test/data/with_fries_over_jsonp.php",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test-e2e/shared/fixture.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/infrastructure/layout.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/datejs/build/i18n/az-Latn-AZ.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/bootstrap/LICENSE",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/controls/autocomplete-item-template.html",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/controls/typeahead.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/scripts/controls/autocompleteFacts.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/controls/autocomplete.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/datejs/build/i18n/ar-TN.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/.jsbeautifyrc",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/jquery.validation/todo",
+		"/Users/buddhike/Projects/inprotechkaizen/client/.jshintrc",
+		"/Users/buddhike/Projects/inprotechkaizen/client/.jshintignore",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/jquery-ui/ui/jquery.ui.effect-shake.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/angular-scenario/jstd-scenario-adapter.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/jquery/jquery.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/scripts/controls/autocomplete-empty-template.html",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/MutationObserver/AUTHORS",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/responses/api-uspto-casecomparison.json",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/api.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test-e2e/specs/integration/uspto/01-newCertificate.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/integration/uspto/controllers/caseComparisonViewController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/integration/uspto/controllers/certificatesController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/integration/uspto/controllers/inboxController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/integration/uspto/controllers/newScheduleController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/integration/uspto/controllers/scheduleController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test/spec/integration/uspto/controllers/schedulesController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/integration/uspto/inbox.html",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/dynamic/integration/uspto/newCertificateHandler.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/integration/uspto/scripts/controllers/inboxController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/responses/api-uspto-inbox.json",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/dynamic/integration/uspto/newScheduleHandler.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/dynamic/integration/uspto/certificatesHandler.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/responses/api-uspto-schedule.json",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/responses/api-uspto-newschedule.json",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/integration/uspto/scripts/controllers/schedulesController.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/responses/api-uspto-schedules.json",
+		"/Users/buddhike/Projects/inprotechkaizen/client/test-e2e/specs/integration/uspto/03-schedules.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/bootstrap/less/responsive-utilities.less",
+		"/Users/buddhike/Projects/inprotechkaizen/client/app/tests/scripts/batchEventUpdate/batchEventUpdateSavabilitySpecification.js",
+		"/Users/buddhike/Projects/inprotechkaizen/client/.gitignore",
+		"/Users/buddhike/Projects/inprotechkaizen/client/.gitattributes"
+	],
+	"find":
+	{
+		"height": 41.0
+	},
+	"find_in_files":
+	{
+		"height": 99.0,
+		"where_history":
+		[
+			"/Users/buddhike/Projects/inprotechkaizen/client/app",
+			"app"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"FFFFAF",
+			"fa-3x",
+			">\n",
+			"fa-5x",
+			"300",
+			"h3",
+			"_timeout",
+			"_time",
+			"$rootScope",
+			"timeout",
+			"appState",
+			"icon",
+			"http://localhost:9000/#/",
+			"Path ''",
+			"\"(.*)\"",
+			"\"(.*)\":",
+			"Path ''",
+			"\"(.*)\"",
+			"\"(.*)\":",
+			"\"",
+			"\":",
+			"\"",
+			"                    \"",
+			"\"",
+			"\":",
+			"initView",
+			"viewData",
+			"viewData.viewData",
+			"initView",
+			"basics",
+			".jsbeautifyrc",
+			"minRowsToRender",
+			"adjustScrollTop",
+			"updateViewableRange",
+			"renderedChange",
+			"renderedChangenoGroups",
+			"setRenderedRows",
+			"renderedRows",
+			"scrollTop(",
+			"renderedRowIndex = ",
+			"lastClickedRow",
+			"selectionProvider",
+			"setVars",
+			"renderedRowIndex",
+			"ngGrid.services",
+			"ngGridServices",
+			"ngGridService",
+			"'SortService'",
+			"SortService",
+			"_extension",
+			"jshint",
+			"fixme",
+			"app",
+			"relative"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+			"'$1'",
+			"$1:",
+			"'$1'",
+			"$1:",
+			"$1"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 29.0
+	},
+	"input":
+	{
+		"height": 37.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"project": "dependable.sublime-project",
+	"replace":
+	{
+		"height": 54.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"site",
+				"app/_scss/site.scss"
+			],
+			[
+				"about",
+				"app/about.html"
+			],
+			[
+				"layout",
+				"app/_layouts/default.html"
+			],
+			[
+				"grunt",
+				"Gruntfile.js"
+			],
+			[
+				"quicksera",
+				"test/spec/search/quickSearchControllerFacts.js"
+			],
+			[
+				"routeconfiguration",
+				"test/spec/scripts/routeConfigurationProviderFacts.js"
+			],
+			[
+				"layout.hbs",
+				"app/templates/layouts/layout.hbs"
+			],
+			[
+				"routeconfigurationprovider",
+				"app/scripts/routeConfigurationProvider.js"
+			],
+			[
+				"casedetails",
+				"server/dynamic/caseDetailsHandler.js"
+			],
+			[
+				"quicksearchcont",
+				"app/search/scripts/quickSearchController.js"
+			],
+			[
+				"searchhandler",
+				"server/dynamic/quickSearchHandler.js"
+			],
+			[
+				"routeconfigure",
+				"app/scripts/routeConfigurationProvider.js"
+			],
+			[
+				"layout.bs",
+				"app/templates/layouts/layout.hbs"
+			],
+			[
+				"start.hbs",
+				"app/templates/partials/start.hbs"
+			],
+			[
+				"main.html",
+				"app/portal/main.html"
+			],
+			[
+				"main.htm",
+				"app/portal/main.html"
+			],
+			[
+				"head.",
+				"app/templates/partials/head.hbs"
+			],
+			[
+				"navbar.hbs",
+				"app/templates/partials/navbar.hbs"
+			],
+			[
+				"footer.hbs",
+				"app/templates/partials/footer.hbs"
+			],
+			[
+				"autocompletefac",
+				"test/spec/scripts/controls/autocompleteFacts.js"
+			],
+			[
+				"autocomplete",
+				"app/scripts/controls/autocomplete.html"
+			],
+			[
+				"typeahead",
+				"app/scripts/controls/typeahead.js"
+			],
+			[
+				"autocomplete-item",
+				"app/scripts/controls/autocomplete-item-template.html"
+			],
+			[
+				"routeprov",
+				"app/scripts/routeConfigurationProvider.js"
+			],
+			[
+				"inbox",
+				"app/integration/uspto/inbox.html"
+			],
+			[
+				"schedules",
+				"server/responses/api-uspto-schedules.json"
+			],
+			[
+				"schedulescontroller",
+				"app/integration/uspto/scripts/controllers/schedulesController.js"
+			],
+			[
+				"gitgnore",
+				".gitignore"
+			],
+			[
+				".gitignore",
+				".gitignore"
+			],
+			[
+				"certificatescontroller",
+				"app/integration/uspto/scripts/controllers/certificatesController.js"
+			],
+			[
+				"enrichment",
+				"app/scripts/http/processEnrichmentInterceptor.js"
+			],
+			[
+				"responder",
+				"server/responder.js"
+			],
+			[
+				"inboxcontroller",
+				"app/integration/uspto/scripts/controllers/inboxController.js"
+			],
+			[
+				"app.js",
+				"debug/search/scripts/app.js"
+			],
+			[
+				"standard-serach",
+				"app/search/standard-search.html"
+			],
+			[
+				"standardsearchcontroller",
+				"test/spec/search/standardSearchControllerFacts.js"
+			],
+			[
+				"basics",
+				"_includes/basics.md"
+			],
+			[
+				"default",
+				"_layouts/default.html"
+			],
+			[
+				"del",
+				"_layouts/default.html"
+			],
+			[
+				"sizeadj",
+				"app/scripts/grid/sizeAdjustmentExtension.js"
+			],
+			[
+				"sizeadjustmentextensionfac",
+				"test/spec/grid/sizeAdjustmentExtensionFacts.js"
+			],
+			[
+				"sizeadjustmentextensionfact",
+				"test/spec/grid/sizeAdjustmentExtensionFacts.js"
+			],
+			[
+				"sizeadjustmentextension",
+				"app/scripts/grid/sizeAdjustmentExtension.js"
+			],
+			[
+				"gridadjustment",
+				"app/scripts/grid/gridAdjustment.js"
+			],
+			[
+				"sizeadjustmentextensionfacts",
+				"test/spec/grid/sizeAdjustmentExtensionFacts.js"
+			],
+			[
+				"nggridbuilder",
+				"app/scripts/grid/ngGridBuilder.js"
+			],
+			[
+				"ng-grid-debug",
+				"app/bower_components/ng-grid/ng-grid-2.0.11.debug.js"
+			],
+			[
+				"quicksearchcontroller",
+				"app/search/scripts/quickSearchController.js"
+			],
+			[
+				"quicksearchcontrollerfacts",
+				"test/spec/search/quickSearchControllerFacts.js"
+			],
+			[
+				"filterextensionfacts",
+				"test/spec/grid/filterExtensionFacts.js"
+			],
+			[
+				"filterextension",
+				"app/scripts/grid/filterExtension.js"
+			],
+			[
+				"quick-search.html",
+				"app/search/quick-search.html"
+			],
+			[
+				"ng-grid.debug",
+				"app/bower_components/ng-grid/ng-grid-2.0.11.debug.js"
+			],
+			[
+				"manipulationhookextension",
+				"app/scripts/grid/manipulationHookExtension.js"
+			],
+			[
+				"manipulationhookeext",
+				"test/spec/grid/manipulationHookExtensionFacts.js"
+			],
+			[
+				"manipulationhookextensionfacts",
+				"test/spec/grid/manipulationHookExtensionFacts.js"
+			],
+			[
+				"manipulation",
+				"app/scripts/grid/manipulationHookExtension.js"
+			],
+			[
+				"manipulationhok",
+				"app/scripts/grid/manipulationHookExtension.js"
+			],
+			[
+				"filterfacts",
+				"test/spec/grid/filterExtensionFacts.js"
+			],
+			[
+				"quicksearchcontrollerfac",
+				"test/spec/search/quickSearchControllerFacts.js"
+			],
+			[
+				"fixture.js",
+				"test-e2e/shared/fixture.js"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 308.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
