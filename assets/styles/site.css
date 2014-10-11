@@ -1,17 +1,21 @@
 body {
-  font-family: 'Ubuntu Condensed', sans-serif;
+  font-family: 'Open Sans Condensed', sans-serif;
   font-size: 21px;
   line-height: 28px;
-  background-color: #ECF0F1;
+  background-color: #FCFCFC;
 }
 
 h2, h3, h4{
-    font-family: 'Ubuntu Condensed', sans-serif;
+    font-family: 'Oswald', sans-serif;
 }
 
 h1, h3{
     margin-top: 20px;
     margin-bottom: 3px;
+}
+
+h2{
+    font-size:21px;
 }
 
 pre{
@@ -44,6 +48,7 @@ pre{
 .navbar-right a.icon-link:link, a.icon-link:active, a.icon-link:visited, a.icon-link:hover{
     font-size: 2.5em;
     color:#fff;
+    text-decoration: none;
 }
 
 .anchor{

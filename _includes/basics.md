@@ -3,15 +3,15 @@ Dependable is a .NET library aiming to solve reliable workflow execution problem
 
 - An expressive, composable programming model
 - Abstraction of complex task of coordination
+- Document based persistence model
 - Robust, scalable and extensible runtime 
 
 ## <a name="installation" class="anchor"></a>Installation
 Core functionality of Dependable is available in a single module which has no dependecies. Simply install the nuget packge and we are set to go.
-```sh
-install-package dependable
-```
+
+```install-package dependable```
 ## <a name="creating-an-activity" class="anchor"></a>Creating an Activity
-An Activity is a unit of work that we would like to perform in a workflow. Sending an email, generating a PDF, scaling images and calling an external web service are some classic examples. They can be created from any method in a class that returns a ```Task``` or ```Task<Activity>```.
+An Activity is a unit of work that we would like to perform in a workflow. Sending an email, generating a PDF, scaling images and calling an external web service are some classic examples. They can be created from any method in a class that returns a Task or Task<Activity>.
 
 ```csharp
 public class Notify 
@@ -28,19 +28,19 @@ var email = Activity.Run<Notify>(
 Dependable also provides handful of methods to compose larger worflows out of smaller activities. Here are some examples.
 
 <div class="example-caption">
-    Runs A.Foo() and then B.Bar()     
+    Run A.Foo and then B.Bar
 </div>
 ```csharp
 Activity.Run<A>(a => a.Foo()).Then<B>(b => b.Bar());
 ```
 <div class="example-caption">
-    Runs B.Bar() if A.Foo() fails (after specified number of retry attempts).
+    Run B.Bar if A.Foo fails (after specified number of retry attempts).
 </div>
 ```csharp
 Activity.Run<A>(a => a.Foo()).Failed<B>(b => b.Bar());
 ```
 <div class="example-caption">
-    Runs B.Bar() everytime A.Foo() throws an exception.     
+    Run B.Bar everytime A.Foo throws an exception.     
 </div>
 ```csharp
 Activity
@@ -48,7 +48,7 @@ Activity
     .ExceptionFilter<B>((exception, b) => b.Bar(exception));
 ```
 <div class="example-caption">
-    Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar()     
+    Run A.Foo and then B.bar. If any of them fails, run C.FooBar   
 </div>
 ```csharp
 Activity
@@ -58,7 +58,7 @@ Activity
     .AnyFailed<C>(c => c.FooBar());
 ```
 <div class="example-caption">
-    Runs A.Foo() and then B.bar(). If all of them fails runs C.FooBar()
+    Run A.Foo and then B.bar. If all of them fail, run C.FooBar
 </div>
 ```csharp
 Activity
@@ -68,8 +68,8 @@ Activity
     .AllFailed<C>(c => c.FooBar());    
 ```
 <div class="example-caption">
-    Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar().
-    If both of them fail runs D.Jar().
+    Run A.Foo and then B.bar. If any of them fails, run C.FooBar.
+    If both of them fail, run D.Jar.
 </div>
 ```csharp
 Activity
@@ -80,8 +80,8 @@ Activity
     .AllFailed<D>(d => d.Jar());
 ```
 <div class="example-caption">
-    Runs A.Foo() and then B.bar(). If any of them fails runs C.FooBar();
-    Otherwise runs D.Jar().
+    Run A.Foo and then B.bar. If any of them fail run C.FooBar.
+    Otherwise run D.Jar.
 </div>
 ```csharp
 Activity
@@ -92,8 +92,8 @@ Activity
     .Then<D>(d => d.Jar());        
 ```
 <div class="example-caption">
-    Runs A.Foo() and then B.Bar(). When an exception is thrown from either of them
-    or any child activity they create, invoke C.Jar with exception details.
+    Run A.Foo and then B.Bar. When an exception is thrown from either of them
+    or any child activity they create, run C.Jar with exception details.
 </div>
 ```csharp
 Activity
@@ -105,8 +105,8 @@ Activity
 <div class="example-caption">
     Alternatively use Activity.Parallel instead of Activity.Sequence
     run specified activites in parallel.
-    Runs A.Foo and B.Bar() in parallel. When both of them are complete
-    runs D.Jar().
+    Run A.Foo and B.Bar in parallel. When both of them are complete,
+    run D.Jar.
 </div>
 ```csharp
 Activity
@@ -143,7 +143,7 @@ public class LoanApproval
 ``` 
 
 ## <a name="creating-a-scheduler" class="anchor"></a>Creating a Scheduler
-Mechanics of executing activities is in Dependable's scheduler. We can use ```DependableConfiguration``` to create one with desired configuration options. Typically we would run this code during application start-up and store this instance at the appdomain level. Invoking ```Scheduler.Start``` will make scheduler wait for activities and start processing them when they are available.
+Mechanics of executing activities is in Dependable's scheduler. We can use DependableConfiguration to create one with desired configuration options. Typically we would run this code during application start-up and store this instance at the appdomain level. Invoking Scheduler.Start method will make scheduler wait for activities and start processing them when they are available.
 
 ```csharp
 var scheduler = new DependableConfiguration().CreateScheduler();
@@ -151,7 +151,7 @@ scheduler.Start();
 ```
 
 ## <a name="scheduling-activities" class="anchor"></a>Scheduling Activities
-Once we have an activity and a scheduler, we can tell Dependable to schedule an instance of that activity using ```Schedule()``` method. When we invoke this method, it captures the arguments we specify in the method call expression and queues a request to execute that activity at some point later. In other words, calling thread of this method is not going to be blocked until the work is done because the intention is to run it in the background.
+Once we have an activity and a scheduler, we can tell Dependable to schedule an instance of that activity using Schedule() method. When we invoke this method, it captures the arguments we specify in the method call expression and queues a request to execute that activity at some point later. In other words, calling thread of this method is not going to be blocked until the work is done because the intention is to run it in the background.
 
 ```csharp
 var email = Activity.Run<Notify>(a => a.Email("alice@me.com", "bob@me.com", "hello"));
