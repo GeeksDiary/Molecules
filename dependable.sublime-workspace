@@ -19,7 +19,15 @@
 			"file": "_layouts/default.html",
 			"settings":
 			{
-				"buffer_size": 7925,
+				"buffer_size": 7961,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "_includes/basics.md",
+			"settings":
+			{
+				"buffer_size": 7413,
 				"line_ending": "Unix"
 			}
 		}
@@ -409,7 +417,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -418,15 +426,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7925,
+						"buffer_size": 7961,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1912,
-								1912
+								432,
+								432
 							]
 						],
 						"settings":
@@ -434,7 +442,35 @@
 							"syntax": "Packages/HTML/HTML.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 619.0,
+						"translation.y": 474.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "_includes/basics.md",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7413,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7413,
+								7413
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Markdown/Markdown.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 3356.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -489,6 +525,10 @@
 		"height": 0.0,
 		"selected_items":
 		[
+			[
+				"basics",
+				"_includes/basics.md"
+			],
 			[
 				"site",
 				"app/_scss/site.scss"
@@ -632,10 +672,6 @@
 			[
 				"standardsearchcontroller",
 				"test/spec/search/standardSearchControllerFacts.js"
-			],
-			[
-				"basics",
-				"_includes/basics.md"
 			],
 			[
 				"default",

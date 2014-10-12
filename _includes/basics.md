@@ -54,7 +54,7 @@ Activity
 Activity
     .Sequence(
         Activity.Run<A>(a => a.Foo()), 
-        Activity.Run<B>(b = b.Bar()))
+        Activity.Run<B>(b => b.Bar()))
     .AnyFailed<C>(c => c.FooBar());
 ```
 <div class="example-caption">
@@ -64,7 +64,7 @@ Activity
 Activity
     .Sequence(
         Activity.Run<A>(a => a.Foo()), 
-        Activity.Run<B>(b = b.Bar()))
+        Activity.Run<B>(b => b.Bar()))
     .AllFailed<C>(c => c.FooBar());    
 ```
 <div class="example-caption">
@@ -75,7 +75,7 @@ Activity
 Activity
     .Sequence(
         Activity.Run<A>(a => a.Foo()), 
-        Activity.Run<B>(b = b.Bar()))
+        Activity.Run<B>(b => b.Bar()))
     .AnyFailed<C>(c => c.FooBar())
     .AllFailed<D>(d => d.Jar());
 ```
@@ -87,7 +87,7 @@ Activity
 Activity
     .Sequence(
         Activity.Run<A>(a => a.Foo()), 
-        Activity.Run<B>(b = b.Bar()))
+        Activity.Run<B>(b => b.Bar()))
     .AnyFailed<C>(c => c.FooBar())
     .Then<D>(d => d.Jar());        
 ```
@@ -99,7 +99,7 @@ Activity
 Activity
     .Sequence(
         Activity.Run<A>(a => a.Foo()), 
-        Activity.Run<B>(b = b.Bar()))
+        Activity.Run<B>(b => b.Bar()))
     .WithExceptionFilter<C>((exception, c) => c.Jar(exception));
 ```
 <div class="example-caption">
@@ -112,7 +112,7 @@ Activity
 Activity
     .Parallel(
         Activity.Run<A>(a => a.Foo()), 
-        Activity.Run<B>(b = b.Bar()))
+        Activity.Run<B>(b => b.Bar()))
     .Then<D>(d => d.Jar());
 ```
 
