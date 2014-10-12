@@ -161,14 +161,19 @@ scheduler.Schedule(email);
 ## <a name="retry" class="anchor"></a>Retry
 When an activity fails, we can configure Dependable to retry it. Retry configuration takes place in two places. Firstly we should tell dependable how many times the activity should be retried and interval used calculate the due time (i.e. the lag between the failure and next execution of activity). We can configure these values globally for all activities or for specific ones or both.
 
+<div class="example-caption">
+Set global retry settings
+</div>
 ```csharp
-// Setting retry settings globally
 var scheduler = new DependableConfiguration()
                     .SetDefaultRetryCount(1)
                     .SetDefaultRetryDelay(TimeSpan.FromSeconds(5))
                     .CreateScheduler();
-
-// Setting retry settings for a specific job
+```
+<div class="example-caption">
+Set activity specific retry settings
+</div>
+```csharp
 var scheduler = new DependableConfiguration()
                     .Activity<Notify>(c => c
                         .WithRetryCount(1)
@@ -176,7 +181,6 @@ var scheduler = new DependableConfiguration()
                     )
                     .CreateScheduler();
 ```
-
 
 The other piece in retry process is what we call Retry Timer. It periodically scans for due items in Dependable internal structures and executes the ready ones. By default this scanning process takes place once every minute. However, we can change that in the configuration.
 
