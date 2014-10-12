@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 
 [assembly: AssemblyTitle("Dependable")]
-[assembly: AssemblyDescription("Library for reliable job scheduling.")]
+[assembly: AssemblyDescription("Build reliable workflows in .NET")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Dependable Team")]
 [assembly: AssemblyProduct("Dependable")]
@@ -36,5 +36,5 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("0.0.27")]
-[assembly: AssemblyFileVersion("0.0.27")]
+[assembly: AssemblyVersion("0.0.28")]
+[assembly: AssemblyFileVersion("0.0.28")]
