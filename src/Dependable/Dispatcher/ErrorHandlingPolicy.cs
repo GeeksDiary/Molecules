@@ -12,25 +12,21 @@ namespace Dependable.Dispatcher
     {
         readonly IDependableConfiguration _configuration;
         readonly IJobCoordinator _jobCoordinator;
-        readonly IMethodBinder _methodBinder;
         readonly IStatusChanger _statusChanger;
         readonly IFailedJobQueue _failedJobQueue;
 
         public ErrorHandlingPolicy(IDependableConfiguration configuration,
             IJobCoordinator jobCoordinator,
-            IMethodBinder methodBinder,
             IStatusChanger statusChanger,
             IFailedJobQueue failedJobQueue)
         {
             if(configuration == null) throw new ArgumentNullException("configuration");
             if(jobCoordinator == null) throw new ArgumentNullException("jobCoordinator");
-            if(methodBinder == null) throw new ArgumentNullException("methodBinder");
             if(statusChanger == null) throw new ArgumentNullException("statusChanger");
             if(failedJobQueue == null) throw new ArgumentNullException("failedJobQueue");
 
             _configuration = configuration;
             _jobCoordinator = jobCoordinator;
-            _methodBinder = methodBinder;
             _statusChanger = statusChanger;
             _failedJobQueue = failedJobQueue;
         }
@@ -50,14 +46,8 @@ namespace Dependable.Dispatcher
             else
             {
                 context.Exception = exception;
-                RunPoisonHandler(job, instance, context);                
+                _jobCoordinator.Run(job, () => _statusChanger.Change(job, JobStatus.Poisoned));
             }
-        }
-
-        void RunPoisonHandler(Job job, object instance, JobContext context)
-        {
-            _methodBinder.Poison(instance, job.Arguments, context);
-            _jobCoordinator.Run(job, () => _statusChanger.Change(job, JobStatus.Poisoned));
         }
     }
 }

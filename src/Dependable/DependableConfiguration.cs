@@ -135,7 +135,7 @@ namespace Dependable
             var coordinator = new JobCoordinator(eventStream);
             var failedJobQueue = new FailedJobQueue(this, delegatingPersistenceStore, now, eventStream, router);
 
-            var errorHandlingPolicy = new ErrorHandlingPolicy(this, coordinator, methodBinder, changeState,
+            var errorHandlingPolicy = new ErrorHandlingPolicy(this, coordinator, changeState,
                 failedJobQueue);
 
             var exceptionFilterDispatcher = new ExceptionFilterDispatcher();
