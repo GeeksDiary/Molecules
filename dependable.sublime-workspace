@@ -163,13 +163,19 @@
 	"expanded_folders":
 	[
 		"/Users/buddhike/Projects/dependable",
-		"/Users/buddhike/Projects/dependable/_includes",
-		"/Users/buddhike/Projects/dependable/_layouts"
+		"/Users/buddhike/Projects/dependable/_layouts",
+		"/Users/buddhike/Projects/dependable/assets",
+		"/Users/buddhike/Projects/dependable/assets/styles"
 	],
 	"file_history":
 	[
 		"/Users/buddhike/Projects/dependable/_layouts/default.html",
+		"/Users/buddhike/Projects/dependable/_includes/tracking.md",
+		"/Users/buddhike/Projects/dependable/_includes/throttling.md",
+		"/Users/buddhike/Projects/dependable/_includes/extensions.md",
+		"/Users/buddhike/Projects/dependable/assets/styles/site.css",
 		"/Users/buddhike/Projects/dependable/_includes/basics.md",
+		"/Users/buddhike/Projects/dependable/_includes/advanced-topics.md",
 		"/Users/buddhike/Projects/geeksdiary/geeksdiary.sublime-project",
 		"/Users/buddhike/Projects/geeksdiary/app/about.html",
 		"/Users/buddhike/Projects/geeksdiary/app/_layouts/default.html",
@@ -290,12 +296,7 @@
 		"/Users/buddhike/Projects/inprotechkaizen/client/server/responses/api-uspto-schedule.json",
 		"/Users/buddhike/Projects/inprotechkaizen/client/server/responses/api-uspto-newschedule.json",
 		"/Users/buddhike/Projects/inprotechkaizen/client/app/integration/uspto/scripts/controllers/schedulesController.js",
-		"/Users/buddhike/Projects/inprotechkaizen/client/server/responses/api-uspto-schedules.json",
-		"/Users/buddhike/Projects/inprotechkaizen/client/test-e2e/specs/integration/uspto/03-schedules.js",
-		"/Users/buddhike/Projects/inprotechkaizen/client/app/bower_components/bootstrap/less/responsive-utilities.less",
-		"/Users/buddhike/Projects/inprotechkaizen/client/app/tests/scripts/batchEventUpdate/batchEventUpdateSavabilitySpecification.js",
-		"/Users/buddhike/Projects/inprotechkaizen/client/.gitignore",
-		"/Users/buddhike/Projects/inprotechkaizen/client/.gitattributes"
+		"/Users/buddhike/Projects/inprotechkaizen/client/server/responses/api-uspto-schedules.json"
 	],
 	"find":
 	{
@@ -315,6 +316,11 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"class=\"title\"",
+			"(<div class=\"title\">)(\\n)(.*)(\\n)(</li>)",
+			"(<li class=\"title\">)",
+			"(<li class=\"title\">).*(</li>)",
+			"(<li class=\"title\">)(.*)(</li>)",
 			"FFFFAF",
 			"fa-3x",
 			">\n",
@@ -376,6 +382,10 @@
 		"regex": true,
 		"replace_history":
 		[
+			"$0$1$2$3</div>\\r\\n",
+			"$0$1$2$3</div>\\n",
+			"$0$1$2$3</div>",
+			"<div class=\"title\">",
 			"'$1'",
 			"$1:",
 			"'$1'",
@@ -434,7 +444,7 @@
 	"project": "dependable.sublime-project",
 	"replace":
 	{
-		"height": 54.0
+		"height": 78.0
 	},
 	"save_all_on_build": true,
 	"select_file":
