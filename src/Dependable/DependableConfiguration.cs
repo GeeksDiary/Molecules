@@ -132,11 +132,11 @@ namespace Dependable
             var changeState = new StatusChanger(eventStream, runningTransition, failedTransition,
                 endTransition, waitingForChildrenTransition, primitiveStatusChanger);
 
-            var coordinator = new JobCoordinator(eventStream);
+            var coordinator = new JobCoordinator(eventStream, recoverableAction);
             var failedJobQueue = new FailedJobQueue(this, delegatingPersistenceStore, now, eventStream, router);
 
             var errorHandlingPolicy = new ErrorHandlingPolicy(this, coordinator, changeState,
-                failedJobQueue);
+                failedJobQueue, recoverableAction);
 
             var exceptionFilterDispatcher = new ExceptionFilterDispatcher();
 

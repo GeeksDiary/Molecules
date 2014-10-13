@@ -22,14 +22,17 @@ namespace Dependable.Dispatcher
     {
         static readonly JobStatus[] CompletableStatus =
         {
-            JobStatus.Running, JobStatus.WaitingForChildren, JobStatus.ReadyToComplete
+            JobStatus.Running, 
+            JobStatus.WaitingForChildren, 
+            JobStatus.ReadyToComplete,
+            JobStatus.Completed
         };
 
         static readonly JobStatus[] RunnableStatus = {JobStatus.Ready, JobStatus.Failed, JobStatus.Running};
 
-        static readonly JobStatus[] FailableStatus = {JobStatus.Running};
+        static readonly JobStatus[] FailableStatus = {JobStatus.Running, JobStatus.Failed};
 
-        static readonly JobStatus[] PoisonableStatus = {JobStatus.Running, JobStatus.ReadyToPoison};
+        static readonly JobStatus[] PoisonableStatus = {JobStatus.Running, JobStatus.ReadyToPoison, JobStatus.Poisoned};
 
         static readonly JobStatus[] AwaitableStatus = {JobStatus.Running, JobStatus.WaitingForChildren};
 

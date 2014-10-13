@@ -99,7 +99,7 @@ namespace Dependable
             _persistenceStore.Store(job);            
 
             _recoverableAction.Run(() => _router.Route(job));
-
+                
             return job.Id;
         }
     }

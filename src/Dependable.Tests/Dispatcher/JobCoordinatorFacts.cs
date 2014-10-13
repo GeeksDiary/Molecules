@@ -63,7 +63,7 @@ namespace Dependable.Tests.Dispatcher
     {
         public static JobCoordinator NewJobCoordinator(this World world)
         {
-            return new JobCoordinator(world.EventStream);
+            return new JobCoordinator(world.EventStream, world.RecoverableAction);
         }
     }
 }

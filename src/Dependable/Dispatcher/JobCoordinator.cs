@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using Dependable.Recovery;
 using Dependable.Tracking;
 
 namespace Dependable.Dispatcher
@@ -12,15 +13,17 @@ namespace Dependable.Dispatcher
     public class JobCoordinator : IJobCoordinator
     {
         readonly IEventStream _eventStream;
+        readonly IRecoverableAction _recoverableAction;
 
         readonly ConcurrentDictionary<Guid, CoordinationQueue> _coordinationQueues =
             new ConcurrentDictionary<Guid, CoordinationQueue>();
 
-        public JobCoordinator(IEventStream eventStream)
+        public JobCoordinator(IEventStream eventStream, IRecoverableAction recoverableAction)
         {
             if (eventStream == null) throw new ArgumentNullException("eventStream");
 
             _eventStream = eventStream;
+            _recoverableAction = recoverableAction;
         }
 
         public void Run(Job job, Action action)
@@ -29,10 +32,11 @@ namespace Dependable.Dispatcher
 
             var q = _coordinationQueues.GetOrAdd(job.RootId, j => new CoordinationQueue());
 
-            q.Operations.Enqueue(action);
+            q.Operations.Enqueue(new CoordinationRequest { Job = job, Action = action });
             
             /*
-             * After queue the action, we take a lock on the queue to see 
+             * After we queue the action, 
+             * we take a lock on the queue to see 
              * if this thread should process the queue.             
              */
             lock (q)
@@ -50,9 +54,12 @@ namespace Dependable.Dispatcher
             _eventStream.Publish<JobCoordinator>(EventType.Activity,
                 EventProperty.ActivityName("CoordinatedEventProcessingCycleStarted"));
 
-            Action request;
+            CoordinationRequest request;
             while (queue.Operations.TryDequeue(out request))
-                request();
+            {
+                var currentRequest = request;
+                _recoverableAction.Run(request.Action, () => Run(currentRequest.Job, currentRequest.Action));
+            }
 
             lock (queue)
                 queue.IsProcessing = false;
@@ -65,12 +72,19 @@ namespace Dependable.Dispatcher
         {
             public CoordinationQueue()
             {
-                Operations = new ConcurrentQueue<Action>();
+                Operations = new ConcurrentQueue<CoordinationRequest>();
             }
 
-            public ConcurrentQueue<Action> Operations { get; private set; }
+            public ConcurrentQueue<CoordinationRequest> Operations { get; private set; }
 
             public bool IsProcessing { get; set; }
+        }
+
+        class CoordinationRequest
+        {
+            public Job Job { get; set; }
+
+            public Action Action { get; set; }
         }
     }
 }

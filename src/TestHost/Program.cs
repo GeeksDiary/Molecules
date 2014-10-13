@@ -44,7 +44,7 @@ namespace TestHost
                 .ThenContinue()
                 .Then<Greet>(g => g.Run("g", "h"));
 
-            _scheduler.Schedule(sequence);
+            // _scheduler.Schedule(sequence);
             //_scheduler.Schedule(
             //    Activity.Run<Greet>(g => g.Run("c", "d"))
             //    .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "ouch"))
@@ -86,6 +86,14 @@ namespace TestHost
             //    var nameA = "a" + i;
             //    var nameB = "b" + i;
             //    var activity = Activity.Run<GreetMany>(a => a.Run(new[] { nameA, nameB }));
+            //    Task.Run(() => _scheduler.Schedule(activity));
+            //}
+
+            //for (var i = 0; i < 100; i++)
+            //{
+            //    var firstName = "a" + i;
+            //    var lastName = "b" + i;
+            //    var activity = Activity.Run<Greet>(a => a.Run(firstName, lastName));
             //    Task.Run(() => _scheduler.Schedule(activity));
             //}
             Console.ReadLine();

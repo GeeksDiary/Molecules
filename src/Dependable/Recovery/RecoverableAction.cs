@@ -17,15 +17,18 @@ namespace Dependable.Recovery
 
     public class RecoverableAction : IRecoverableAction
     {
-        readonly IDependableConfiguration _configuration;        
+        readonly IDependableConfiguration _configuration;
         readonly IEventStream _eventStream;
-        readonly ConcurrentQueue<Action> _coordinationFailures = new ConcurrentQueue<Action>();
+        
+        readonly ConcurrentQueue<RecoverableActionRequest> _itemsToRecover = 
+            new ConcurrentQueue<RecoverableActionRequest>();
+
         readonly Timer _timer;
 
         public RecoverableAction(IDependableConfiguration configuration, IEventStream eventStream)
         {
-            if(configuration == null) throw new ArgumentNullException("configuration");
-            if(eventStream == null) throw new ArgumentNullException("eventStream");
+            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (eventStream == null) throw new ArgumentNullException("eventStream");
 
             _configuration = configuration;
             _eventStream = eventStream;
@@ -35,28 +38,28 @@ namespace Dependable.Recovery
         void OnTick(object state)
         {
             try
-            {                
-                var maxItemsToRetry = _coordinationFailures.Count;
+            {
+                var maxItemsToRetry = _itemsToRecover.Count;
 
                 _eventStream.Publish<RecoverableAction>(
-                                                        EventType.TimerActivity,
-                                                        EventProperty.ActivityName("RecoveryTimer"),
-                                                        new KeyValuePair<string, object>(
-                                                            "NumberOfItemsToProcess",
-                                                            maxItemsToRetry));
-                
+                    EventType.TimerActivity,
+                    EventProperty.ActivityName("RecoveryTimer"),
+                    new KeyValuePair<string, object>(
+                        "NumberOfItemsToProcess",
+                        maxItemsToRetry));
+
                 for (var i = 0; i < maxItemsToRetry; i++)
                 {
-                    Action request;
-                    if (!_coordinationFailures.TryDequeue(out request))
+                    RecoverableActionRequest request;
+                    if (!_itemsToRecover.TryDequeue(out request))
                         break;
 
-                    Task.Run(() => Run(request));
+                    Task.Run(() => RunCore(request));
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                if(e.IsFatal())
+                if (e.IsFatal())
                     throw;
 
                 _eventStream.Publish<RecoverableAction>(e);
@@ -74,28 +77,43 @@ namespace Dependable.Recovery
 
         public void Run(Action action, Action recoveryAction = null, Action then = null)
         {
-            RunCore(action, recoveryAction ?? action, then);
+            RunCore(new RecoverableActionRequest
+            {
+                Action = action,
+                RecoveryAction = recoveryAction ?? action,
+                Then = then
+            });
         }
 
-        void RunCore(Action action, Action recoveryAction = null, Action then = null)
+        void RunCore(RecoverableActionRequest request)
         {
+            var success = false;
             try
             {
-                action();
+                request.Action();
+                success = true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                if(e.IsFatal())
+                if (e.IsFatal())
                     throw;
 
-                _coordinationFailures.Enqueue(recoveryAction);
+                _itemsToRecover.Enqueue(request);
 
                 _eventStream.Publish<RecoverableAction>(e);
             }
 
-            if (then != null)
-                then();
+            if (success && request.Then != null)
+                request.Then();
         }
 
+        public class RecoverableActionRequest
+        {
+            public Action Action { get; set; }
+
+            public Action RecoveryAction { get; set; }
+
+            public Action Then { get; set; }
+        }
     }
 }

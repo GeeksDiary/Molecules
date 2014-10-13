@@ -14,21 +14,25 @@ namespace Dependable.Dispatcher
         readonly IJobCoordinator _jobCoordinator;
         readonly IStatusChanger _statusChanger;
         readonly IFailedJobQueue _failedJobQueue;
+        readonly IRecoverableAction _recoverableAction;
 
         public ErrorHandlingPolicy(IDependableConfiguration configuration,
             IJobCoordinator jobCoordinator,
             IStatusChanger statusChanger,
-            IFailedJobQueue failedJobQueue)
+            IFailedJobQueue failedJobQueue,
+            IRecoverableAction recoverableAction)
         {
             if(configuration == null) throw new ArgumentNullException("configuration");
             if(jobCoordinator == null) throw new ArgumentNullException("jobCoordinator");
             if(statusChanger == null) throw new ArgumentNullException("statusChanger");
             if(failedJobQueue == null) throw new ArgumentNullException("failedJobQueue");
+            if (recoverableAction == null) throw new ArgumentNullException("recoverableAction");
 
             _configuration = configuration;
             _jobCoordinator = jobCoordinator;
             _statusChanger = statusChanger;
             _failedJobQueue = failedJobQueue;
+            _recoverableAction = recoverableAction;
         }
 
         public void RetryOrPoison(Job job, object instance, Exception exception, JobContext context)
@@ -40,8 +44,8 @@ namespace Dependable.Dispatcher
             var config = _configuration.For(job.Type);
             if(job.DispatchCount <= config.RetryCount)
             {
-                _statusChanger.Change(job, JobStatus.Failed);
-                _failedJobQueue.Add(job);
+                _recoverableAction.Run(() => _statusChanger.Change(job, JobStatus.Failed),
+                    then: () => _failedJobQueue.Add(job));
             }
             else
             {

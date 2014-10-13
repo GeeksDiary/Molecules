@@ -31,8 +31,8 @@ namespace Dependable.Dispatcher
         public Dispatcher(IDependencyResolver dependencyResolver,
             IJobCoordinator jobCoordinator, IErrorHandlingPolicy errorHandlingPolicy,
             IMethodBinder methodBinder,
-            IEventStream eventStream, 
-            IRecoverableAction recoverableAction, 
+            IEventStream eventStream,
+            IRecoverableAction recoverableAction,
             IStatusChanger statusChanger,
             IContinuationLiveness continuationLiveness,
             IExceptionFilterDispatcher exceptionFilterDispatcher)
@@ -81,7 +81,7 @@ namespace Dependable.Dispatcher
                     _eventStream.Publish<Dispatcher>(EventType.JobAbandoned,
                         EventProperty.Named("Reason", "UnexpectedStatus"), EventProperty.JobSnapshot(job));
                     break;
-            }            
+            }
         }
 
         async Task Run(Job job)
@@ -118,9 +118,8 @@ namespace Dependable.Dispatcher
                 }
 
                 if (result != null)
-                    _recoverableAction.Run(() => CompleteJob(job, result));
+                    CompleteJob(job, result);
             }
-            
         }
 
         void CompleteJob(Job job, JobResult result)
@@ -128,7 +127,10 @@ namespace Dependable.Dispatcher
             if (result.Activity == null)
                 _jobCoordinator.Run(job, () => _statusChanger.Change(job, JobStatus.Completed));
             else
-                _statusChanger.Change(job, JobStatus.WaitingForChildren, result.Activity);
+            {
+                _recoverableAction.Run(() =>
+                    _statusChanger.Change(job, JobStatus.WaitingForChildren, result.Activity));                
+            }
         }
     }
 }
