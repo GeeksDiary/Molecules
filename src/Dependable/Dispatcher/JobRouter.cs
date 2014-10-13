@@ -1,4 +1,5 @@
 ﻿using System;
+using Dependable.Recovery;
 
 namespace Dependable.Dispatcher
 {
@@ -10,19 +11,23 @@ namespace Dependable.Dispatcher
     public class JobRouter : IJobRouter
     {
         readonly QueueConfiguration _configuration;
+        readonly IRecoverableAction _recoverableAction;
 
-        public JobRouter(QueueConfiguration configuration)
+        public JobRouter(QueueConfiguration configuration, IRecoverableAction recoverableAction)
         {
             if (configuration == null) throw new ArgumentNullException("configuration");
+            if (recoverableAction == null) throw new ArgumentNullException("recoverableAction");
             _configuration = configuration;
+            _recoverableAction = recoverableAction;
         }
 
         public void Route(Job job)
         {
-            (_configuration.ActivitySpecificQueues.ContainsKey(job.Type)
+            var queue = _configuration.ActivitySpecificQueues.ContainsKey(job.Type)
                 ? _configuration.ActivitySpecificQueues[job.Type]
-                : _configuration.Default)
-                .Write(job);
+                : _configuration.Default;
+
+            _recoverableAction.Run(() => queue.Write(job));
         }
     }
 }

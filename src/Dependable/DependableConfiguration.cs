@@ -109,13 +109,13 @@ namespace Dependable
             Func<DateTime> now = () => DateTime.Now;
 
             var eventStream = new EventStream(_eventSinks, _exceptionLogger, now);
+            var recoverableAction = new RecoverableAction(this, eventStream);
             var delegatingPersistenceStore = new DelegatingPersistenceStore(_persistenceProvider);
 
             var queueConfiguration = new JobQueueFactory(delegatingPersistenceStore, this, eventStream).Create();
 
-            var router = new JobRouter(queueConfiguration);
+            var router = new JobRouter(queueConfiguration, recoverableAction);
             var methodBinder = new MethodBinder();
-            var recoverableAction = new RecoverableAction(this, eventStream);
 
             var primitiveStatusChanger = new PrimitiveStatusChanger(eventStream, delegatingPersistenceStore);
             var continuationDispatcher = new ContinuationDispatcher(router, primitiveStatusChanger, delegatingPersistenceStore);

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Dependable;
 using Dependable.Dispatcher;
@@ -28,21 +27,21 @@ namespace TestHost
                 .Activity<Greet>(c => c.WithMaxQueueLength(1).WithMaxWorkers(1))
                 .CreateScheduler();
 
-            _scheduler.Start();
+            // _scheduler.Start();
 
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("alice", "cooper")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("bob", "jane")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("kyle", "simpson")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("andrew", "matthews")));
 
-            var sequence = Activity
-                .Sequence(
-                    Activity.Run<Greet>(g => g.Run("a", "b")),
-                    Activity.Run<Greet>(g => g.Run("c", "d")))
-                .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"))
-                .AnyFailed<Greet>(g => g.Run("e", "f"))
-                .ThenContinue()
-                .Then<Greet>(g => g.Run("g", "h"));
+            //var sequence = Activity
+            //    .Sequence(
+            //        Activity.Run<Greet>(g => g.Run("a", "b")),
+            //        Activity.Run<Greet>(g => g.Run("c", "d")))
+            //    .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"))
+            //    .AnyFailed<Greet>(g => g.Run("e", "f"))
+            //    .ThenContinue()
+            //    .Then<Greet>(g => g.Run("g", "h"));
 
             // _scheduler.Schedule(sequence);
             //_scheduler.Schedule(
@@ -88,14 +87,22 @@ namespace TestHost
             //    var activity = Activity.Run<GreetMany>(a => a.Run(new[] { nameA, nameB }));
             //    Task.Run(() => _scheduler.Schedule(activity));
             //}
+            Console.Write("Generate new work? Y/N(Y)");
+            var generate = Console.ReadLine().ToUpper();
+            if (generate == "Y")
+            {
+                for (var i = 0; i < 100; i++)
+                {
+                    var firstName = "a" + i;
+                    var lastName = "b" + i;
+                    var activity = Activity.Run<Greet>(a => a.Run(firstName, lastName));
+                    _scheduler.Schedule(activity);
+                }    
+            }
 
-            //for (var i = 0; i < 100; i++)
-            //{
-            //    var firstName = "a" + i;
-            //    var lastName = "b" + i;
-            //    var activity = Activity.Run<Greet>(a => a.Run(firstName, lastName));
-            //    Task.Run(() => _scheduler.Schedule(activity));
-            //}
+            Console.WriteLine("Press enter to start scheduler");
+            Console.ReadLine();
+            _scheduler.Start();
             Console.ReadLine();
         }
     }
@@ -108,6 +115,7 @@ namespace TestHost
 
     public class GreetEx
     {
+// ReSharper disable once CSharpWarnings::CS1998
         public async Task Run(Person person)
         {
             Console.WriteLine("Hello {0} {1}", person.FirstName, person.LastName);
@@ -120,7 +128,7 @@ namespace TestHost
         public async Task Run(string firstName, string lastName)
         {
             Console.WriteLine("hello {0} {1}", firstName, lastName);
-            Thread.Sleep(5000);
+            System.Threading.Thread.Sleep(500);
 
             if (firstName == "c")
                 throw new Exception("la la la");
@@ -138,6 +146,7 @@ namespace TestHost
 
     public class DueSchedule
     {
+// ReSharper disable once CSharpWarnings::CS1998
         public async Task<Activity> Run()
         {
             return Activity.Sequence(Activity.Run<ApplicationList>(a => a.Download()),
@@ -153,6 +162,7 @@ namespace TestHost
             Console.WriteLine("Download List");
         }
 
+// ReSharper disable once CSharpWarnings::CS1998
         public async Task<Activity> DownloadEachItem()
         {
             Console.WriteLine("Download Each Item");
@@ -167,16 +177,19 @@ namespace TestHost
 
     public class ApplicationDetails
     {
+// ReSharper disable once CSharpWarnings::CS1998
         public async Task Download()
         {
             Console.WriteLine("Download One");
         }
 
+// ReSharper disable once CSharpWarnings::CS1998
         public async Task Convert()
         {
             Console.WriteLine("Convert");            
         }
 
+// ReSharper disable once CSharpWarnings::CS1998
         public async Task Notify()
         {
             Console.WriteLine("Notify");            

@@ -98,7 +98,7 @@ namespace Dependable
             job.Continuation = converted.Continuation;
             _persistenceStore.Store(job);            
 
-            _recoverableAction.Run(() => _router.Route(job));
+            _router.Route(job);
                 
             return job.Id;
         }
