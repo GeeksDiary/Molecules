@@ -34,16 +34,16 @@ namespace TestHost
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("kyle", "simpson")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("andrew", "matthews")));
 
-            //var sequence = Activity
-            //    .Sequence(
-            //        Activity.Run<Greet>(g => g.Run("a", "b")),
-            //        Activity.Run<Greet>(g => g.Run("c", "d")))
-            //    .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"))
-            //    .AnyFailed<Greet>(g => g.Run("e", "f"))
-            //    .ThenContinue()
-            //    .Then<Greet>(g => g.Run("g", "h"));
+            var sequence = Activity
+                .Sequence(
+                    Activity.Run<Greet>(g => g.Run("a", "b")),
+                    Activity.Run<Greet>(g => g.Run("c", "d")))
+                .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"))
+                .AnyFailed<Greet>(g => g.Run("e", "f"))
+                .ThenContinue()
+                .Then<Greet>(g => g.Run("g", "h"));
 
-            // _scheduler.Schedule(sequence);
+            _scheduler.Schedule(sequence);
             //_scheduler.Schedule(
             //    Activity.Run<Greet>(g => g.Run("c", "d"))
             //    .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "ouch"))

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dependable.Dispatcher;
@@ -18,12 +19,12 @@ namespace Dependable
     {
         readonly IJobRouter _router;
         readonly IActivityToContinuationConverter _activityToContinuationConverter;
+        readonly IEnumerable<IJobPump> _jobPumps;
         readonly QueueConfiguration _queueConfiguration;
         readonly IPersistenceStore _persistenceStore;
         readonly Func<DateTime> _now;
         readonly IFailedJobQueue _failedJobQueue;
         readonly IRecoverableAction _recoverableAction;
-        readonly IJobPump _jobPump;
 
         bool _hasStarted;
 
@@ -34,9 +35,9 @@ namespace Dependable
             Func<DateTime> now,
             IFailedJobQueue failedJobQueue,
             IRecoverableAction recoverableAction,
-            IJobPump jobPump,
             IJobRouter router,
-            IActivityToContinuationConverter activityToContinuationConverter)
+            IActivityToContinuationConverter activityToContinuationConverter,
+            IEnumerable<IJobPump> jobPumps)
         {
             if (queueConfiguration == null) throw new ArgumentNullException("queueConfiguration");
             if (configuration == null) throw new ArgumentNullException("configuration");
@@ -44,20 +45,20 @@ namespace Dependable
             if (now == null) throw new ArgumentNullException("now");
             if (failedJobQueue == null) throw new ArgumentNullException("failedJobQueue");
             if (recoverableAction == null) throw new ArgumentNullException("recoverableAction");
-            if (jobPump == null) throw new ArgumentNullException("jobPump");
             if (router == null) throw new ArgumentNullException("router");
             if (activityToContinuationConverter == null)
                 throw new ArgumentNullException("activityToContinuationConverter");
+            if (jobPumps == null) throw new ArgumentNullException("jobPumps");
 
             _queueConfiguration = queueConfiguration;
             _persistenceStore = persistenceStore;
             _now = now;
             _failedJobQueue = failedJobQueue;
             _recoverableAction = recoverableAction;
-            _jobPump = jobPump;
 
             _router = router;
             _activityToContinuationConverter = activityToContinuationConverter;
+            _jobPumps = jobPumps;
         }
 
         public async Task Start()
@@ -70,9 +71,7 @@ namespace Dependable
             _failedJobQueue.Monitor();
             _recoverableAction.Monitor();
 
-            var tasks = _queueConfiguration.ActivitySpecificQueues.Values.Select(q => _jobPump.Start(q)).ToList();
-            tasks.Add(_jobPump.Start(_queueConfiguration.Default));
-
+            var tasks =_jobPumps.Select(p => p.Start()).ToArray();            
             await Task.WhenAny(tasks);
         }
 

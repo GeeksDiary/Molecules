@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Dependable.Dependencies;
 using Dependable.Diagnostics;
 using Dependable.Dispatcher;
@@ -118,14 +119,17 @@ namespace Dependable
             var methodBinder = new MethodBinder();
 
             var primitiveStatusChanger = new PrimitiveStatusChanger(eventStream, delegatingPersistenceStore);
-            var continuationDispatcher = new ContinuationDispatcher(router, primitiveStatusChanger, delegatingPersistenceStore);
+            var continuationDispatcher = new ContinuationDispatcher(router, primitiveStatusChanger,
+                delegatingPersistenceStore);
             var activityToContinuationConverter = new ActivityToContinuationConverter(now);
 
 
             var runningTransition = new RunningTransition(primitiveStatusChanger);
             var failedTransition = new FailedTransition(this, primitiveStatusChanger, now);
-            var endTransition = new EndTransition(delegatingPersistenceStore, primitiveStatusChanger, continuationDispatcher);
-            var waitingForChildrenTransition = new WaitingForChildrenTransition(delegatingPersistenceStore, continuationDispatcher, activityToContinuationConverter);
+            var endTransition = new EndTransition(delegatingPersistenceStore, primitiveStatusChanger,
+                continuationDispatcher);
+            var waitingForChildrenTransition = new WaitingForChildrenTransition(delegatingPersistenceStore,
+                continuationDispatcher, activityToContinuationConverter);
 
             var continuationLiveness = new ContinuationLiveness(delegatingPersistenceStore, continuationDispatcher);
 
@@ -150,7 +154,14 @@ namespace Dependable
                 continuationLiveness,
                 exceptionFilterDispatcher);
 
-            var jobPump = new JobPump(jobDispatcher, eventStream);
+            var jobPumps =
+                queueConfiguration
+                    .ActivitySpecificQueues
+                    .Values
+                    .Select(q => new JobPump(jobDispatcher, eventStream, q))
+                    .ToList();
+
+            jobPumps.Add(new JobPump(jobDispatcher, eventStream, queueConfiguration.Default));
 
             return new Scheduler(
                 queueConfiguration,
@@ -159,9 +170,9 @@ namespace Dependable
                 now,
                 failedJobQueue,
                 recoverableAction,
-                jobPump,
                 router,
-                activityToContinuationConverter);
+                activityToContinuationConverter,
+                jobPumps);
         }
 
         TimeSpan IDependableConfiguration.RetryTimerInterval
