@@ -39,6 +39,84 @@ namespace Dependable.Tests.Dispatcher
 // ReSharper disable once CSharpWarnings::CS4014
             _world.Dispatcher.Received(1).Dispatch(job, queue.Configuration);
         }
+
+        public class MaxWorkers
+        {
+            readonly World _world = new World();
+            readonly Queue<TaskCompletionSource<object>> _dispatchInvocations = new Queue<TaskCompletionSource<object>>();
+            readonly Queue<TaskCompletionSource<object>> _dispatchResults = new Queue<TaskCompletionSource<object>>();
+            readonly Queue<TaskCompletionSource<object>> _readInvocations = new Queue<TaskCompletionSource<object>>();
+            readonly IJobQueue _queue;
+
+            public MaxWorkers()
+            {
+                var readTask = Task.FromResult((Job)_world.NewJob);                
+                
+                _queue = Substitute.For<IJobQueue>();
+                _queue.Configuration.Returns(new ActivityConfiguration().WithMaxWorkers(1));
+                
+                _queue.Read().Returns(c =>
+                {
+                    if (_readInvocations.Count != 0)
+                        _readInvocations.Dequeue().SetResult(new object());
+                    return readTask;
+                });
+
+                _world.Dispatcher.Dispatch(null, null).ReturnsForAnyArgs(c =>
+                {
+                    _dispatchInvocations.Dequeue().SetResult(new object());
+                    return _dispatchResults.Dequeue().Task;
+                });
+            }
+
+            [Fact]
+            public async Task ShouldNotReadTheQueueUntilDispatcherCompletes()
+            {
+                var dispatchInvoked = new TaskCompletionSource<object>();
+                _dispatchInvocations.Enqueue(dispatchInvoked);
+
+                _dispatchResults.Enqueue(new TaskCompletionSource<object>());
+
+                var pump = _world.NewJobPump(_queue);
+// ReSharper disable once CSharpWarnings::CS4014
+                pump.Start();
+                
+                await dispatchInvoked.Task;
+
+// ReSharper disable once CSharpWarnings::CS4014
+                _queue.Received(1).Read();
+            }
+
+            [Fact]
+            public async Task ShouldContinueWhenDispatcherCompletes()
+            {
+                var firstDispatchResult = new TaskCompletionSource<object>();
+                var secondDispatchResult = new TaskCompletionSource<object>();
+                _dispatchResults.Enqueue(firstDispatchResult);
+                _dispatchResults.Enqueue(secondDispatchResult);
+
+                var firstDispatchInvoked = new TaskCompletionSource<object>();
+                var secondDispatchInvoked = new TaskCompletionSource<object>();
+                _dispatchInvocations.Enqueue(firstDispatchInvoked);
+                _dispatchInvocations.Enqueue(secondDispatchInvoked);
+
+                var pump = _world.NewJobPump(_queue);
+                // ReSharper disable once CSharpWarnings::CS4014
+                pump.Start();
+
+                // Wait for first dispatch call to arrive in dispatcher
+                await firstDispatchInvoked.Task;
+
+                // Finishing first dispatch should return control back to pump.
+                firstDispatchResult.SetResult(new object());
+
+                // Now wait for second dispatch call to arrive in dispatcher
+                await secondDispatchInvoked.Task;
+
+                // ReSharper disable once CSharpWarnings::CS4014
+                _queue.Received(2).Read();
+            }
+        }
     }
 
     public static partial class WorldExtensions
