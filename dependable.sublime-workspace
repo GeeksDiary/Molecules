@@ -27,7 +27,7 @@
 			"file": "_includes/basics.md",
 			"settings":
 			{
-				"buffer_size": 7413,
+				"buffer_size": 7419,
 				"line_ending": "Unix"
 			}
 		}
@@ -454,15 +454,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7413,
+						"buffer_size": 7419,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7413,
-								7413
+								3689,
+								3689
 							]
 						],
 						"settings":
@@ -470,7 +470,7 @@
 							"syntax": "Packages/Markdown/Markdown.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 3356.0,
+						"translation.y": 3355.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
