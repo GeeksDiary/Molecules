@@ -88,10 +88,9 @@ namespace Dependable.Dispatcher
         {
             using (var scope = _dependencyResolver.BeginScope())
             {
-                var context = new JobContext(job);
-                var instance = scope.GetService(job.Type);
-
+                var context = new JobContext(job);                    
                 JobResult result = null;
+
                 try
                 {
                     _statusChanger.Change(job, JobStatus.Running);
@@ -99,6 +98,8 @@ namespace Dependable.Dispatcher
                     if (job.Status != JobStatus.Running)
                         return;
 
+                    var instance = scope.GetService(job.Type);
+                    
                     result = await _methodBinder.Run(instance, job);
 
                     if (result == null)
@@ -114,7 +115,7 @@ namespace Dependable.Dispatcher
 
                     _exceptionFilterDispatcher.Dispatch(job, e, context, scope);
                     _eventStream.Publish<Dispatcher>(e, EventProperty.JobSnapshot(job));
-                    _errorHandlingPolicy.RetryOrPoison(job, instance, e, context);
+                    _errorHandlingPolicy.RetryOrPoison(job, e, context);
                 }
 
                 if (result != null)

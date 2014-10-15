@@ -5,7 +5,7 @@ namespace Dependable.Dispatcher
 {
     public interface IErrorHandlingPolicy
     {
-        void RetryOrPoison(Job job, object instance, Exception exception, JobContext context);
+        void RetryOrPoison(Job job, Exception exception, JobContext context);
     }
 
     public class ErrorHandlingPolicy : IErrorHandlingPolicy
@@ -35,7 +35,7 @@ namespace Dependable.Dispatcher
             _recoverableAction = recoverableAction;
         }
 
-        public void RetryOrPoison(Job job, object instance, Exception exception, JobContext context)
+        public void RetryOrPoison(Job job, Exception exception, JobContext context)
         {
             if(job == null) throw new ArgumentNullException("job");
             if(exception == null) throw new ArgumentNullException("exception");
@@ -43,7 +43,7 @@ namespace Dependable.Dispatcher
 
             var config = _configuration.For(job.Type);
             if(job.DispatchCount <= config.RetryCount)
-            {
+            {                
                 _recoverableAction.Run(() => _statusChanger.Change(job, JobStatus.Failed),
                     then: () => _failedJobQueue.Add(job));
             }

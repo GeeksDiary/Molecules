@@ -1,5 +1,6 @@
 using System;
 using Dependable.Dependencies;
+using Dependable.Tracking;
 using Dependable.Utilities;
 
 namespace Dependable.Dispatcher
@@ -11,6 +12,14 @@ namespace Dependable.Dispatcher
 
     public class ExceptionFilterDispatcher : IExceptionFilterDispatcher
     {
+        readonly IEventStream _eventStream;
+
+        public ExceptionFilterDispatcher(IEventStream eventStream)
+        {
+            if (eventStream == null) throw new ArgumentNullException("eventStream");
+            _eventStream = eventStream;
+        }
+
         public void Dispatch(Job job, Exception exception, JobContext context, IDependencyScope scope)
         {
             if (job == null) throw new ArgumentNullException("job");
@@ -22,17 +31,20 @@ namespace Dependable.Dispatcher
             {
                 try
                 {
-                    DispatchAndHandleException(filter, exception, context, scope);
+                    DispatchCore(filter, exception, context, scope);
                 }
                 catch (Exception e)
                 {
                     if (e.IsFatal())
                         throw;
+
+                    _eventStream.Publish<ExceptionFilterDispatcher>(e);
                 }
             }
         }
 
-        void DispatchAndHandleException(ExceptionFilter filter, Exception exception, JobContext context, IDependencyScope scope)
+        static void DispatchCore(ExceptionFilter filter, Exception exception, JobContext context, 
+            IDependencyScope scope)
         {
             var instance = scope.GetService(filter.Type);
 

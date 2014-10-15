@@ -171,7 +171,7 @@ namespace Dependable.Dispatcher
 
             if (!job.Suspended)
                 return;
-
+            
             _persistenceStore.Store(job);
             
             _eventStream.Publish<JobQueue>(EventType.JobSuspended, EventProperty.JobSnapshot(job),

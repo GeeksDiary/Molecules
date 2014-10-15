@@ -22,28 +22,28 @@ namespace TestHost
                 .SetDefaultRetryCount(1)
                 .SetDefaultRetryDelay(TimeSpan.FromSeconds(1))
                 .SetRetryTimerInterval(TimeSpan.FromSeconds(1))                
-                .UseSqlPersistenceProvider("Default", "TestHost")
+                //.UseSqlPersistenceProvider("Default", "TestHost")
                 .UseConsoleEventLogger(EventType.JobStatusChanged | EventType.Exception)
-                .Activity<Greet>(c => c.WithMaxQueueLength(1).WithMaxWorkers(1))
+                //.Activity<Greet>(c => c.WithMaxQueueLength(1).WithMaxWorkers(1))
                 .CreateScheduler();
 
             // _scheduler.Start();
 
-            //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("alice", "cooper")));
+            _scheduler.Schedule(Activity.Run<Greet>(g => g.Run("alice", "cooper")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("bob", "jane")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("kyle", "simpson")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("andrew", "matthews")));
 
-            var sequence = Activity
-                .Sequence(
-                    Activity.Run<Greet>(g => g.Run("a", "b")),
-                    Activity.Run<Greet>(g => g.Run("c", "d")))
-                .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"))
-                .AnyFailed<Greet>(g => g.Run("e", "f"))
-                .ThenContinue()
-                .Then<Greet>(g => g.Run("g", "h"));
+            //var sequence = Activity
+            //    .Sequence(
+            //        Activity.Run<Greet>(g => g.Run("a", "b")),
+            //        Activity.Run<Greet>(g => g.Run("c", "d")))
+            //    .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"))
+            //    .AnyFailed<Greet>(g => g.Run("e", "f"))
+            //    .ThenContinue()
+            //    .Then<Greet>(g => g.Run("g", "h"));
 
-            _scheduler.Schedule(sequence);
+            //_scheduler.Schedule(sequence);
             //_scheduler.Schedule(
             //    Activity.Run<Greet>(g => g.Run("c", "d"))
             //    .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "ouch"))
@@ -124,6 +124,10 @@ namespace TestHost
 
     public class Greet
     {
+        public Greet(string a)
+        {
+            
+        }
 // ReSharper disable once CSharpWarnings::CS1998
         public async Task Run(string firstName, string lastName)
         {

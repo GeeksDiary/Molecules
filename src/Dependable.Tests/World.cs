@@ -26,6 +26,7 @@ namespace Dependable.Tests
             JobQueueFactory = Substitute.For<IJobQueueFactory>();
             ContinuationDispatcher = Substitute.For<IContinuationDispatcher>();
             ActivityToContinuationConverter = Substitute.For<IActivityToContinuationConverter>();
+            Dispatcher = Substitute.For<IDispatcher>();
 
             Now = () => Fixture.Now;
 
@@ -80,6 +81,8 @@ namespace Dependable.Tests
         public IContinuationDispatcher ContinuationDispatcher { get; set; }
 
         public IActivityToContinuationConverter ActivityToContinuationConverter { get; set; }
+
+        public IDispatcher Dispatcher { get; set; }
 
         void StubChange<TSource>()
         {

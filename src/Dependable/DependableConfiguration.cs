@@ -142,7 +142,7 @@ namespace Dependable
             var errorHandlingPolicy = new ErrorHandlingPolicy(this, coordinator, changeState,
                 failedJobQueue, recoverableAction);
 
-            var exceptionFilterDispatcher = new ExceptionFilterDispatcher();
+            var exceptionFilterDispatcher = new ExceptionFilterDispatcher(eventStream);
 
             var jobDispatcher = new Dispatcher.Dispatcher(_dependencyResolver,
                 coordinator,
