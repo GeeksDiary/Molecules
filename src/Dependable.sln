@@ -21,6 +21,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6EF159E7-AAB8-4559-BCC6-EC28A6A90A91}"
 	ProjectSection(SolutionItems) = preProject
 		make.bat = make.bat
+		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHost", "TestHost\TestHost.csproj", "{FAADD0C6-E171-44C9-B6A7-FD708EFC5EAA}"

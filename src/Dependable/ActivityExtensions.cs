@@ -9,12 +9,29 @@ namespace Dependable
     {
         public static SingleActivity Then<T>(this Activity first, Expression<Func<T, Task>> func)
         {
-            return ThenCore<T>(first, func);            
+            if (first == null) throw new ArgumentNullException("first");
+            if (func == null) throw new ArgumentNullException("func");
+
+            return ThenCore<T>(first, func);
         }
 
         public static SingleActivity Then<T>(this Activity first, Expression<Func<T, Task<Activity>>> func)
         {
+            if (first == null) throw new ArgumentNullException("first");
+            if (func == null) throw new ArgumentNullException("func");
+
             return ThenCore<T>(first, func);
+        }
+
+        public static Activity Then(this Activity first, Activity next)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (next == null) throw new ArgumentNullException("next");
+
+            next.Parent = first;
+            first.Next = next;
+
+            return next;
         }
 
         static SingleActivity ThenCore<T>(Activity first, LambdaExpression func)
@@ -23,10 +40,9 @@ namespace Dependable
             if (func == null) throw new ArgumentNullException("func");
 
             var method = func.ToMethodCall();
-            var next = new SingleActivity(typeof(T), method.Name, method.Arguments) { Parent = first };
-            first.Next = next;
+            var next = new SingleActivity(typeof(T), method.Name, method.Arguments);
 
-            return next;
+            return (SingleActivity)first.Then(next);
         }
 
         public static Activity Root(this Activity activity)

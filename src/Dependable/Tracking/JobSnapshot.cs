@@ -7,6 +7,7 @@ namespace Dependable.Tracking
         public JobSnapshot(Job job)
         {
             Id = job.Id;
+            RootId = job.RootId;
             Type = job.Type;
             Method = job.Method;
             Status = job.Status;
@@ -14,6 +15,8 @@ namespace Dependable.Tracking
         }
 
         public Guid Id { get; private set; }
+
+        public Guid RootId { get; set; }
 
         public Type Type { get; private set; }
 

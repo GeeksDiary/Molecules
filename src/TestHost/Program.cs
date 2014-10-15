@@ -29,7 +29,10 @@ namespace TestHost
 
             // _scheduler.Start();
 
-            _scheduler.Schedule(Activity.Run<Greet>(g => g.Run("alice", "cooper")));
+            _scheduler.Schedule(Activity.Run<Greet>(g => g.Run("alice", "cooper")).Then<Greet>(g => g.Run("bob", "jane")));
+            _scheduler.Schedule(Activity.Sequence(Activity.Run<Greet>(g => g.Run("ian", "patrick")),
+                Activity.Run<Greet>(g => g.Run("james", "bond"))));
+
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("bob", "jane")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("kyle", "simpson")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("andrew", "matthews")));
@@ -124,10 +127,6 @@ namespace TestHost
 
     public class Greet
     {
-        public Greet(string a)
-        {
-            
-        }
 // ReSharper disable once CSharpWarnings::CS1998
         public async Task Run(string firstName, string lastName)
         {

@@ -61,6 +61,7 @@ namespace Dependable.Tracking
             AppendPart(builder, snapshot.Type.FullName);
             AppendPart(builder, snapshot.Method);
             AppendPart(builder, snapshot.Id.ToString());
+            AppendPart(builder, snapshot.RootId.ToString());
             AppendPart(builder, data["FromStatus"]);
             AppendPart(builder, data["ToStatus"]);
         }
