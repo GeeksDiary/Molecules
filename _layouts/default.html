@@ -17,10 +17,10 @@
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
     <script src="libs/modernizr/modernizr.js"></script>
 
-    <link rel="stylesheet" href="libs/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" href="libs/font-awesome/font-awesome.min.css">
-    <link rel="stylesheet" href="assets/styles/site.css">
-    <link rel="stylesheet" href="assets/styles/highlight.css">
+    <link rel="stylesheet" href="{{ site.baseUrl }}libs/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ site.baseUrl }}libs/font-awesome/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ site.baseUrl }}assets/styles/site.css">
+    <link rel="stylesheet" href="{{ site.baseUrl }}assets/styles/highlight.css">
     <link href='http://fonts.googleapis.com/css?family=Oswald|Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
 </head>
 
@@ -32,7 +32,7 @@
         <div class="container">
             <div class="navbar-header">
                 <h1>
-                    <img src="assets/images/Dependable.64.png">Dependable</h1>
+                    <img src="{{ site.baseUrl }}assets/images/Dependable.64.png">Dependable</h1>
             </div>
             <div class="navbar-collapse collapse">
                 <div class="navbar-right">
@@ -62,32 +62,32 @@
         <div class="container">
             <div class="navbar-header">Build reliable workflows in .NET </div>
             <ul class="nav navbar-nav navbar-right navbar-collapse collapse">
-                <li><a href="{{ site.url }}index.html" class="dropdown-toggle" data-toggle="dropdown" style="background: mediumseagreen;color: white;">Basics<span class="caret"></span></a>
+                <li><a href="{{ site.baseUrl }}index.html" class="dropdown-toggle" data-toggle="dropdown" style="background: mediumseagreen;color: white;">Basics<span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
                         <li>
-                            <a href="{{ site.url }}index.html#introduction">Introduction</a>
+                            <a href="{{ site.baseUrl }}index.html#introduction">Introduction</a>
                         </li>                       
                         <li>
-                            <a href="{{ site.url }}index.html#installation">Installation</a>
+                            <a href="{{ site.baseUrl }}index.html#installation">Installation</a>
                         </li>             
 
                         <li class="divider"></li>                                  
                         <li class="dropdown-header">Getting Started</li>
                         
                         <li>
-                            <a href="{{ site.url }}index.html#creating-an-activity">Creating an Activity</a>
+                            <a href="{{ site.baseUrl }}index.html#creating-an-activity">Creating an Activity</a>
                         </li>                        
                         <li>
-                            <a href="{{ site.url }}index.html#creating-a-scheduler">Creating Scheduler</a>
+                            <a href="{{ site.baseUrl }}index.html#creating-a-scheduler">Creating Scheduler</a>
                         </li>
                         <li>
-                            <a href="{{ site.url }}index.html#scheduling-activities">Scheduling Activities</a>
+                            <a href="{{ site.baseUrl }}index.html#scheduling-activities">Scheduling Activities</a>
                         </li>                       
                         <li class="divider"></li>                         
                         <li class="dropdown-header">Reliability Features</li>                       
                         
                         <li>
-                            <a href="{{ site.url }}index.html#retry">Retry</a>
+                            <a href="{{ site.baseUrl }}index.html#retry">Retry</a>
                         </li>                                        
                     </ul>
                 </li>
@@ -95,39 +95,39 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="background: coral;color: white;">Advanced<span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">                        
                         <li class="dropdown-header">Features</li>
-                        <li><a href="{{ site.url }}tracking.html">Tracking</a>
+                        <li><a href="{{ site.baseUrl }}tracking.html">Tracking</a>
                         </li>
                         
-                        <li><a href="{{ site.url }}throttling.html">Throttling</a>
+                        <li><a href="{{ site.baseUrl }}throttling.html">Throttling</a>
                         </li>
                         
                         <li class="divider"></li>
                         <li class="dropdown-header">Extensibility</li>
                         
                         <li>
-                            <a href="{{ site.url }}extensibility.html#persistence-providers">Persistence Providers</a>
+                            <a href="{{ site.baseUrl }}extensibility.html#persistence-providers">Persistence Providers</a>
                         </li>
                         <li>
-                            <a href="{{ site.url }}extensibility.html#event-sinks">Event Sinks</a>
+                            <a href="{{ site.baseUrl }}extensibility.html#event-sinks">Event Sinks</a>
                         </li>
                         <li>
-                            <a href="{{ site.url }}extensibility.html#dependency-resolvers">Dependency Resolvers</a>
+                            <a href="{{ site.baseUrl }}extensibility.html#dependency-resolvers">Dependency Resolvers</a>
                         </li>
                     </ul>
                 </li>
                 <li class="dropdown">
-                    <a href="{{ site.url }}extensions.html" class="dropdown-toggle" data-toggle="dropdown" style="background: deepskyblue;color: white;">Extensions<span class="caret"></span></a>
+                    <a href="{{ site.baseUrl }}extensions.html" class="dropdown-toggle" data-toggle="dropdown" style="background: deepskyblue;color: white;">Extensions<span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">                                                
                         <li class="divider"></li>
                         <li class="dropdown-header">Persistence</li>
                         
                         <li>
-                            <a href="{{ site.url }}extensions.html#sql-server-persistence-extension">SQL Server Persistence Extension</a>
+                            <a href="{{ site.baseUrl }}extensions.html#sql-server-persistence-extension">SQL Server Persistence Extension</a>
                         </li>                        
                     </ul>
                 </li>
                 <li>
-                    <a href="{{ site.url }}license.html" style="background: dimgray;color: white;">License</a>
+                    <a href="{{ site.baseUrl }}license.html" style="background: dimgray;color: white;">License</a>
                 </li>
             </ul>
         </div>
@@ -156,8 +156,8 @@
     ga('send', 'pageview');
     </script>
 
-    <script src="libs/jquery/jquery.min.js"></script>
-    <script src="libs/bootstrap/bootstrap.min.js"></script>
+    <script src="{{ site.baseUrl }}libs/jquery/jquery.min.js"></script>
+    <script src="{{ site.baseUrl }}libs/bootstrap/bootstrap.min.js"></script>
 </body>
 
 </html>
