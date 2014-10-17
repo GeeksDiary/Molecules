@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Dependable.Recovery;
 
 namespace Dependable.Dispatcher
@@ -27,7 +28,7 @@ namespace Dependable.Dispatcher
                 ? _configuration.ActivitySpecificQueues[job.Type]
                 : _configuration.Default;
 
-            _recoverableAction.Run(() => queue.Write(job));
+            Task.Run(() => _recoverableAction.Run(() => queue.Write(job)));
         }
     }
 }
