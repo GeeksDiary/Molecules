@@ -27,7 +27,7 @@ namespace Dependable.Tests.Dispatcher
         [Fact]
         public void NewlyCreatedJobShouldHaveTheCorrectAttributes()
         {
-            var parent = (Job) _parent;
+            var parent = (Dependable.Job) _parent;
             var activity = Activity.Run<Test>(t => t.RunWithArguments("a"));
 
             var converted = _world.NewActivityToContinuationConverter().Convert(activity, _parent);

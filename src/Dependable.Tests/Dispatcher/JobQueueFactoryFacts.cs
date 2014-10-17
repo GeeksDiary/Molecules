@@ -25,8 +25,8 @@ namespace Dependable.Tests.Dispatcher
         [InlineData(JobStatus.Completed, false)]
         public async Task ShouldOnlyRecoverJobsInRecoverableState(JobStatus status, bool recoverable)
         {
-            Job job = _world.NewJob.In(status);
-            Job next = _world.NewJob;
+            Dependable.Job job = _world.NewJob.In(status);
+            Dependable.Job next = _world.NewJob;
 
             _world.PersistenceStore.LoadBy(status).Returns(new[] {job});
 
@@ -46,7 +46,7 @@ namespace Dependable.Tests.Dispatcher
             var readyInt = _world.NewJob.OfType<int>().In(JobStatus.Ready);
 
             _world.PersistenceStore.LoadBy(JobStatus.Ready)
-                .Returns(new Job[] {readyString, readyShort, readyInt});
+                .Returns(new Dependable.Job[] {readyString, readyShort, readyInt});
 
             var configuration = _world.NewJobQueueFactory(activityConfiguration: new[]
             {
@@ -80,9 +80,9 @@ namespace Dependable.Tests.Dispatcher
         public async Task ShouldProvideCorrectSuspendedCountForSpecificQueue()
         {
             var suspendedJob = _world.NewJob.OfType<string>().In(JobStatus.Ready);
-            Job job = _world.NewJob.OfType<string>().In(JobStatus.Ready);
+            Dependable.Job job = _world.NewJob.OfType<string>().In(JobStatus.Ready);
 
-            _world.PersistenceStore.LoadSuspended(typeof (string), 1).Returns(new Job[] {suspendedJob});
+            _world.PersistenceStore.LoadSuspended(typeof (string), 1).Returns(new Dependable.Job[] {suspendedJob});
             _world.PersistenceStore.CountSuspended(typeof (string)).Returns(1);
 
             var configuration = _world.NewJobQueueFactory(activityConfiguration: new[]
@@ -101,8 +101,8 @@ namespace Dependable.Tests.Dispatcher
         [Fact]
         public async Task ShouldProvideCorrectSuspendedCountForDefaultQueue()
         {
-            Job suspendedIntJob = _world.NewJob.OfType<int>().In(JobStatus.Ready);
-            Job intJob = _world.NewJob.OfType<int>().In(JobStatus.Ready);
+            Dependable.Job suspendedIntJob = _world.NewJob.OfType<int>().In(JobStatus.Ready);
+            Dependable.Job intJob = _world.NewJob.OfType<int>().In(JobStatus.Ready);
 
             _world.PersistenceStore.LoadSuspended(Arg.Any<IEnumerable<Type>>(), 1).Returns(new[] {suspendedIntJob});
             _world.PersistenceStore.CountSuspended(typeof (string)).Returns(1);

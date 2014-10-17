@@ -10,6 +10,10 @@ namespace Dependable.Dispatcher
         Continuation[] Dispatch(Job job, IEnumerable<Job> children = null);
     }
 
+    /// <summary>
+    /// Used to evaluate to continuation of a given job and 
+    /// dispatch the appropriate jobs.
+    /// </summary>
     public class ContinuationDispatcher : IContinuationDispatcher
     {
         readonly IJobRouter _router;
@@ -36,25 +40,16 @@ namespace Dependable.Dispatcher
             if (children == null)
                 children = Enumerable.Empty<Job>();
 
-            var schedulableList = job.Continuation.PendingContinuations().ToArray();
+            var readyContinuations = job.Continuation.PendingContinuations().ToArray();
 
-            Prepare(job, schedulableList);
-            DispatchCore(schedulableList, children);
+            foreach (var continuation in readyContinuations)
+                continuation.Status = JobStatus.Ready;
 
-            return schedulableList;
-        }
+            _persistenceStore.Store(job);
 
-        /// <summary>
-        /// Find all schedulable awaits for the specified job,
-        /// change their status to Ready and 
-        /// store.
-        /// </summary>
-        void Prepare(Job job, IEnumerable<Continuation> awaits)
-        {
-            foreach (var @await in awaits)
-                @await.Status = JobStatus.Ready;
+            DispatchCore(readyContinuations, children);
 
-            _primitiveStatusChanger.Change<ContinuationDispatcher>(job, JobStatus.WaitingForChildren);
+            return readyContinuations;
         }
 
         /// <summary>
@@ -63,12 +58,12 @@ namespace Dependable.Dispatcher
         /// attempts to update the status to Ready.
         /// Once successful, routes the job.
         /// </summary>
-        void DispatchCore(IEnumerable<Continuation> schedulableList, IEnumerable<Job> children)
+        void DispatchCore(IEnumerable<Continuation> readyContinuations, IEnumerable<Job> children)
         {
             var childrenIndex = children.ToDictionary(c => c.Id, c => c);
 
             var schedulableJobs = (
-                from @await in schedulableList
+                from @await in readyContinuations
                 let j = childrenIndex.ContainsKey(@await.Id)
                     ? childrenIndex[@await.Id]
                     : _persistenceStore.Load(@await.Id)

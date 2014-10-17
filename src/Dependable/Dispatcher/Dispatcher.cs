@@ -69,7 +69,7 @@ namespace Dependable.Dispatcher
                     await Run(job);
                     break;
                 case JobStatus.WaitingForChildren:
-                    _jobCoordinator.Run(job, () => _continuationLiveness.Verify(job));
+                    _jobCoordinator.Run(job, () => _continuationLiveness.Verify(job.Id));
                     break;
                 case JobStatus.ReadyToComplete:
                     _jobCoordinator.Run(job, () => _statusChanger.Change(job, JobStatus.Completed));

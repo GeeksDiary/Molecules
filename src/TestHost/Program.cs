@@ -22,31 +22,31 @@ namespace TestHost
                 .SetDefaultRetryCount(1)
                 .SetDefaultRetryDelay(TimeSpan.FromSeconds(1))
                 .SetRetryTimerInterval(TimeSpan.FromSeconds(1))                
-                //.UseSqlPersistenceProvider("Default", "TestHost")
+                .UseSqlPersistenceProvider("Default", "TestHost")
                 .UseConsoleEventLogger(EventType.JobStatusChanged | EventType.Exception)
                 //.Activity<Greet>(c => c.WithMaxQueueLength(1).WithMaxWorkers(1))
                 .CreateScheduler();
 
             // _scheduler.Start();
 
-            _scheduler.Schedule(Activity.Run<Greet>(g => g.Run("alice", "cooper")).Then<Greet>(g => g.Run("bob", "jane")));
-            _scheduler.Schedule(Activity.Sequence(Activity.Run<Greet>(g => g.Run("ian", "patrick")),
-                Activity.Run<Greet>(g => g.Run("james", "bond"))));
+            // _scheduler.Schedule(Activity.Run<Greet>(g => g.Run("alice", "cooper")).Then<Greet>(g => g.Run("bob", "jane")));
+            //_scheduler.Schedule(Activity.Sequence(Activity.Run<Greet>(g => g.Run("ian", "patrick")),
+            //    Activity.Run<Greet>(g => g.Run("james", "bond"))));
 
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("bob", "jane")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("kyle", "simpson")));
             //_scheduler.Schedule(Activity.Run<Greet>(g => g.Run("andrew", "matthews")));
 
-            //var sequence = Activity
-            //    .Sequence(
-            //        Activity.Run<Greet>(g => g.Run("a", "b")),
-            //        Activity.Run<Greet>(g => g.Run("c", "d")))
-            //    .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"))
-            //    .AnyFailed<Greet>(g => g.Run("e", "f"))
-            //    .ThenContinue()
-            //    .Then<Greet>(g => g.Run("g", "h"));
+            var sequence = Activity
+                .Sequence(
+                    Activity.Run<Greet>(g => g.Run("a", "b")),
+                    Activity.Run<Greet>(g => g.Run("c", "d")))
+                .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "hey"))
+                .AnyFailed<Greet>(g => g.Run("e", "f"))
+                .ThenContinue()
+                .Then<Greet>(g => g.Run("g", "h"));
 
-            //_scheduler.Schedule(sequence);
+            _scheduler.Schedule(sequence);
             //_scheduler.Schedule(
             //    Activity.Run<Greet>(g => g.Run("c", "d"))
             //    .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "ouch"))
@@ -111,6 +111,7 @@ namespace TestHost
     }
 
     public class Person
+
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -131,7 +132,7 @@ namespace TestHost
         public async Task Run(string firstName, string lastName)
         {
             Console.WriteLine("hello {0} {1}", firstName, lastName);
-            System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(2000);
 
             if (firstName == "c")
                 throw new Exception("la la la");

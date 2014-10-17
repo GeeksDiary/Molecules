@@ -128,15 +128,23 @@ namespace Dependable
             var failedTransition = new FailedTransition(this, primitiveStatusChanger, now);
             var endTransition = new EndTransition(delegatingPersistenceStore, primitiveStatusChanger,
                 continuationDispatcher);
-            var waitingForChildrenTransition = new WaitingForChildrenTransition(delegatingPersistenceStore,
-                continuationDispatcher, activityToContinuationConverter);
-
+            
             var continuationLiveness = new ContinuationLiveness(delegatingPersistenceStore, continuationDispatcher);
+
+            var coordinator = new JobCoordinator(eventStream, recoverableAction);
+
+            var waitingForChildrenTransition = new WaitingForChildrenTransition(
+                delegatingPersistenceStore,
+                continuationDispatcher, 
+                activityToContinuationConverter, 
+                recoverableAction, 
+                continuationLiveness, 
+                coordinator, 
+                primitiveStatusChanger);
 
             var changeState = new StatusChanger(eventStream, runningTransition, failedTransition,
                 endTransition, waitingForChildrenTransition, primitiveStatusChanger);
 
-            var coordinator = new JobCoordinator(eventStream, recoverableAction);
             var failedJobQueue = new FailedJobQueue(this, delegatingPersistenceStore, now, eventStream, router);
 
             var errorHandlingPolicy = new ErrorHandlingPolicy(this, coordinator, changeState,

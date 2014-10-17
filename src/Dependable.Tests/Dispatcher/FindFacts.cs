@@ -6,7 +6,7 @@ namespace Dependable.Tests.Dispatcher
 {
     public class FindFacts
     {
-        readonly Job _job = new Job(Guid.NewGuid(), typeof (string), "Run", new object[0], Fixture.Now);
+        readonly Dependable.Job _job = new Dependable.Job(Guid.NewGuid(), typeof (string), "Run", new object[0], Fixture.Now);
 
         [Fact]
         public void ShouldFindSingleChild()

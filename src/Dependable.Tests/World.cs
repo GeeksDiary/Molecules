@@ -19,14 +19,15 @@ namespace Dependable.Tests
             FailedTransition = Substitute.For<IFailedTransition>();
             EndTransition = Substitute.For<IEndTransition>();
             WaitingForChildrenTransition = Substitute.For<IWaitingForChildrenTransition>();
-            PrimitiveStatusChanger = Substitute.For<IPrimitiveStatusChanger>();
-            RecoverableAction = Substitute.For<IRecoverableAction>();
+            PrimitiveStatusChanger = Substitute.For<IPrimitiveStatusChanger>();            
             StatusChanger = Substitute.For<IStatusChanger>();            
             Configuration = Substitute.For<IDependableConfiguration>();
             JobQueueFactory = Substitute.For<IJobQueueFactory>();
             ContinuationDispatcher = Substitute.For<IContinuationDispatcher>();
             ActivityToContinuationConverter = Substitute.For<IActivityToContinuationConverter>();
             Dispatcher = Substitute.For<IDispatcher>();
+            ContinuationLiveness = Substitute.For<IContinuationLiveness>();
+            JobCoordinator = Substitute.For<IJobCoordinator>();
 
             Now = () => Fixture.Now;
 
@@ -34,6 +35,29 @@ namespace Dependable.Tests
             StubChange<WaitingForChildrenTransition>();
             StubChange<FailedTransition>();
             StubChange<RunningTransition>();
+
+            InitializeRecoverableAction();
+        }
+
+        void InitializeRecoverableAction()
+        {
+            RecoverableAction = Substitute.For<IRecoverableAction>();
+            RecoverableAction.WhenForAnyArgs(a => a.Run(null)).Do(c =>
+            {
+                var args = c.Args();
+                try
+                {
+                    ((Action)args[0])();
+                }
+                catch (Exception)
+                {
+                    var recoveryAction = args[1] ?? args[0];
+                    ((Action)recoveryAction)();    
+                }
+
+                if (args[2] != null)
+                    ((Action)args[2])();
+            });
         }
 
         public IPersistenceStore PersistenceStore { get; set; }
@@ -83,6 +107,10 @@ namespace Dependable.Tests
         public IActivityToContinuationConverter ActivityToContinuationConverter { get; set; }
 
         public IDispatcher Dispatcher { get; set; }
+
+        public IContinuationLiveness ContinuationLiveness { get; set; }
+
+        public IJobCoordinator JobCoordinator { get; set; }
 
         void StubChange<TSource>()
         {

@@ -24,7 +24,7 @@ namespace Dependable.Tests.Dispatcher
             var job = _world.NewJob.In(JobStatus.Ready);
 
             var persistedStatus = JobStatus.Ready;
-            _world.PersistenceStore.When(r => r.Store(job)).Do(c => persistedStatus = ((Job)c.Args()[0]).Status);
+            _world.PersistenceStore.When(r => r.Store(job)).Do(c => persistedStatus = ((Dependable.Job)c.Args()[0]).Status);
             
             _world.NewPrimitiveStatusChanger().Change<PrimitiveStatusChangerFacts>(job, JobStatus.Running);
             

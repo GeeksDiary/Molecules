@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Dependable.Dispatcher;
 using NSubstitute;
@@ -9,9 +10,19 @@ namespace Dependable.Tests.Dispatcher
     public class WaitingForChildrenTransitionFacts
     {
         readonly World _world = new World();
+        readonly Job _job;
+        readonly SingleActivity _activity;
+        readonly ConvertedActivity _converted;
+
+        public WaitingForChildrenTransitionFacts()
+        {
+            _job = _world.NewJob.In(JobStatus.Running);
+            _activity = Activity.Run<Test>(t => t.Run());
+            _converted = new ConvertedActivity(new Continuation(), new[] {(Job) _world.NewJob});
+        }
 
         [Fact]
-        public void PersistsAllJobsReturnedByActivityToContinuationConverter()
+        public void PersistsAllJobsCreatedForTheActivity()
         {
             IEnumerable<Job> newJobs = null;
 
@@ -19,44 +30,78 @@ namespace Dependable.Tests.Dispatcher
                     .PersistenceStore
                     .When(s => s.Store(Arg.Any<IEnumerable<Job>>()))
                     .Do(c => newJobs = (IEnumerable<Job>)c.Args()[0]);
-
-            var job = _world.NewJob.In(JobStatus.Running);
-            var activity = Activity.Run<Test>(t => t.Run());
-            var converted = new ConvertedActivity(new Continuation(), new[] {(Job) _world.NewJob});
             
-            _world.ActivityToContinuationConverter.Convert(activity, job).Returns(converted);
+            _world.ActivityToContinuationConverter.Convert(_activity, _job).Returns(_converted);
 
-            _world.NewWaitingForChildrenTransition().Transit(job, activity);
+            _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
 
-            Assert.Contains(converted.Jobs.Single(), newJobs);
+            Assert.Equal(_converted.Jobs.Single(), newJobs.Single());
         }
 
         [Fact]
-        public void SetsConvertedContinuationToJobBeingAwaited()
-        {
-            var job = _world.NewJob.In(JobStatus.Running);
-            var activity = Activity.Run<Test>(t => t.Run());
-            var converted = new ConvertedActivity(new Continuation(), new[] { (Job)_world.NewJob });
+        public void PersistsJobAsWaitingForChildrenWithContinuation()
+        {            
+            _world.ActivityToContinuationConverter.Convert(_activity, _job).Returns(_converted);
 
-            _world.ActivityToContinuationConverter.Convert(activity, job).Returns(converted);
+            _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
 
-            _world.NewWaitingForChildrenTransition().Transit(job, activity);
+            Assert.Equal(_converted.Continuation, _job.Continuation);
 
-            Assert.Equal(converted.Continuation, ((Job) job).Continuation);
+            _world.PrimitiveStatusChanger.Received(1)
+                .Change<WaitingForChildrenTransition>(_job, JobStatus.WaitingForChildren);
         }
 
         [Fact]
         public void InvokesContinuationDispatcher()
         {
-            var job = _world.NewJob.In(JobStatus.Running);
-            var activity = Activity.Run<Test>(t => t.Run());
-            var converted = new ConvertedActivity(new Continuation(), new[] { (Job)_world.NewJob });
+            _world.ActivityToContinuationConverter.Convert(_activity, _job).Returns(_converted);
 
-            _world.ActivityToContinuationConverter.Convert(activity, job).Returns(converted);
+            _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
 
-            _world.NewWaitingForChildrenTransition().Transit(job, activity);
+            _world.ContinuationDispatcher.Received(1).Dispatch(_job, _converted.Jobs);
+        }
 
-            _world.ContinuationDispatcher.Received(1).Dispatch(job, converted.Jobs);
+        [Fact]
+        public void InvokesCoordinatorIfContinuationDispatcherThrowsAnException()
+        {
+            _world.ActivityToContinuationConverter.Convert(_activity, _job).Returns(_converted);
+
+            _world.ContinuationDispatcher.When(d => d.Dispatch(_job, _converted.Jobs)).Do(_ =>
+            {
+                throw new Exception("Doh");
+            });
+            
+            _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
+
+            _world.JobCoordinator.Received(1).Run(_job, Arg.Any<Action>());
+        }
+
+        [Fact]
+        public void InvokesCoordinatorIfContinuationDispatcherDoesNotThrowAnException()
+        {
+            _world.ActivityToContinuationConverter.Convert(_activity, _job).Returns(_converted);
+
+            _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
+
+            _world.JobCoordinator.DidNotReceiveWithAnyArgs().Run(null, null);
+        }
+
+        [Fact]
+        public void CoordinatorReceivesAnActionToVerifyConinuationLiveness()
+        {
+            _world.ActivityToContinuationConverter.Convert(_activity, _job).Returns(_converted);
+
+            _world.ContinuationDispatcher.When(d => d.Dispatch(_job, _converted.Jobs)).Do(_ =>
+            {
+                throw new Exception("Doh");
+            });
+
+            _world.JobCoordinator.When(c => c.Run(_job, Arg.Any<Action>())).
+                Do(c => ((Action) c.Args()[1])());
+
+            _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
+
+            _world.ContinuationLiveness.Received(1).Verify(_job.Id);
         }
     }
 
@@ -68,7 +113,11 @@ namespace Dependable.Tests.Dispatcher
                 new WaitingForChildrenTransition(
                     world.PersistenceStore,
                     world.ContinuationDispatcher,
-                    world.ActivityToContinuationConverter);
+                    world.ActivityToContinuationConverter,
+                    world.RecoverableAction,
+                    world.ContinuationLiveness,
+                    world.JobCoordinator,
+                    world.PrimitiveStatusChanger);
         }
     }    
 }

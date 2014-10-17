@@ -97,7 +97,7 @@ namespace Dependable.Tests.Dispatcher
             {
                 var parent = _world.NewJob.In(JobStatus.WaitingForChildren);
                 var sibling = _world.NewJob.In(siblingStatus).AsChildOf(parent, JobStatus.Ready);
-                var siblingContinuation = ((Job)parent).Continuation.Find(sibling);
+                var siblingContinuation = ((Dependable.Job)parent).Continuation.Find(sibling);
 
                 _world.ContinuationDispatcher.Dispatch(parent).Returns(new[] { siblingContinuation });
 

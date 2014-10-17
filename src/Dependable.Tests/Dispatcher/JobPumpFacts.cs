@@ -16,8 +16,8 @@ namespace Dependable.Tests.Dispatcher
         {
             var job = _world.NewJob.In(JobStatus.Ready);
 
-            var availableJob = new TaskCompletionSource<Job>();
-            var waitForJob = new TaskCompletionSource<Job>();
+            var availableJob = new TaskCompletionSource<Dependable.Job>();
+            var waitForJob = new TaskCompletionSource<Dependable.Job>();
             var items = new Queue<Task>(new [] { availableJob.Task, waitForJob.Task });
             
             var queue = Substitute.For<IJobQueue>();
@@ -50,7 +50,7 @@ namespace Dependable.Tests.Dispatcher
 
             public MaxWorkers()
             {
-                var readTask = Task.FromResult((Job)_world.NewJob);                
+                var readTask = Task.FromResult((Dependable.Job)_world.NewJob);                
                 
                 _queue = Substitute.For<IJobQueue>();
                 _queue.Configuration.Returns(new ActivityConfiguration().WithMaxWorkers(1));
