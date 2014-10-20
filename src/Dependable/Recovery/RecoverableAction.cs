@@ -19,8 +19,8 @@ namespace Dependable.Recovery
     {
         readonly IDependableConfiguration _configuration;
         readonly IEventStream _eventStream;
-        
-        readonly ConcurrentQueue<RecoverableActionRequest> _itemsToRecover = 
+
+        readonly ConcurrentQueue<RecoverableActionRequest> _itemsToRecover =
             new ConcurrentQueue<RecoverableActionRequest>();
 
         readonly Timer _timer;
@@ -98,7 +98,12 @@ namespace Dependable.Recovery
                 if (e.IsFatal())
                     throw;
 
-                _itemsToRecover.Enqueue(request);
+                _itemsToRecover.Enqueue(new RecoverableActionRequest
+                {
+                    Action = request.RecoveryAction,
+                    RecoveryAction = request.RecoveryAction,
+                    Then = request.Then
+                });
 
                 _eventStream.Publish<RecoverableAction>(e);
             }

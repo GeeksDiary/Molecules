@@ -52,6 +52,7 @@
     <Compile Include="Dispatcher\JobQueueFactoryFacts.cs" />
     <Compile Include="Dispatcher\PendingContinuationsExtensionFacts.cs" />
     <Compile Include="Dispatcher\CanContinueExtensionFacts.cs" />
+    <Compile Include="Dispatcher\RecoverableActionFacts.cs" />
     <Compile Include="Dispatcher\StatusChangerFacts.cs" />
     <Compile Include="Dispatcher\EndTransitionFacts.cs" />
     <Compile Include="Dispatcher\JobCoordinatorFacts.cs" />

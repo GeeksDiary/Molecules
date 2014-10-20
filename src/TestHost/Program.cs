@@ -48,10 +48,10 @@ namespace TestHost
 
             // _scheduler.Schedule(sequence);
 
-            _scheduler.Schedule(Activity.Sequence(
-                    Activity.Run<Greet>(g => g.Run("a", "b")).Then<Greet>(g => g.Run("e", "f")),
-                    Activity.Run<Greet>(g => g.Run("g", "h")).Then<Greet>(g => g.Run("i", "j"))
-                ));
+            //_scheduler.Schedule(Activity.Parallel(
+            //        Activity.Run<Greet>(g => g.Run("a", "b")).Then<Greet>(g => g.Run("e", "f")),
+            //        Activity.Run<Greet>(g => g.Run("g", "h")).Then<Greet>(g => g.Run("i", "j"))
+            //    ));
 
             //_scheduler.Schedule(
             //    Activity.Run<Greet>(g => g.Run("c", "d"))
@@ -100,11 +100,11 @@ namespace TestHost
             var generate = Console.ReadLine().ToUpper();
             if (generate == "Y")
             {
-                for (var i = 0; i < 100; i++)
+                for (var i = 0; i < 1000; i++)
                 {
                     var firstName = "a" + i;
                     var lastName = "b" + i;
-                    var activity = Activity.Run<Greet>(a => a.Run(firstName, lastName));
+                    var activity = Activity.Run<GreetMany>(a => a.Run(new[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j"} ));
                     _scheduler.Schedule(activity);
                 }    
             }
@@ -112,6 +112,8 @@ namespace TestHost
             Console.WriteLine("Press enter to start scheduler");
             Console.ReadLine();
             _scheduler.Start();
+            Console.ReadLine();
+            GC.Collect();
             Console.ReadLine();
         }
     }
@@ -138,7 +140,7 @@ namespace TestHost
         public async Task Run(string firstName, string lastName)
         {
             Console.WriteLine("hello {0} {1}", firstName, lastName);
-            System.Threading.Thread.Sleep(2000);
+            //System.Threading.Thread.Sleep(2000);
 
             if (firstName == "c")
                 throw new Exception("la la la");
