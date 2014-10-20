@@ -46,7 +46,13 @@ namespace TestHost
                 .ThenContinue()
                 .Then<Greet>(g => g.Run("g", "h"));
 
-            _scheduler.Schedule(sequence);
+            // _scheduler.Schedule(sequence);
+
+            _scheduler.Schedule(Activity.Sequence(
+                    Activity.Run<Greet>(g => g.Run("a", "b")).Then<Greet>(g => g.Run("e", "f")),
+                    Activity.Run<Greet>(g => g.Run("g", "h")).Then<Greet>(g => g.Run("i", "j"))
+                ));
+
             //_scheduler.Schedule(
             //    Activity.Run<Greet>(g => g.Run("c", "d"))
             //    .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "ouch"))

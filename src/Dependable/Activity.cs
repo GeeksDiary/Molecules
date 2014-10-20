@@ -54,7 +54,7 @@ namespace Dependable
         {
             if (items == null) throw new ArgumentNullException("items");
 
-            return new ActivityGroup(items, true);
+            return CreateGroup(items, true);
         }
 
         public static ActivityGroup Sequence(params Activity[] items)
@@ -68,7 +68,12 @@ namespace Dependable
         {
             if (items == null) throw new ArgumentNullException("items");
 
-            return new ActivityGroup(items, false);
+            return CreateGroup(items, false);
+        }
+
+        static ActivityGroup CreateGroup(IEnumerable<Activity> items, bool isParallel)
+        {
+            return new ActivityGroup(items.Select(i => i.Root()), isParallel);
         }
     }
 }
