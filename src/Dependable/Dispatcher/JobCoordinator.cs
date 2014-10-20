@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Dependable.Recovery;
 using Dependable.Tracking;
 
@@ -15,8 +16,10 @@ namespace Dependable.Dispatcher
         readonly IEventStream _eventStream;
         readonly IRecoverableAction _recoverableAction;
 
-        readonly ConcurrentDictionary<Guid, CoordinationQueue> _coordinationQueues =
-            new ConcurrentDictionary<Guid, CoordinationQueue>();
+        readonly Dictionary<Guid, ConcurrentQueue<CoordinationRequest>> _coordinationQueues =
+            new Dictionary<Guid, ConcurrentQueue<CoordinationRequest>>();
+
+        readonly object _latch = new object();
 
         public JobCoordinator(IEventStream eventStream, IRecoverableAction recoverableAction)
         {
@@ -30,54 +33,51 @@ namespace Dependable.Dispatcher
         {
             if (job == null) throw new ArgumentNullException("job");
 
-            var q = _coordinationQueues.GetOrAdd(job.RootId, j => new CoordinationQueue());
-
-            q.Operations.Enqueue(new CoordinationRequest { Job = job, Action = action });
-            
-            /*
-             * After we queue the action, 
-             * we take a lock on the queue to see 
-             * if this thread should process the queue.             
-             */
-            lock (q)
+            ConcurrentQueue<CoordinationRequest> q;
+            lock (_latch)
             {
-                if (q.IsProcessing)
-                    return;
-                q.IsProcessing = true;
+                // Creator of the queue always processes it.
+                var isProcessing = _coordinationQueues.ContainsKey(job.RootId);
+                q = isProcessing ? _coordinationQueues[job.RootId] : new ConcurrentQueue<CoordinationRequest>();
+
+                _coordinationQueues[job.RootId] = q;
+
+                q.Enqueue(new CoordinationRequest {Job = job, Action = action});
+
+                // If this thread did not create the queue, don't process it.
+                if (isProcessing) return;
             }
 
-            ProcessAll(q);
+            ProcessAll(job.RootId, q);
         }
 
-        void ProcessAll(CoordinationQueue queue)
+        void ProcessAll(Guid id, ConcurrentQueue<CoordinationRequest> q)
         {
             _eventStream.Publish<JobCoordinator>(EventType.Activity,
                 EventProperty.ActivityName("CoordinatedEventProcessingCycleStarted"));
 
-            CoordinationRequest request;
-            while (queue.Operations.TryDequeue(out request))
+            while (true)
             {
-                var currentRequest = request;
-                _recoverableAction.Run(request.Action, () => Run(currentRequest.Job, currentRequest.Action));
+                CoordinationRequest request;
+                if (q.TryDequeue(out request))
+                {
+                    _recoverableAction.Run(request.Action, () => Run(request.Job, request.Action));
+                }
+                else
+                {
+                    lock (_latch)
+                    {
+                        if (q.IsEmpty)
+                        {
+                            _coordinationQueues.Remove(id);
+                            break;                            
+                        }
+                    }
+                }                
             }
-
-            lock (queue)
-                queue.IsProcessing = false;
 
             _eventStream.Publish<JobCoordinator>(EventType.Activity,
                 EventProperty.ActivityName("CoordinatedEventProcessingCycleFinished"));
-        }
-
-        class CoordinationQueue
-        {
-            public CoordinationQueue()
-            {
-                Operations = new ConcurrentQueue<CoordinationRequest>();
-            }
-
-            public ConcurrentQueue<CoordinationRequest> Operations { get; private set; }
-
-            public bool IsProcessing { get; set; }
         }
 
         class CoordinationRequest
