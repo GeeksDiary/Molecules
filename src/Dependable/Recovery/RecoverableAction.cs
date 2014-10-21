@@ -54,7 +54,7 @@ namespace Dependable.Recovery
                     if (!_itemsToRecover.TryDequeue(out request))
                         break;
 
-                    Task.Run(() => RunCore(request));
+                    Task.Run(() => RunCore(request)).FailFastOnException();
                 }
             }
             catch (Exception e)

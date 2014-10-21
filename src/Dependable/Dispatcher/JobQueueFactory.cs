@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dependable.Persistence;
+using Dependable.Recovery;
 using Dependable.Tracking;
 
 namespace Dependable.Dispatcher
@@ -16,17 +17,23 @@ namespace Dependable.Dispatcher
         readonly IPersistenceStore _persistenceStore;
         readonly IDependableConfiguration _configuration;
         readonly IEventStream _eventStream;
+        readonly IRecoverableAction _recoverableAction;
 
-        public JobQueueFactory(IPersistenceStore persistenceStore, IDependableConfiguration configuration,
-            IEventStream eventStream)
+        public JobQueueFactory(
+            IPersistenceStore persistenceStore, 
+            IDependableConfiguration configuration,
+            IEventStream eventStream,
+            IRecoverableAction recoverableAction)
         {
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
             if (configuration == null) throw new ArgumentNullException("configuration");
             if (eventStream == null) throw new ArgumentNullException("eventStream");
+            if (recoverableAction == null) throw new ArgumentNullException("recoverableAction");
 
             _persistenceStore = persistenceStore;
             _configuration = configuration;
             _eventStream = eventStream;
+            _recoverableAction = recoverableAction;
         }
 
         public QueueConfiguration Create()
@@ -59,7 +66,7 @@ namespace Dependable.Dispatcher
 
                 activitySpecificQueues[activityConfiguration.Type] =
                     new JobQueue(filtered.Item1, suspendedCount, activityConfiguration,
-                        _configuration.ActivityConfiguration, _persistenceStore, _eventStream);
+                        _configuration.ActivityConfiguration, _persistenceStore, _eventStream, _recoverableAction);
 
                 PublishQueueInitializedEvent(filtered.Item1.Length, suspendedCount, activityConfiguration.Type);
             }
@@ -69,7 +76,7 @@ namespace Dependable.Dispatcher
 
             var defaultQueue = new JobQueue(all, suspendedCountForDefaultQueue,
                 _configuration.DefaultActivityConfiguration, _configuration.ActivityConfiguration, _persistenceStore,
-                _eventStream);
+                _eventStream, _recoverableAction);
 
             PublishQueueInitializedEvent(all.Length, suspendedCountForDefaultQueue);
 

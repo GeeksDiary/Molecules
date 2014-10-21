@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Dependable.Recovery;
 using Xunit;
 
-namespace Dependable.Tests.Dispatcher
+namespace Dependable.Tests.Recovery
 {
     public class RecoverableActionFacts
     {
@@ -49,11 +49,11 @@ namespace Dependable.Tests.Dispatcher
             {
                 if (a++ == 0) throw new Exception("doh");                
             }, 
-            () =>
-            {
-                a++;
-                tcs.SetResult(null);    
-            });
+                () =>
+                {
+                    a++;
+                    tcs.SetResult(null);    
+                });
 
             recoverableAction.Monitor();
             await tcs.Task;
@@ -62,7 +62,7 @@ namespace Dependable.Tests.Dispatcher
         }
     }
 
-    public static partial class WorldExtensions
+    public static class WorldExtensions
     {
         public static IRecoverableAction NewRecoverableAction(this World world)
         {

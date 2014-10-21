@@ -99,6 +99,7 @@
     <Compile Include="Tracking\EventType.cs" />
     <Compile Include="Tracking\IEventSink.cs" />
     <Compile Include="Tracking\JobSnapshot.cs" />
+    <Compile Include="Utilities\TaskUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dependable.nuspec" />

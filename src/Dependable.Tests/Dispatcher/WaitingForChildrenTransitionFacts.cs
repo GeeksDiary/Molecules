@@ -58,50 +58,25 @@ namespace Dependable.Tests.Dispatcher
 
             _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
 
-            _world.ContinuationDispatcher.Received(1).Dispatch(_job, _converted.Jobs);
+            _world.ContinuationDispatcher.Received(1).Dispatch(_job);
         }
 
         [Fact]
-        public void InvokesCoordinatorIfContinuationDispatcherThrowsAnException()
+        public void RetriesIfContinuationDispatcherThrowsAnException()
         {
+            var count = 0;
+
             _world.ActivityToContinuationConverter.Convert(_activity, _job).Returns(_converted);
 
-            _world.ContinuationDispatcher.When(d => d.Dispatch(_job, _converted.Jobs)).Do(_ =>
+            _world.ContinuationDispatcher.When(d => d.Dispatch(_job)).Do(c =>
             {
-                throw new Exception("Doh");
+                if(count++ == 0)
+                    throw new Exception("Doh");
             });
             
             _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
 
-            _world.JobCoordinator.Received(1).Run(_job, Arg.Any<Action>());
-        }
-
-        [Fact]
-        public void InvokesCoordinatorIfContinuationDispatcherDoesNotThrowAnException()
-        {
-            _world.ActivityToContinuationConverter.Convert(_activity, _job).Returns(_converted);
-
-            _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
-
-            _world.JobCoordinator.DidNotReceiveWithAnyArgs().Run(null, null);
-        }
-
-        [Fact]
-        public void CoordinatorReceivesAnActionToVerifyConinuationLiveness()
-        {
-            _world.ActivityToContinuationConverter.Convert(_activity, _job).Returns(_converted);
-
-            _world.ContinuationDispatcher.When(d => d.Dispatch(_job, _converted.Jobs)).Do(_ =>
-            {
-                throw new Exception("Doh");
-            });
-
-            _world.JobCoordinator.When(c => c.Run(_job, Arg.Any<Action>())).
-                Do(c => ((Action) c.Args()[1])());
-
-            _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
-
-            _world.ContinuationLiveness.Received(1).Verify(_job.Id);
+            _world.ContinuationDispatcher.Received(2).Dispatch(_job);
         }
     }
 
@@ -115,8 +90,6 @@ namespace Dependable.Tests.Dispatcher
                     world.ContinuationDispatcher,
                     world.ActivityToContinuationConverter,
                     world.RecoverableAction,
-                    world.ContinuationLiveness,
-                    world.JobCoordinator,
                     world.PrimitiveStatusChanger);
         }
     }    

@@ -113,16 +113,16 @@ namespace Dependable
             var recoverableAction = new RecoverableAction(this, eventStream);
             var delegatingPersistenceStore = new DelegatingPersistenceStore(_persistenceProvider);
 
-            var queueConfiguration = new JobQueueFactory(delegatingPersistenceStore, this, eventStream).Create();
+            var queueConfiguration = new JobQueueFactory(
+                delegatingPersistenceStore, this, eventStream, recoverableAction).Create();
 
-            var router = new JobRouter(queueConfiguration, recoverableAction);
+            var router = new JobRouter(queueConfiguration);
             var methodBinder = new MethodBinder();
 
             var primitiveStatusChanger = new PrimitiveStatusChanger(eventStream, delegatingPersistenceStore);
             var continuationDispatcher = new ContinuationDispatcher(router, primitiveStatusChanger,
-                delegatingPersistenceStore);
+                delegatingPersistenceStore, recoverableAction);
             var activityToContinuationConverter = new ActivityToContinuationConverter(now);
-
 
             var runningTransition = new RunningTransition(primitiveStatusChanger);
             var failedTransition = new FailedTransition(this, primitiveStatusChanger, now);
@@ -138,8 +138,6 @@ namespace Dependable
                 continuationDispatcher, 
                 activityToContinuationConverter, 
                 recoverableAction, 
-                continuationLiveness, 
-                coordinator, 
                 primitiveStatusChanger);
 
             var changeState = new StatusChanger(eventStream, runningTransition, failedTransition,

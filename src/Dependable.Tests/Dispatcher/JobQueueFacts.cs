@@ -53,7 +53,7 @@ namespace Dependable.Tests.Dispatcher
             readonly World _world = new World();
             readonly ActivityConfiguration _configuration = new ActivityConfiguration(typeof (string)).WithMaxQueueLength(1);
             readonly JobQueue _q;
-            readonly Dependable.Job _excess;
+            readonly Job _excess;
 
             public ExcessReads()
             {
@@ -88,7 +88,7 @@ namespace Dependable.Tests.Dispatcher
             public async Task ShouldUpdateSuspendedFlagAndStore()
             {
                 var suspended = true;
-                _world.PersistenceStore.When(s => s.Store(_excess)).Do(c => suspended = ((Dependable.Job) c.Args()[0]).Suspended);
+                _world.PersistenceStore.When(s => s.Store(_excess)).Do(c => suspended = ((Job) c.Args()[0]).Suspended);
 
                 await _q.Read();
                 await _q.Read();
@@ -137,7 +137,7 @@ namespace Dependable.Tests.Dispatcher
 
             readonly ActivityConfiguration _configuration = new ActivityConfiguration(typeof (string)).WithMaxQueueLength(1);
 
-            readonly Dependable.Job _excessItem;
+            readonly Job _excessItem;
 
             readonly JobQueue _queue;
 
@@ -160,7 +160,7 @@ namespace Dependable.Tests.Dispatcher
             {
                 var suspended = false;
                 _world.PersistenceStore.When(s => s.Store(_excessItem))
-                    .Do(c => suspended = ((Dependable.Job) c.Args()[0]).Suspended);
+                    .Do(c => suspended = ((Job) c.Args()[0]).Suspended);
 
                 _queue.Write(_excessItem);
 
@@ -182,7 +182,7 @@ namespace Dependable.Tests.Dispatcher
 
                 await q.Read();
 
-                var job = (Dependable.Job) _world.NewJob;
+                var job = (Job) _world.NewJob;
                 q.Write(job);
 
                 Assert.True(job.Suspended);
@@ -201,12 +201,12 @@ namespace Dependable.Tests.Dispatcher
                 q.Write(suspendedJob);
 
                 _world.PersistenceStore.LoadSuspended(typeof (string), Arg.Any<int>())
-                    .Returns(new Dependable.Job[] {suspendedJob});
+                    .Returns(new Job[] {suspendedJob});
 
                 await q.Read();
                 await q.Read();
 
-                var job = (Dependable.Job) _world.NewJob;
+                var job = (Job) _world.NewJob;
 
                 q.Write(job);
 
@@ -237,14 +237,15 @@ namespace Dependable.Tests.Dispatcher
 
     public partial class WorldExtensions
     {
-        public static JobQueue NewJobQueue(this World world, IEnumerable<Dependable.Job> jobs = null, int suspendedCount = 0, ActivityConfiguration configuration = null, IEnumerable<ActivityConfiguration> allActivityConfiguration = null)
+        public static JobQueue NewJobQueue(this World world, IEnumerable<Job> jobs = null, int suspendedCount = 0, ActivityConfiguration configuration = null, IEnumerable<ActivityConfiguration> allActivityConfiguration = null)
         {
-            return new JobQueue(jobs ?? Enumerable.Empty<Dependable.Job>(), 
+            return new JobQueue(jobs ?? Enumerable.Empty<Job>(), 
                 suspendedCount, 
                 configuration ?? new ActivityConfiguration().WithMaxQueueLength(1000),
                 allActivityConfiguration ?? Enumerable.Empty<ActivityConfiguration>(),
                 world.PersistenceStore, 
-                world.EventStream);
+                world.EventStream,
+                world.RecoverableAction);
         }
     }
 }

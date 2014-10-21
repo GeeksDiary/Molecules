@@ -137,7 +137,7 @@ namespace Dependable.Tests.Dispatcher
             configuration.ActivityConfiguration.Returns(
                 activityConfiguration ?? Enumerable.Empty<ActivityConfiguration>());
 
-            return new JobQueueFactory(world.PersistenceStore, configuration, world.EventStream);
+            return new JobQueueFactory(world.PersistenceStore, configuration, world.EventStream, world.RecoverableAction);
         }
     }
 }

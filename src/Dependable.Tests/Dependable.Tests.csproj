@@ -52,7 +52,6 @@
     <Compile Include="Dispatcher\JobQueueFactoryFacts.cs" />
     <Compile Include="Dispatcher\PendingContinuationsExtensionFacts.cs" />
     <Compile Include="Dispatcher\CanContinueExtensionFacts.cs" />
-    <Compile Include="Dispatcher\RecoverableActionFacts.cs" />
     <Compile Include="Dispatcher\StatusChangerFacts.cs" />
     <Compile Include="Dispatcher\EndTransitionFacts.cs" />
     <Compile Include="Dispatcher\JobCoordinatorFacts.cs" />
@@ -67,6 +66,7 @@
     <Compile Include="Fixture.cs" />
     <Compile Include="JobManagementWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Recovery\RecoverableActionFacts.cs" />
     <Compile Include="World.cs" />
   </ItemGroup>
   <ItemGroup>

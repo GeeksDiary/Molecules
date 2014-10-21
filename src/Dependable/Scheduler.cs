@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Dependable.Dispatcher;
 using Dependable.Persistence;
 using Dependable.Recovery;
+using Dependable.Utilities;
 
 namespace Dependable
 {
@@ -20,7 +21,6 @@ namespace Dependable
         readonly IJobRouter _router;
         readonly IActivityToContinuationConverter _activityToContinuationConverter;
         readonly IEnumerable<IJobPump> _jobPumps;
-        readonly QueueConfiguration _queueConfiguration;
         readonly IPersistenceStore _persistenceStore;
         readonly Func<DateTime> _now;
         readonly IFailedJobQueue _failedJobQueue;
@@ -50,7 +50,6 @@ namespace Dependable
                 throw new ArgumentNullException("activityToContinuationConverter");
             if (jobPumps == null) throw new ArgumentNullException("jobPumps");
 
-            _queueConfiguration = queueConfiguration;
             _persistenceStore = persistenceStore;
             _now = now;
             _failedJobQueue = failedJobQueue;
@@ -72,7 +71,7 @@ namespace Dependable
             _recoverableAction.Monitor();
 
             var tasks =_jobPumps.Select(p => p.Start()).ToArray();            
-            await Task.WhenAny(tasks);
+            await Task.WhenAny(tasks).FailFastOnException();
         }
 
         public Guid Schedule(Activity activity, Guid? correlationId = null)

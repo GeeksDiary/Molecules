@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dependable.Persistence;
+using Dependable.Recovery;
 using Dependable.Tracking;
 using Dependable.Utilities;
 
@@ -26,6 +27,7 @@ namespace Dependable.Dispatcher
     {
         readonly IPersistenceStore _persistenceStore;
         readonly IEventStream _eventStream;
+        readonly IRecoverableAction _recoverableAction;
         readonly Queue<Job> _items;
 
         readonly object _queueAccess = new object();
@@ -40,13 +42,15 @@ namespace Dependable.Dispatcher
             ActivityConfiguration configuration,    
             IEnumerable<ActivityConfiguration> allActivityConfiguration,
             IPersistenceStore persistenceStore,
-            IEventStream eventStream)
+            IEventStream eventStream,
+            IRecoverableAction recoverableAction)
         {
             if (items == null) throw new ArgumentNullException("items");
             if (configuration == null) throw new ArgumentNullException("configuration");
             if (allActivityConfiguration == null) throw new ArgumentNullException("allActivityConfiguration");
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
             if (eventStream == null) throw new ArgumentNullException("eventStream");
+            if (recoverableAction == null) throw new ArgumentNullException("recoverableAction");
 
             Configuration = configuration;
 
@@ -54,6 +58,7 @@ namespace Dependable.Dispatcher
             _allActivityConfiguration = allActivityConfiguration;
             _persistenceStore = persistenceStore;
             _eventStream = eventStream;
+            _recoverableAction = recoverableAction;
             _items = new Queue<Job>(items);
         }
 
@@ -148,7 +153,7 @@ namespace Dependable.Dispatcher
         }
 
         public void Write(Job job)
-        {            
+        {
             job.Suspended = false;
 
             var suspendedCount = 0;
@@ -172,7 +177,7 @@ namespace Dependable.Dispatcher
             if (!job.Suspended)
                 return;
             
-            _persistenceStore.Store(job);
+            _recoverableAction.Run(() => _persistenceStore.Store(job));
             
             _eventStream.Publish<JobQueue>(EventType.JobSuspended, EventProperty.JobSnapshot(job),
                 EventProperty.Named("SuspendedCount", suspendedCount));

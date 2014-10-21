@@ -61,6 +61,8 @@ namespace Dependable.Dispatcher
         public async Task Dispatch(Job job, ActivityConfiguration configuration)
         {
             if (job == null) throw new ArgumentNullException("job");
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
             switch (job.Status)
             {
                 case JobStatus.Ready:

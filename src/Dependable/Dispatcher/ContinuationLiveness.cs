@@ -44,7 +44,7 @@ namespace Dependable.Dispatcher
             
             if (currentJob.Status != JobStatus.WaitingForChildren)
                 return;
-
+                
             _continuationDispatcher.Dispatch(currentJob);
         }
     }

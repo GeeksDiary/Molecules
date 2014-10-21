@@ -36,7 +36,6 @@ namespace Dependable.Dispatcher
 
         static readonly JobStatus[] AwaitableStatus = {JobStatus.Running, JobStatus.WaitingForChildren};
 
-        readonly IEventStream _eventStream;
         readonly IRunningTransition _runningTransition;
         readonly IFailedTransition _failedTransition;
         readonly IEndTransition _endTransition;
@@ -57,7 +56,6 @@ namespace Dependable.Dispatcher
             if (waitingForChildrenTransition == null) throw new ArgumentNullException("waitingForChildrenTransition");
             if (primitiveStatusChanger == null) throw new ArgumentNullException("primitiveStatusChanger");
 
-            _eventStream = eventStream;
             _runningTransition = runningTransition;
             _failedTransition = failedTransition;
             _endTransition = endTransition;
@@ -67,7 +65,6 @@ namespace Dependable.Dispatcher
 
         public void Change(Job job, JobStatus newStatus, Activity activity = null)
         {
-            var originalStatus = job.Status;
             switch (newStatus)
             {
                 case JobStatus.Ready:
@@ -91,15 +88,6 @@ namespace Dependable.Dispatcher
                     CheckStatusAndInvoke(job, PoisonableStatus,
                         () => _endTransition.Transit(job, JobStatus.Poisoned));
                     break;                
-            }
-
-            if (job.Status == originalStatus)
-            {
-                _eventStream.Publish<StatusChanger>(
-                    EventType.JobStatusChangeRejected,                    
-                    EventProperty.JobSnapshot(job),
-                    EventProperty.FromStatus(originalStatus),
-                    EventProperty.ToStatus(newStatus));
             }
         }
 

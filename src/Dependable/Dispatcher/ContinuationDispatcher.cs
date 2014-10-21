@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dependable.Persistence;
+using Dependable.Recovery;
 
 namespace Dependable.Dispatcher
 {
     public interface IContinuationDispatcher
     {
-        Continuation[] Dispatch(Job job, IEnumerable<Job> children = null);
+        Continuation[] Dispatch(Job job);
     }
 
     /// <summary>
@@ -19,26 +20,27 @@ namespace Dependable.Dispatcher
         readonly IJobRouter _router;
         readonly IPrimitiveStatusChanger _primitiveStatusChanger;
         readonly IPersistenceStore _persistenceStore;
+        readonly IRecoverableAction _recoverableAction;
 
         public ContinuationDispatcher(IJobRouter router,
             IPrimitiveStatusChanger primitiveStatusChanger,
-            IPersistenceStore persistenceStore)
+            IPersistenceStore persistenceStore,
+            IRecoverableAction recoverableAction)
         {
             if (router == null) throw new ArgumentNullException("router");
             if (primitiveStatusChanger == null) throw new ArgumentNullException("primitiveStatusChanger");
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
+            if (recoverableAction == null) throw new ArgumentNullException("recoverableAction");
 
             _router = router;
             _primitiveStatusChanger = primitiveStatusChanger;
             _persistenceStore = persistenceStore;
+            _recoverableAction = recoverableAction;
         }
 
-        public Continuation[] Dispatch(Job job, IEnumerable<Job> children = null)
+        public Continuation[] Dispatch(Job job)
         {
             if (job == null) throw new ArgumentNullException("job");
-
-            if (children == null)
-                children = Enumerable.Empty<Job>();
 
             var readyContinuations = job.Continuation.PendingContinuations().ToArray();
 
@@ -47,7 +49,7 @@ namespace Dependable.Dispatcher
 
             _persistenceStore.Store(job);
 
-            DispatchCore(readyContinuations, children);
+            DispatchCore(readyContinuations);
 
             return readyContinuations;
         }
@@ -58,23 +60,21 @@ namespace Dependable.Dispatcher
         /// attempts to update the status to Ready.
         /// Once successful, routes the job.
         /// </summary>
-        void DispatchCore(IEnumerable<Continuation> readyContinuations, IEnumerable<Job> children)
+        void DispatchCore(IEnumerable<Continuation> readyContinuations)
         {
-            var childrenIndex = children.ToDictionary(c => c.Id, c => c);
-
             var schedulableJobs = (
                 from @await in readyContinuations
-                let j = childrenIndex.ContainsKey(@await.Id)
-                    ? childrenIndex[@await.Id]
-                    : _persistenceStore.Load(@await.Id)
+                let j = _persistenceStore.Load(@await.Id)
                 where j.Status == JobStatus.Created
                 select j)
                 .ToArray();
 
             foreach (var job in schedulableJobs)
             {
-                _primitiveStatusChanger.Change<ContinuationDispatcher>(job, JobStatus.Ready);
-                _router.Route(job);
+                var jobReference = job;
+                _recoverableAction.Run(
+                    () => _primitiveStatusChanger.Change<ContinuationDispatcher>(jobReference, JobStatus.Ready),
+                    then: () => _router.Route(jobReference));
             }
         }
     }

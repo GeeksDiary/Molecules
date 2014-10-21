@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Dependable.Recovery;
+using Dependable.Utilities;
 
 namespace Dependable.Dispatcher
 {
@@ -12,14 +12,11 @@ namespace Dependable.Dispatcher
     public class JobRouter : IJobRouter
     {
         readonly QueueConfiguration _configuration;
-        readonly IRecoverableAction _recoverableAction;
 
-        public JobRouter(QueueConfiguration configuration, IRecoverableAction recoverableAction)
+        public JobRouter(QueueConfiguration configuration)
         {
             if (configuration == null) throw new ArgumentNullException("configuration");
-            if (recoverableAction == null) throw new ArgumentNullException("recoverableAction");
             _configuration = configuration;
-            _recoverableAction = recoverableAction;
         }
 
         public void Route(Job job)
@@ -28,7 +25,7 @@ namespace Dependable.Dispatcher
                 ? _configuration.ActivitySpecificQueues[job.Type]
                 : _configuration.Default;
 
-            Task.Run(() => _recoverableAction.Run(() => queue.Write(job)));
+            Task.Run(() => queue.Write(job)).FailFastOnException();
         }
     }
 }

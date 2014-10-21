@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Dependable;
@@ -46,7 +47,7 @@ namespace TestHost
                 .ThenContinue()
                 .Then<Greet>(g => g.Run("g", "h"));
 
-            // _scheduler.Schedule(sequence);
+            _scheduler.Schedule(sequence);
 
             //_scheduler.Schedule(Activity.Parallel(
             //        Activity.Run<Greet>(g => g.Run("a", "b")).Then<Greet>(g => g.Run("e", "f")),
@@ -111,9 +112,7 @@ namespace TestHost
 
             Console.WriteLine("Press enter to start scheduler");
             Console.ReadLine();
-            _scheduler.Start();
-            Console.ReadLine();
-            GC.Collect();
+            _scheduler.Start();        
             Console.ReadLine();
         }
     }
