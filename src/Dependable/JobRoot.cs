@@ -4,8 +4,9 @@ namespace Dependable
 {
     public class JobRoot
     {
-// ReSharper disable once CSharpWarnings::CS1998
+#pragma warning disable 1998
         public async Task Run()
+#pragma warning restore 1998
         {
         }
     }
