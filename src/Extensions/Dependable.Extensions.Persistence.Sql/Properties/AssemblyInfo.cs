@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Dependable.Extensions.Persistence.Sql")]
 [assembly: AssemblyDescription("SQL Server persistance provider for Dependable.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Dependable Team")]
+[assembly: AssemblyCompany("Dependable Contributors")]
 [assembly: AssemblyProduct("Dependable.Extensions.Persistence.Sql")]
 [assembly: AssemblyCopyright("Copyright © Dependable Team 2014")]
 [assembly: AssemblyTrademark("")]

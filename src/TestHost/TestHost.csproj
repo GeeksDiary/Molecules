@@ -50,6 +50,10 @@
       <Project>{541bcfa5-ff53-4262-b446-47612bf51fc6}</Project>
       <Name>Dependable</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Extensions\Dependable.Extensions.Dependencies.Autofac\Dependable.Extensions.Dependencies.Autofac.csproj">
+      <Project>{9ce92509-5372-47d2-9545-a542f8bc7052}</Project>
+      <Name>Dependable.Extensions.Dependencies.Autofac</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Extensions\Dependable.Extensions.Persistence.Sql\Dependable.Extensions.Persistence.Sql.csproj">
       <Project>{fe5005e8-dbbd-470f-9ac4-88fef2bd2143}</Project>
       <Name>Dependable.Extensions.Persistence.Sql</Name>

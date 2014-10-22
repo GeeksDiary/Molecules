@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dependable;
 using Dependable.Dispatcher;
+using Dependable.Extensions.Dependencies.Autofac;
 using Dependable.Extensions.Persistence.Sql;
 using Dependable.Tracking;
 
@@ -24,7 +25,7 @@ namespace TestHost
                 .SetDefaultRetryDelay(TimeSpan.FromSeconds(1))
                 .SetRetryTimerInterval(TimeSpan.FromSeconds(1))                
                 .UseSqlPersistenceProvider("Default", "TestHost")
-                .UseConsoleEventLogger(EventType.JobStatusChanged | EventType.Exception)
+                .UseConsoleEventLogger(EventType.JobStatusChanged | EventType.Exception)                
                 //.Activity<Greet>(c => c.WithMaxQueueLength(1).WithMaxWorkers(1))
                 .CreateScheduler();
 

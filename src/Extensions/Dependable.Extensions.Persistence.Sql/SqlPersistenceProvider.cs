@@ -25,16 +25,4 @@ namespace Dependable.Extensions.Persistence.Sql
             return new SqlPersistenceStore(_connectionStringName, _instanceName);
         }
     }
-
-    public static class SqlRepositoryProviderExtensions
-    {
-        public static DependableConfiguration UseSqlPersistenceProvider(
-            this DependableConfiguration configuration,
-            string connectionStringName,
-            string instanceName)
-        {
-            return
-                configuration.UsePersistenceProvider(new SqlPersistenceProvider(connectionStringName, instanceName));
-        }
-    }
 }

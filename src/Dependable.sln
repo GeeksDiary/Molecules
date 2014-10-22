@@ -26,6 +26,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHost", "TestHost\TestHost.csproj", "{FAADD0C6-E171-44C9-B6A7-FD708EFC5EAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dependable.Extensions.Dependencies.Autofac", "Extensions\Dependable.Extensions.Dependencies.Autofac\Dependable.Extensions.Dependencies.Autofac.csproj", "{9CE92509-5372-47D2-9545-A542F8BC7052}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,11 +50,16 @@ Global
 		{FAADD0C6-E171-44C9-B6A7-FD708EFC5EAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAADD0C6-E171-44C9-B6A7-FD708EFC5EAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAADD0C6-E171-44C9-B6A7-FD708EFC5EAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CE92509-5372-47D2-9545-A542F8BC7052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CE92509-5372-47D2-9545-A542F8BC7052}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CE92509-5372-47D2-9545-A542F8BC7052}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CE92509-5372-47D2-9545-A542F8BC7052}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FE5005E8-DBBD-470F-9AC4-88FEF2BD2143} = {C2176840-B7BB-41D8-933D-5FA00E057933}
+		{9CE92509-5372-47D2-9545-A542F8BC7052} = {C2176840-B7BB-41D8-933D-5FA00E057933}
 	EndGlobalSection
 EndGlobal
