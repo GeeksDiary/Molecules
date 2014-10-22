@@ -4,30 +4,30 @@ namespace Dependable.Dispatcher
 {
     public interface IFailedTransition
     {
-        void Transit(Job job);
+        Job Transit(Job job);
     }
 
     public class FailedTransition : IFailedTransition
     {
         readonly IDependableConfiguration _configuration;
-        readonly IPrimitiveStatusChanger _primitiveStatusChanger;
+        readonly IJobMutator _jobMutator;
         readonly Func<DateTime> _now;
 
-        public FailedTransition(IDependableConfiguration configuration, IPrimitiveStatusChanger primitiveStatusChanger, Func<DateTime> now)
+        public FailedTransition(IDependableConfiguration configuration, IJobMutator jobMutator, Func<DateTime> now)
         {
             if (configuration == null) throw new ArgumentNullException("configuration");
-            if (primitiveStatusChanger == null) throw new ArgumentNullException("primitiveStatusChanger");
+            if (jobMutator == null) throw new ArgumentNullException("JobMutator");
             if (now == null) throw new ArgumentNullException("now");
 
             _configuration = configuration;
-            _primitiveStatusChanger = primitiveStatusChanger;
+            _jobMutator = jobMutator;
             _now = now;
         }
 
-        public void Transit(Job job)
-        {            
-            job.RetryOn = _now() + _configuration.For(job.Type).RetryDelay;
-            _primitiveStatusChanger.Change<FailedTransition>(job, JobStatus.Failed);
+        public Job Transit(Job job)
+        {
+            return _jobMutator.Mutate<FailedTransition>(job, status: JobStatus.Failed,
+                retryOn: _now() + _configuration.For(job.Type).RetryDelay);
         }
     }
 }

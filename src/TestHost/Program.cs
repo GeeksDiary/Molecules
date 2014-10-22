@@ -48,7 +48,7 @@ namespace TestHost
                 .ThenContinue()
                 .Then<Greet>(g => g.Run("g", "h"));
 
-            _scheduler.Schedule(sequence);
+            //_scheduler.Schedule(sequence);
 
             //_scheduler.Schedule(Activity.Parallel(
             //        Activity.Run<Greet>(g => g.Run("a", "b")).Then<Greet>(g => g.Run("e", "f")),
@@ -141,7 +141,6 @@ namespace TestHost
         {
             Console.WriteLine("hello {0} {1}", firstName, lastName);
             //System.Threading.Thread.Sleep(2000);
-
             if (firstName == "c")
                 throw new Exception("la la la");
         }

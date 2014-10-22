@@ -95,10 +95,7 @@ namespace Dependable.Dispatcher
 
                 try
                 {
-                    _statusChanger.Change(job, JobStatus.Running);
-
-                    if (job.Status != JobStatus.Running)
-                        return;
+                    job = _statusChanger.Change(job, JobStatus.Running);
 
                     var instance = scope.GetService(job.Type);
                     
@@ -132,7 +129,7 @@ namespace Dependable.Dispatcher
             else
             {
                 _recoverableAction.Run(() =>
-                    _statusChanger.Change(job, JobStatus.WaitingForChildren, result.Activity));                
+                    _statusChanger.Change(job, JobStatus.WaitingForChildren, activity: result.Activity));                
             }
         }
     }

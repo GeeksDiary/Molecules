@@ -7,7 +7,7 @@ namespace Dependable.Dispatcher
 {
     public interface IStatusChanger
     {
-        void Change(Job job, JobStatus newStatus, Activity activity = null);
+        Job Change(Job job, JobStatus newStatus, Activity activity = null);
     }
 
     /// <summary>
@@ -22,15 +22,15 @@ namespace Dependable.Dispatcher
     {
         static readonly JobStatus[] CompletableStatus =
         {
-            JobStatus.Running, 
-            JobStatus.WaitingForChildren, 
+            JobStatus.Running,
+            JobStatus.WaitingForChildren,
             JobStatus.ReadyToComplete,
             JobStatus.Completed
         };
 
-        static readonly JobStatus[] RunnableStatus = {JobStatus.Ready, JobStatus.Failed, JobStatus.Running};
+        static readonly JobStatus[] RunnableStatuses = {JobStatus.Ready, JobStatus.Failed, JobStatus.Running};
 
-        static readonly JobStatus[] FailableStatus = {JobStatus.Running, JobStatus.Failed};
+        static readonly JobStatus[] FallibleStatuses = {JobStatus.Ready, JobStatus.Running, JobStatus.Failed};
 
         static readonly JobStatus[] PoisonableStatus = {JobStatus.Running, JobStatus.ReadyToPoison, JobStatus.Poisoned};
 
@@ -40,61 +40,57 @@ namespace Dependable.Dispatcher
         readonly IFailedTransition _failedTransition;
         readonly IEndTransition _endTransition;
         readonly IWaitingForChildrenTransition _waitingForChildrenTransition;
-        readonly IPrimitiveStatusChanger _primitiveStatusChanger;
+        readonly IJobMutator _jobMutator;
 
         public StatusChanger(IEventStream eventStream,
             IRunningTransition runningTransition,
             IFailedTransition failedTransition,
             IEndTransition endTransition,
             IWaitingForChildrenTransition waitingForChildrenTransition,
-            IPrimitiveStatusChanger primitiveStatusChanger)
+            IJobMutator jobMutator)
         {
             if (eventStream == null) throw new ArgumentNullException("eventStream");
             if (runningTransition == null) throw new ArgumentNullException("runningTransition");
             if (failedTransition == null) throw new ArgumentNullException("failedTransition");
             if (endTransition == null) throw new ArgumentNullException("endTransition");
             if (waitingForChildrenTransition == null) throw new ArgumentNullException("waitingForChildrenTransition");
-            if (primitiveStatusChanger == null) throw new ArgumentNullException("primitiveStatusChanger");
+            if (jobMutator == null) throw new ArgumentNullException("JobMutator");
 
             _runningTransition = runningTransition;
             _failedTransition = failedTransition;
             _endTransition = endTransition;
             _waitingForChildrenTransition = waitingForChildrenTransition;
-            _primitiveStatusChanger = primitiveStatusChanger;
+            _jobMutator = jobMutator;
         }
 
-        public void Change(Job job, JobStatus newStatus, Activity activity = null)
+        public Job Change(Job job, JobStatus newStatus, Activity activity = null)
         {
             switch (newStatus)
             {
                 case JobStatus.Ready:
-                    CheckStatusAndInvoke(job, new[] {JobStatus.Created}, () => _primitiveStatusChanger.Change<StatusChanger>(job, newStatus));
-                    break;
+                    return CheckStatusAndInvoke(job, new[] {JobStatus.Created},
+                        () => _jobMutator.Mutate<StatusChanger>(job, status: newStatus));
                 case JobStatus.Running:
-                    CheckStatusAndInvoke(job, RunnableStatus, () => _runningTransition.Transit(job));
-                    break;
+                    return CheckStatusAndInvoke(job, RunnableStatuses, () => _runningTransition.Transit(job));
                 case JobStatus.Completed:
-                    CheckStatusAndInvoke(job, CompletableStatus,
+                    return CheckStatusAndInvoke(job, CompletableStatus,
                         () => _endTransition.Transit(job, JobStatus.Completed));
-                    break;
                 case JobStatus.Failed:
-                    CheckStatusAndInvoke(job, FailableStatus, () => _failedTransition.Transit(job));
-                    break;
+                    return CheckStatusAndInvoke(job, FallibleStatuses, () => _failedTransition.Transit(job));
                 case JobStatus.WaitingForChildren:
-                    CheckStatusAndInvoke(job, AwaitableStatus,
+                    return CheckStatusAndInvoke(job, AwaitableStatus,
                         () => _waitingForChildrenTransition.Transit(job, activity));
-                    break;
                 case JobStatus.Poisoned:
-                    CheckStatusAndInvoke(job, PoisonableStatus,
+                    return CheckStatusAndInvoke(job, PoisonableStatus,
                         () => _endTransition.Transit(job, JobStatus.Poisoned));
-                    break;                
             }
+
+            return job;
         }
 
-        static void CheckStatusAndInvoke(Job job, IEnumerable<JobStatus> validStatus, Action action)
+        static Job CheckStatusAndInvoke(Job job, IEnumerable<JobStatus> validStatus, Func<Job> action)
         {
-            if (validStatus.Contains(job.Status))
-                action();
+            return validStatus.Contains(job.Status) ? action() : job;
         }
     }
 }

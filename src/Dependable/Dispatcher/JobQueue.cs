@@ -28,6 +28,7 @@ namespace Dependable.Dispatcher
         readonly IPersistenceStore _persistenceStore;
         readonly IEventStream _eventStream;
         readonly IRecoverableAction _recoverableAction;
+        readonly IJobMutator _jobMutator;
         readonly Queue<Job> _items;
 
         readonly object _queueAccess = new object();
@@ -43,7 +44,8 @@ namespace Dependable.Dispatcher
             IEnumerable<ActivityConfiguration> allActivityConfiguration,
             IPersistenceStore persistenceStore,
             IEventStream eventStream,
-            IRecoverableAction recoverableAction)
+            IRecoverableAction recoverableAction,
+            IJobMutator jobMutator)
         {
             if (items == null) throw new ArgumentNullException("items");
             if (configuration == null) throw new ArgumentNullException("configuration");
@@ -51,6 +53,7 @@ namespace Dependable.Dispatcher
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
             if (eventStream == null) throw new ArgumentNullException("eventStream");
             if (recoverableAction == null) throw new ArgumentNullException("recoverableAction");
+            if (jobMutator == null) throw new ArgumentNullException("JobMutator");
 
             Configuration = configuration;
 
@@ -59,6 +62,7 @@ namespace Dependable.Dispatcher
             _persistenceStore = persistenceStore;
             _eventStream = eventStream;
             _recoverableAction = recoverableAction;
+            _jobMutator = jobMutator;
             _items = new Queue<Job>(items);
         }
 
@@ -104,12 +108,7 @@ namespace Dependable.Dispatcher
                         EventProperty.ActivityName("LoadSuspendedItemsStarted"),
                         EventProperty.Named("NumberOfItems", items.Length));
 
-                    foreach (var item in items)
-                    {
-                        item.Suspended = false;
-                        _persistenceStore.Store(item);
-                        list.Add(item);
-                    }
+                    list.AddRange(items.Select(item => _jobMutator.Mutate<JobQueue>(item, suspended: false)));
                 }
                 catch (Exception e)
                 {
@@ -154,9 +153,8 @@ namespace Dependable.Dispatcher
 
         public void Write(Job job)
         {
-            job.Suspended = false;
-
             var suspendedCount = 0;
+            var suspended = false;
 
             lock (_queueAccess)
             {
@@ -167,17 +165,17 @@ namespace Dependable.Dispatcher
                 if ((_suspendedCount > 0 || _items.Count >= Configuration.MaxQueueLength))
                 {
                     _suspendedCount++;
-                    job.Suspended = true;
+                    suspended = true;
                     suspendedCount = _suspendedCount;
                 }
                 else
                     _items.Enqueue(job);
             }
 
-            if (!job.Suspended)
+            if (!suspended)
                 return;
             
-            _recoverableAction.Run(() => _persistenceStore.Store(job));
+            _recoverableAction.Run(() => _jobMutator.Mutate<JobQueue>(job, suspended: true));
             
             _eventStream.Publish<JobQueue>(EventType.JobSuspended, EventProperty.JobSnapshot(job),
                 EventProperty.Named("SuspendedCount", suspendedCount));

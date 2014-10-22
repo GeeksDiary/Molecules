@@ -45,10 +45,7 @@ namespace Dependable.Tests.Dispatcher
 
             _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
 
-            Assert.Equal(_converted.Continuation, _job.Continuation);
-
-            _world.PrimitiveStatusChanger.Received(1)
-                .Change<WaitingForChildrenTransition>(_job, JobStatus.WaitingForChildren);
+            Assert.Equal(_converted.Continuation, _world.JobMutator.Mutations(_job).Dequeue().Continuation);
         }
 
         [Fact]
@@ -58,7 +55,7 @@ namespace Dependable.Tests.Dispatcher
 
             _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
 
-            _world.ContinuationDispatcher.Received(1).Dispatch(_job);
+            _world.ContinuationDispatcher.Received(1).Dispatch(Arg.Is<Job>(j => j.Id == _job.Id));
         }
 
         [Fact]
@@ -68,7 +65,7 @@ namespace Dependable.Tests.Dispatcher
 
             _world.ActivityToContinuationConverter.Convert(_activity, _job).Returns(_converted);
 
-            _world.ContinuationDispatcher.When(d => d.Dispatch(_job)).Do(c =>
+            _world.ContinuationDispatcher.When(d => d.Dispatch(Arg.Is<Job>(j => j.Id == _job.Id))).Do(c =>
             {
                 if(count++ == 0)
                     throw new Exception("Doh");
@@ -76,7 +73,7 @@ namespace Dependable.Tests.Dispatcher
             
             _world.NewWaitingForChildrenTransition().Transit(_job, _activity);
 
-            _world.ContinuationDispatcher.Received(2).Dispatch(_job);
+            _world.ContinuationDispatcher.Received(2).Dispatch(Arg.Is<Job>(j => j.Id == _job.Id));
         }
     }
 
@@ -90,7 +87,7 @@ namespace Dependable.Tests.Dispatcher
                     world.ContinuationDispatcher,
                     world.ActivityToContinuationConverter,
                     world.RecoverableAction,
-                    world.PrimitiveStatusChanger);
+                    world.JobMutator);
         }
     }    
 }

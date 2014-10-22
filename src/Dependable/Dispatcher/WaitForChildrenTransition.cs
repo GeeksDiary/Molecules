@@ -6,7 +6,7 @@ namespace Dependable.Dispatcher
 {
     public interface IWaitingForChildrenTransition
     {
-        void Transit(Job job, Activity activity);
+        Job Transit(Job job, Activity activity);
     }
 
     public class WaitingForChildrenTransition : IWaitingForChildrenTransition
@@ -15,40 +15,42 @@ namespace Dependable.Dispatcher
         readonly IContinuationDispatcher _continuationDispatcher;
         readonly IActivityToContinuationConverter _activityToContinuationConverter;
         readonly IRecoverableAction _recoverableAction;
-        readonly IPrimitiveStatusChanger _primitiveStatusChanger;
+        readonly IJobMutator _jobMutator;
 
         public WaitingForChildrenTransition(IPersistenceStore persistenceStore,
             IContinuationDispatcher continuationDispatcher,
-            IActivityToContinuationConverter activityToContinuationConverter, 
+            IActivityToContinuationConverter activityToContinuationConverter,
             IRecoverableAction recoverableAction,
-            IPrimitiveStatusChanger primitiveStatusChanger)
+            IJobMutator jobMutator)
         {
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
             if (continuationDispatcher == null) throw new ArgumentNullException("continuationDispatcher");
             if (activityToContinuationConverter == null)
                 throw new ArgumentNullException("activityToContinuationConverter");
-            if (primitiveStatusChanger == null) throw new ArgumentNullException("primitiveStatusChanger");
+            if (jobMutator == null) throw new ArgumentNullException("JobMutator");
 
             _persistenceStore = persistenceStore;
             _continuationDispatcher = continuationDispatcher;
             _activityToContinuationConverter = activityToContinuationConverter;
             _recoverableAction = recoverableAction;
-            _primitiveStatusChanger = primitiveStatusChanger;
+            _jobMutator = jobMutator;
         }
 
-        public void Transit(Job job, Activity activity)
+        public Job Transit(Job job, Activity activity)
         {
             if (job == null) throw new ArgumentNullException("job");
             if (activity == null) throw new ArgumentNullException("activity");
 
             var converted = _activityToContinuationConverter.Convert(activity, job);
 
-            _persistenceStore.Store(converted.Jobs);            
-                        
-            job.Continuation = converted.Continuation;
-            _primitiveStatusChanger.Change<WaitingForChildrenTransition>(job, JobStatus.WaitingForChildren);
+            _persistenceStore.Store(converted.Jobs);
+
+            job = _jobMutator.Mutate<WaitingForChildrenTransition>(job, status: JobStatus.WaitingForChildren,
+                continuation: converted.Continuation);
 
             _recoverableAction.Run(() => _continuationDispatcher.Dispatch(job));
-        }        
+
+            return job;
+        }
     }
 }

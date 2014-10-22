@@ -18,22 +18,22 @@ namespace Dependable.Dispatcher
     public class ContinuationDispatcher : IContinuationDispatcher
     {
         readonly IJobRouter _router;
-        readonly IPrimitiveStatusChanger _primitiveStatusChanger;
+        readonly IJobMutator _jobMutator;
         readonly IPersistenceStore _persistenceStore;
         readonly IRecoverableAction _recoverableAction;
 
         public ContinuationDispatcher(IJobRouter router,
-            IPrimitiveStatusChanger primitiveStatusChanger,
+            IJobMutator jobMutator,
             IPersistenceStore persistenceStore,
             IRecoverableAction recoverableAction)
         {
             if (router == null) throw new ArgumentNullException("router");
-            if (primitiveStatusChanger == null) throw new ArgumentNullException("primitiveStatusChanger");
+            if (jobMutator == null) throw new ArgumentNullException("JobMutator");
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
             if (recoverableAction == null) throw new ArgumentNullException("recoverableAction");
 
             _router = router;
-            _primitiveStatusChanger = primitiveStatusChanger;
+            _jobMutator = jobMutator;
             _persistenceStore = persistenceStore;
             _recoverableAction = recoverableAction;
         }
@@ -47,7 +47,7 @@ namespace Dependable.Dispatcher
             foreach (var continuation in readyContinuations)
                 continuation.Status = JobStatus.Ready;
 
-            _persistenceStore.Store(job);
+            _jobMutator.Mutate<ContinuationDispatcher>(job, continuation: job.Continuation);
 
             DispatchCore(readyContinuations);
 
@@ -73,7 +73,7 @@ namespace Dependable.Dispatcher
             {
                 var jobReference = job;
                 _recoverableAction.Run(
-                    () => _primitiveStatusChanger.Change<ContinuationDispatcher>(jobReference, JobStatus.Ready),
+                    () => jobReference = _jobMutator.Mutate<ContinuationDispatcher>(jobReference, JobStatus.Ready),
                     then: () => _router.Route(jobReference));
             }
         }

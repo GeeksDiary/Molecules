@@ -18,7 +18,9 @@ namespace Dependable
             JobStatus status = JobStatus.Ready,
             int dispatchCount = 0,
             DateTime? retryOn = null,
-            ExceptionFilter[] exceptionFilters = null)
+            ExceptionFilter[] exceptionFilters = null,
+            Continuation continuation = null,
+            bool? suspended = null)
         {
             if(type == null) throw new ArgumentNullException("type");
             if (arguments == null) throw new ArgumentNullException("arguments");
@@ -40,6 +42,8 @@ namespace Dependable
             Properties = new Dictionary<string, object>();
 
             ExceptionFilters = exceptionFilters ?? new ExceptionFilter[0];
+            Continuation = continuation;
+            Suspended = suspended ?? false;
         }
 
         public Guid Id { get; private set; }
@@ -58,15 +62,15 @@ namespace Dependable
 
         public Guid CorrelationId { get; private set; }
 
-        public JobStatus Status { get; set; }
+        public JobStatus Status { get; private set; }
 
-        public int DispatchCount { get; set; }
+        public int DispatchCount { get; private set; }
 
-        public DateTime? RetryOn { get; set; }
+        public DateTime? RetryOn { get; private set; }
 
-        public Continuation Continuation { get; set; }
+        public Continuation Continuation { get; private set; }
 
-        public bool Suspended { get; set; }
+        public bool Suspended { get; private set; }
 
         public IDictionary<string, object> Properties { get; private set; }
 

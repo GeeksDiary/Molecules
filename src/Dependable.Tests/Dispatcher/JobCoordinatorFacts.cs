@@ -30,9 +30,9 @@ namespace Dependable.Tests.Dispatcher
         [Fact]
         public async Task ShouldSerializeRequestsForJobsInSameTree()
         {
-            var parent = _world.NewJob.In(JobStatus.WaitingForChildren);
-            var childA = _world.NewJob.In(JobStatus.Running).AsChildOf(parent);
-            var childB = _world.NewJob.In(JobStatus.Running).AsChildOf(parent);
+            Job parent = _world.NewJob.In(JobStatus.WaitingForChildren);
+            var childA = _world.NewJob.In(JobStatus.Running).AsChildOf(ref parent);
+            var childB = _world.NewJob.In(JobStatus.Running).AsChildOf(ref parent);
 
             var childAStatusChange = new ManualResetEvent(false);
             var childAWaiting = new ManualResetEvent(false);

@@ -16,7 +16,7 @@ namespace Dependable.Tests.Dispatcher
                 () =>
                     new StatusChanger(_world.EventStream, _world.RunningTransition,
                         _world.FailedTransition, _world.EndTransition, _world.WaitingForChildrenTransition,
-                        _world.PrimitiveStatusChanger);
+                        _world.JobMutator);
         }
 
         [Theory]
@@ -25,7 +25,7 @@ namespace Dependable.Tests.Dispatcher
         [InlineData(JobStatus.Failed)]
         public void TransitsToRunningFrom(JobStatus @from)
         {
-            var job = _world.NewJob;
+            var job = _world.NewJob.In(@from);
             _changeStatus().Change(job, JobStatus.Running);
             _world.RunningTransition.Received(1).Transit(job);
         }
@@ -59,18 +59,19 @@ namespace Dependable.Tests.Dispatcher
         [InlineData(JobStatus.Created)]
         [InlineData(JobStatus.Ready)]
         [InlineData(JobStatus.Failed)]
-        [InlineData(JobStatus.Completed)]
         [InlineData(JobStatus.ReadyToPoison)]
         [InlineData(JobStatus.Poisoned)]
         public void DoesNotTransitToCompletedFrom(JobStatus status)
         {
-            var job = _world.NewJob;
+            var job = _world.NewJob.In(status);
             _changeStatus().Change(job, JobStatus.Completed);
             _world.EndTransition.DidNotReceive().Transit(job, JobStatus.Completed);
         }
 
         [Theory]
+        [InlineData(JobStatus.Ready)]
         [InlineData(JobStatus.Running)]
+        [InlineData(JobStatus.Failed)]
         public void TransitsToFailedFrom(JobStatus status)
         {
             var job = _world.NewJob.In(status);
@@ -79,17 +80,15 @@ namespace Dependable.Tests.Dispatcher
         }
 
         [Theory]
-        [InlineData(JobStatus.Created)]
-        [InlineData(JobStatus.Ready)]
-        [InlineData(JobStatus.WaitingForChildren)]
-        [InlineData(JobStatus.Failed)]
+        [InlineData(JobStatus.Created)]        
+        [InlineData(JobStatus.WaitingForChildren)]        
         [InlineData(JobStatus.ReadyToComplete)]
         [InlineData(JobStatus.Completed)]
         [InlineData(JobStatus.ReadyToPoison)]
         [InlineData(JobStatus.Poisoned)]
         public void DoesNotTransitToFailedFrom(JobStatus status)
         {
-            var job = _world.NewJob;
+            Job job = _world.NewJob.In(status);
             _changeStatus().Change(job, JobStatus.Failed);
             _world.FailedTransition.DidNotReceive().Transit(job);
         }
@@ -110,11 +109,10 @@ namespace Dependable.Tests.Dispatcher
         [InlineData(JobStatus.WaitingForChildren)]
         [InlineData(JobStatus.Failed)]
         [InlineData(JobStatus.ReadyToComplete)]
-        [InlineData(JobStatus.Completed)]
-        [InlineData(JobStatus.Poisoned)]
+        [InlineData(JobStatus.Completed)]        
         public void DoesNotTransitToPoisonedFrom(JobStatus status)
         {
-            var job = _world.NewJob;
+            var job = _world.NewJob.In(status);
             _changeStatus().Change(job, JobStatus.Poisoned);
             _world.EndTransition.DidNotReceive().Transit(job, JobStatus.Poisoned);
         }
@@ -139,7 +137,7 @@ namespace Dependable.Tests.Dispatcher
         [InlineData(JobStatus.Poisoned)]
         public void DoesNotTransitToWaitingForChildrenFrom(JobStatus status)
         {
-            var job = _world.NewJob;
+            var job = _world.NewJob.In(status);
             _changeStatus().Change(job, JobStatus.WaitingForChildren);
             _world.WaitingForChildrenTransition.DidNotReceive().Transit(job, null);
         }

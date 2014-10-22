@@ -79,10 +79,10 @@ namespace Dependable.Tests.Dispatcher
         [Fact]
         public async Task ShouldProvideCorrectSuspendedCountForSpecificQueue()
         {
-            var suspendedJob = _world.NewJob.OfType<string>().In(JobStatus.Ready);
-            Dependable.Job job = _world.NewJob.OfType<string>().In(JobStatus.Ready);
+            Job suspendedJob = _world.NewJob.OfType<string>().In(JobStatus.Ready);
+            Job job = _world.NewJob.OfType<string>().In(JobStatus.Ready);
 
-            _world.PersistenceStore.LoadSuspended(typeof (string), 1).Returns(new Dependable.Job[] {suspendedJob});
+            _world.PersistenceStore.LoadSuspended(typeof (string), 1).Returns(new Job[] {suspendedJob});
             _world.PersistenceStore.CountSuspended(typeof (string)).Returns(1);
 
             var configuration = _world.NewJobQueueFactory(activityConfiguration: new[]
@@ -92,7 +92,7 @@ namespace Dependable.Tests.Dispatcher
 
             var stringQueue = configuration.ActivitySpecificQueues[typeof (string)];
 
-            Assert.Equal(suspendedJob, await stringQueue.Read());
+            Assert.Equal(suspendedJob.Id, (await stringQueue.Read()).Id);
 
             stringQueue.Write(job);
             Assert.Equal(job, await stringQueue.Read());
@@ -101,8 +101,8 @@ namespace Dependable.Tests.Dispatcher
         [Fact]
         public async Task ShouldProvideCorrectSuspendedCountForDefaultQueue()
         {
-            Dependable.Job suspendedIntJob = _world.NewJob.OfType<int>().In(JobStatus.Ready);
-            Dependable.Job intJob = _world.NewJob.OfType<int>().In(JobStatus.Ready);
+            Job suspendedIntJob = _world.NewJob.OfType<int>().In(JobStatus.Ready);
+            Job intJob = _world.NewJob.OfType<int>().In(JobStatus.Ready);
 
             _world.PersistenceStore.LoadSuspended(Arg.Any<IEnumerable<Type>>(), 1).Returns(new[] {suspendedIntJob});
             _world.PersistenceStore.CountSuspended(typeof (string)).Returns(1);
@@ -116,7 +116,7 @@ namespace Dependable.Tests.Dispatcher
                 defaultActivityConfiguration: new ActivityConfiguration().WithMaxQueueLength(1)).Create();
 
             var defaultQueue = configuration.Default;
-            Assert.Equal(suspendedIntJob, await defaultQueue.Read());
+            Assert.Equal(suspendedIntJob.Id, (await defaultQueue.Read()).Id);
 
             defaultQueue.Write(intJob);
             Assert.Equal(intJob, await defaultQueue.Read());
@@ -137,7 +137,7 @@ namespace Dependable.Tests.Dispatcher
             configuration.ActivityConfiguration.Returns(
                 activityConfiguration ?? Enumerable.Empty<ActivityConfiguration>());
 
-            return new JobQueueFactory(world.PersistenceStore, configuration, world.EventStream, world.RecoverableAction);
+            return new JobQueueFactory(world.PersistenceStore, configuration, world.EventStream, world.RecoverableAction, world.JobMutator);
         }
     }
 }

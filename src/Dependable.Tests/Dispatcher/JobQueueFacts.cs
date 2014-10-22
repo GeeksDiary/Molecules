@@ -72,7 +72,7 @@ namespace Dependable.Tests.Dispatcher
             public async Task ShouldLoadSuspendedItemsAfterTheCurrentBufferIsEmpty()
             {
                 await _q.Read();
-                Assert.Equal(_excess, await _q.Read());
+                Assert.Equal(_excess.Id, (await _q.Read()).Id);
             }
 
             [Fact]
@@ -86,14 +86,11 @@ namespace Dependable.Tests.Dispatcher
 
             [Fact]
             public async Task ShouldUpdateSuspendedFlagAndStore()
-            {
-                var suspended = true;
-                _world.PersistenceStore.When(s => s.Store(_excess)).Do(c => suspended = ((Job) c.Args()[0]).Suspended);
-
+            {                
                 await _q.Read();
                 await _q.Read();
 
-                Assert.False(suspended);
+                Assert.Equal(true, _world.JobMutator.Mutations(_excess).Dequeue().Suspended);
             }
 
             [Fact]
@@ -109,7 +106,7 @@ namespace Dependable.Tests.Dispatcher
 
                 await _q.Read();
                                 
-                Assert.Equal(_excess, await _q.Read());
+                Assert.Equal(_excess.Id, (await _q.Read()).Id);
             }
 
             [Fact]
@@ -123,11 +120,11 @@ namespace Dependable.Tests.Dispatcher
                     .LoadSuspended(typeof (string), _configuration.MaxQueueLength)
                     .Returns(new[] {_excess, moreExcess });
 
-                _world.PersistenceStore.When(s => s.Store(moreExcess)).Do(_ => { throw new Exception("Doh"); });
+                _world.JobMutator.When(s => s.Mutate<JobQueue>(moreExcess, suspended: false)).Do(_ => { throw new Exception("Doh"); });
 
                 await _q.Read();
                 
-                Assert.Equal(_excess, await _q.Read());
+                Assert.Equal(_excess.Id, (await _q.Read()).Id);
             }
         }
 
@@ -152,20 +149,15 @@ namespace Dependable.Tests.Dispatcher
             public void ShouldSuspendExcessItems()
             {
                 _queue.Write(_excessItem);
-                Assert.True(_excessItem.Suspended);
+                Assert.Equal(true, _world.JobMutator.Mutations(_excessItem).Dequeue().Suspended);
             }
 
             [Fact]
             public void ShouldPersistTheSuspendedJob()
             {
-                var suspended = false;
-                _world.PersistenceStore.When(s => s.Store(_excessItem))
-                    .Do(c => suspended = ((Job) c.Args()[0]).Suspended);
-
                 _queue.Write(_excessItem);
 
-                Assert.True(suspended);
-                _world.PersistenceStore.Received(1).Store(_excessItem);
+                Assert.Equal(true, _world.JobMutator.Mutations(_excessItem).Dequeue().Suspended);
             }
 
             [Fact]
@@ -185,7 +177,7 @@ namespace Dependable.Tests.Dispatcher
                 var job = (Job) _world.NewJob;
                 q.Write(job);
 
-                Assert.True(job.Suspended);
+                Assert.Equal(true, _world.JobMutator.Mutations(job).Dequeue().Suspended);
             }
 
             [Fact]
@@ -245,7 +237,8 @@ namespace Dependable.Tests.Dispatcher
                 allActivityConfiguration ?? Enumerable.Empty<ActivityConfiguration>(),
                 world.PersistenceStore, 
                 world.EventStream,
-                world.RecoverableAction);
+                world.RecoverableAction,
+                world.JobMutator);
         }
     }
 }

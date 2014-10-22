@@ -18,22 +18,26 @@ namespace Dependable.Dispatcher
         readonly IDependableConfiguration _configuration;
         readonly IEventStream _eventStream;
         readonly IRecoverableAction _recoverableAction;
+        readonly IJobMutator _jobMutator;
 
         public JobQueueFactory(
             IPersistenceStore persistenceStore, 
             IDependableConfiguration configuration,
             IEventStream eventStream,
-            IRecoverableAction recoverableAction)
+            IRecoverableAction recoverableAction,
+            IJobMutator jobMutator)
         {
             if (persistenceStore == null) throw new ArgumentNullException("persistenceStore");
             if (configuration == null) throw new ArgumentNullException("configuration");
             if (eventStream == null) throw new ArgumentNullException("eventStream");
             if (recoverableAction == null) throw new ArgumentNullException("recoverableAction");
+            if (jobMutator == null) throw new ArgumentNullException("JobMutator");
 
             _persistenceStore = persistenceStore;
             _configuration = configuration;
             _eventStream = eventStream;
             _recoverableAction = recoverableAction;
+            _jobMutator = jobMutator;
         }
 
         public QueueConfiguration Create()
@@ -66,7 +70,7 @@ namespace Dependable.Dispatcher
 
                 activitySpecificQueues[activityConfiguration.Type] =
                     new JobQueue(filtered.Item1, suspendedCount, activityConfiguration,
-                        _configuration.ActivityConfiguration, _persistenceStore, _eventStream, _recoverableAction);
+                        _configuration.ActivityConfiguration, _persistenceStore, _eventStream, _recoverableAction, _jobMutator);
 
                 PublishQueueInitializedEvent(filtered.Item1.Length, suspendedCount, activityConfiguration.Type);
             }
@@ -76,7 +80,7 @@ namespace Dependable.Dispatcher
 
             var defaultQueue = new JobQueue(all, suspendedCountForDefaultQueue,
                 _configuration.DefaultActivityConfiguration, _configuration.ActivityConfiguration, _persistenceStore,
-                _eventStream, _recoverableAction);
+                _eventStream, _recoverableAction, _jobMutator);
 
             PublishQueueInitializedEvent(all.Length, suspendedCountForDefaultQueue);
 

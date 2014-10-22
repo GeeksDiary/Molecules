@@ -21,6 +21,7 @@ namespace Dependable
         readonly IJobRouter _router;
         readonly IActivityToContinuationConverter _activityToContinuationConverter;
         readonly IEnumerable<IJobPump> _jobPumps;
+        readonly IJobMutator _jobMutator;
         readonly IPersistenceStore _persistenceStore;
         readonly Func<DateTime> _now;
         readonly IFailedJobQueue _failedJobQueue;
@@ -37,7 +38,8 @@ namespace Dependable
             IRecoverableAction recoverableAction,
             IJobRouter router,
             IActivityToContinuationConverter activityToContinuationConverter,
-            IEnumerable<IJobPump> jobPumps)
+            IEnumerable<IJobPump> jobPumps,
+            IJobMutator jobMutator)
         {
             if (queueConfiguration == null) throw new ArgumentNullException("queueConfiguration");
             if (configuration == null) throw new ArgumentNullException("configuration");
@@ -49,6 +51,7 @@ namespace Dependable
             if (activityToContinuationConverter == null)
                 throw new ArgumentNullException("activityToContinuationConverter");
             if (jobPumps == null) throw new ArgumentNullException("jobPumps");
+            if (jobMutator == null) throw new ArgumentNullException("JobMutator");
 
             _persistenceStore = persistenceStore;
             _now = now;
@@ -58,6 +61,7 @@ namespace Dependable
             _router = router;
             _activityToContinuationConverter = activityToContinuationConverter;
             _jobPumps = jobPumps;
+            _jobMutator = jobMutator;
         }
 
         public async Task Start()
@@ -90,12 +94,9 @@ namespace Dependable
                     status: JobStatus.WaitingForChildren);
 
             var converted = _activityToContinuationConverter.Convert(activity, job);
-
             _persistenceStore.Store(converted.Jobs);
 
-            job.Continuation = converted.Continuation;
-            _persistenceStore.Store(job);            
-
+            job = _jobMutator.Mutate<Scheduler>(job, continuation: converted.Continuation);            
             _router.Route(job);
                 
             return job.Id;

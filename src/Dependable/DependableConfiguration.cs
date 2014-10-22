@@ -112,21 +112,21 @@ namespace Dependable
             var eventStream = new EventStream(_eventSinks, _exceptionLogger, now);
             var recoverableAction = new RecoverableAction(this, eventStream);
             var delegatingPersistenceStore = new DelegatingPersistenceStore(_persistenceProvider);
+            var jobMutation = new JobMutator(eventStream, delegatingPersistenceStore);
 
             var queueConfiguration = new JobQueueFactory(
-                delegatingPersistenceStore, this, eventStream, recoverableAction).Create();
+                delegatingPersistenceStore, this, eventStream, recoverableAction, jobMutation).Create();
 
             var router = new JobRouter(queueConfiguration);
             var methodBinder = new MethodBinder();
 
-            var primitiveStatusChanger = new PrimitiveStatusChanger(eventStream, delegatingPersistenceStore);
-            var continuationDispatcher = new ContinuationDispatcher(router, primitiveStatusChanger,
+            var continuationDispatcher = new ContinuationDispatcher(router, jobMutation,
                 delegatingPersistenceStore, recoverableAction);
             var activityToContinuationConverter = new ActivityToContinuationConverter(now);
 
-            var runningTransition = new RunningTransition(primitiveStatusChanger);
-            var failedTransition = new FailedTransition(this, primitiveStatusChanger, now);
-            var endTransition = new EndTransition(delegatingPersistenceStore, primitiveStatusChanger,
+            var runningTransition = new RunningTransition(jobMutation);
+            var failedTransition = new FailedTransition(this, jobMutation, now);
+            var endTransition = new EndTransition(delegatingPersistenceStore, jobMutation,
                 continuationDispatcher);
             
             var continuationLiveness = new ContinuationLiveness(delegatingPersistenceStore, continuationDispatcher);
@@ -138,10 +138,10 @@ namespace Dependable
                 continuationDispatcher, 
                 activityToContinuationConverter, 
                 recoverableAction, 
-                primitiveStatusChanger);
+                jobMutation);
 
             var changeState = new StatusChanger(eventStream, runningTransition, failedTransition,
-                endTransition, waitingForChildrenTransition, primitiveStatusChanger);
+                endTransition, waitingForChildrenTransition, jobMutation);
 
             var failedJobQueue = new FailedJobQueue(this, delegatingPersistenceStore, now, eventStream, router);
 
@@ -178,7 +178,8 @@ namespace Dependable
                 recoverableAction,
                 router,
                 activityToContinuationConverter,
-                jobPumps);
+                jobPumps,
+                jobMutation);
         }
 
         TimeSpan IDependableConfiguration.RetryTimerInterval

@@ -151,19 +151,17 @@ namespace Dependable.Extensions.Persistence.Sql
                 record.Method,
                 arguments,
                 (DateTime) record.CreatedOn,
-                (Guid) record.RootId,
-                (Guid?) record.ParentId,
-                (Guid) record.CorrelationId,
-                Enum.Parse(typeof (JobStatus), record.Status),
-                (int) record.DispatchCount,
-                (DateTime?) record.RetryOn,
-                exceptionFilters)
-            {
-                Suspended = (bool) record.Suspended,
-                Continuation = JsonConvert.DeserializeObject<Continuation>(
+                rootId: (Guid) record.RootId,
+                parentId: (Guid?) record.ParentId,
+                correlationId: (Guid) record.CorrelationId,
+                status: Enum.Parse(typeof (JobStatus), record.Status),
+                dispatchCount: (int) record.DispatchCount,
+                retryOn: (DateTime?) record.RetryOn,
+                exceptionFilters: exceptionFilters,
+                suspended: (bool) record.Suspended,
+                continuation: JsonConvert.DeserializeObject<Continuation>(
                     record.Continuation,
-                    DefaultSerializerSettings)
-            };
+                    DefaultSerializerSettings));
 
             return job;
         }

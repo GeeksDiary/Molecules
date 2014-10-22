@@ -4,23 +4,24 @@ namespace Dependable.Dispatcher
 {
     public interface IRunningTransition
     {
-        void Transit(Job job);
+        Job Transit(Job job);
     }
 
     public class RunningTransition : IRunningTransition
     {
-        readonly IPrimitiveStatusChanger _primitiveStatusChanger;
+        readonly IJobMutator _jobMutator;
 
-        public RunningTransition(IPrimitiveStatusChanger primitiveStatusChanger)
+        public RunningTransition(IJobMutator jobMutator)
         {
-            if (primitiveStatusChanger == null) throw new ArgumentNullException("primitiveStatusChanger");
-            _primitiveStatusChanger = primitiveStatusChanger;
+            if (jobMutator == null) throw new ArgumentNullException("JobMutator");
+            _jobMutator = jobMutator;
         }
 
-        public void Transit(Job job)
+        public Job Transit(Job job)
         {
-            job.DispatchCount++;
-            _primitiveStatusChanger.Change<RunningTransition>(job, JobStatus.Running);
+            return _jobMutator.Mutate<RunningTransition>(job, 
+                status: JobStatus.Running, 
+                dispatchCount: job.DispatchCount + 1);
         }
     }
 }

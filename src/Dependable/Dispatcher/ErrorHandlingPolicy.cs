@@ -44,7 +44,7 @@ namespace Dependable.Dispatcher
             var config = _configuration.For(job.Type);
             if(job.DispatchCount <= config.RetryCount)
             {                
-                _recoverableAction.Run(() => _statusChanger.Change(job, JobStatus.Failed),
+                _recoverableAction.Run(() => job = _statusChanger.Change(job, JobStatus.Failed),
                     then: () => _failedJobQueue.Add(job));
             }
             else

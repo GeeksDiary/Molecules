@@ -18,24 +18,30 @@ namespace Dependable.Tests
             _world.PersistenceStore.Load(job.Id).Returns(_ => _job);
         }
 
-        public JobManagementWrapper AsChildOf(Job parent, JobStatus status = JobStatus.Created)
+        public JobManagementWrapper AsChildOf(ref Job parent, JobStatus status = JobStatus.Created)
         {
             _job = Clone(rootId: parent.RootId, parentId: parent.Id);
 
-            var continuation = parent.Continuation ?? new Continuation { Children = Enumerable.Empty<Continuation>() };
+            var currentContinuation = parent.Continuation ?? new Continuation { Children = Enumerable.Empty<Continuation>() };
 
-            parent.Continuation = new Continuation
+            var newContinuation = new Continuation
             {
-                ContinueAfterHandlingFailure = continuation.ContinueAfterHandlingFailure,
-                Children = continuation.Children.Concat(new []
+                ContinueAfterHandlingFailure = currentContinuation.ContinueAfterHandlingFailure,
+                Children = currentContinuation.Children.Concat(new[]
                 {
                     new Continuation
                     {
-                        Id = _job.Id, Status = status
+                        Id = _job.Id,
+                        Status = status
                     }
                 })
             };
 
+            parent = new Job(parent.Id, parent.Type, parent.Method, parent.Arguments, parent.CreatedOn, parent.RootId,
+                parent.ParentId, parent.CorrelationId, parent.Status, parent.DispatchCount, parent.RetryOn,
+                parent.ExceptionFilters, newContinuation, parent.Suspended);
+
+            _world.PersistenceStore.Load(parent.Id).Returns(parent);
             return this;
         }
 
@@ -97,12 +103,12 @@ namespace Dependable.Tests
                 "Run",
                 arguments ?? _job.Arguments,
                 createdOn ?? _job.CreatedOn,
-                rootId ?? _job.RootId,
-                parentId ?? _job.ParentId,
-                correlationId ?? _job.CorrelationId,
-                status ?? _job.Status,
-                dispatchCount ?? _job.DispatchCount,
-                retryOn ?? _job.RetryOn);
+                rootId: rootId ?? _job.RootId,
+                parentId: parentId ?? _job.ParentId,
+                correlationId: correlationId ?? _job.CorrelationId,
+                status: status ?? _job.Status,
+                dispatchCount: dispatchCount ?? _job.DispatchCount,
+                retryOn: retryOn ?? _job.RetryOn);
         }
     }
 }

@@ -53,7 +53,7 @@
     <Compile Include="Dispatcher\JobQueueFactory.cs" />
     <Compile Include="Dispatcher\JobResult.cs" />
     <Compile Include="Dispatcher\ContinuationExtensions.cs" />
-    <Compile Include="Dispatcher\PrimitiveStatusChanger.cs" />
+    <Compile Include="Dispatcher\JobMutator.cs" />
     <Compile Include="Dispatcher\ContinuationLiveness.cs" />
     <Compile Include="Dispatcher\QueueConfiguration.cs" />
     <Compile Include="Dispatcher\RunningTransition.cs" />

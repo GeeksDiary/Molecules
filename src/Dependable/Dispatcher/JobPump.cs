@@ -75,7 +75,8 @@ namespace Dependable.Dispatcher
 
                     _eventStream.Publish<JobPump>(e);
                 }
-            });            
+            })
+            .FailFastOnException();            
         }
     }
 }   

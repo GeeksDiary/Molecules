@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Dependable.Dispatcher;
 using Dependable.Persistence;
 using Dependable.Recovery;
@@ -19,8 +20,7 @@ namespace Dependable.Tests
             FailedTransition = Substitute.For<IFailedTransition>();
             EndTransition = Substitute.For<IEndTransition>();
             WaitingForChildrenTransition = Substitute.For<IWaitingForChildrenTransition>();
-            PrimitiveStatusChanger = Substitute.For<IPrimitiveStatusChanger>();            
-            StatusChanger = Substitute.For<IStatusChanger>();            
+            StatusChanger = Substitute.For<IStatusChanger>();
             Configuration = Substitute.For<IDependableConfiguration>();
             JobQueueFactory = Substitute.For<IJobQueueFactory>();
             ContinuationDispatcher = Substitute.For<IContinuationDispatcher>();
@@ -31,11 +31,16 @@ namespace Dependable.Tests
 
             Now = () => Fixture.Now;
 
-            StubChange<EndTransition>();
-            StubChange<WaitingForChildrenTransition>();
-            StubChange<FailedTransition>();
-            StubChange<RunningTransition>();
-
+            JobMutator = Substitute.For<IJobMutator>()
+                .Stub<ContinuationDispatcher>(this)
+                .Stub<EndTransition>(this)
+                .Stub<FailedTransition>(this)
+                .Stub<JobQueue>(this)
+                .Stub<RunningTransition>(this)
+                .Stub<StatusChanger>(this)
+                .Stub<WaitingForChildrenTransition>(this)
+                .Stub<Scheduler>(this);
+            
             InitializeRecoverableAction();
         }
 
@@ -47,16 +52,16 @@ namespace Dependable.Tests
                 var args = c.Args();
                 try
                 {
-                    ((Action)args[0])();
+                    ((Action) args[0])();
                 }
                 catch (Exception)
                 {
                     var recoveryAction = args[1] ?? args[0];
-                    ((Action)recoveryAction)();    
+                    ((Action) recoveryAction)();
                 }
 
                 if (args[2] != null)
-                    ((Action)args[2])();
+                    ((Action) args[2])();
             });
         }
 
@@ -76,10 +81,10 @@ namespace Dependable.Tests
 
         public IWaitingForChildrenTransition WaitingForChildrenTransition { get; set; }
 
-        public IPrimitiveStatusChanger PrimitiveStatusChanger { get; set; }
+        public IJobMutator JobMutator { get; set; }
 
         public IRecoverableAction RecoverableAction { get; set; }
-        
+
         public IStatusChanger StatusChanger { get; set; }
 
         public Func<DateTime> Now { get; set; }
@@ -91,7 +96,7 @@ namespace Dependable.Tests
                 return new JobManagementWrapper(new Job(Guid.NewGuid(),
                     typeof (string),
                     "Run",
-                    new[] { new object() },                    
+                    new[] {new object()},
                     Fixture.Now), this);
             }
         }
@@ -99,7 +104,7 @@ namespace Dependable.Tests
         public IDependableConfiguration Configuration { get; set; }
 
         public IPersistenceProvider PersistenceProvider { get; set; }
-        
+
         public IJobQueueFactory JobQueueFactory { get; set; }
 
         public IContinuationDispatcher ContinuationDispatcher { get; set; }
@@ -111,11 +116,5 @@ namespace Dependable.Tests
         public IContinuationLiveness ContinuationLiveness { get; set; }
 
         public IJobCoordinator JobCoordinator { get; set; }
-
-        void StubChange<TSource>()
-        {
-            PrimitiveStatusChanger.WhenForAnyArgs(c => c.Change<TSource>(null, Arg.Any<JobStatus>()))
-                .Do(c => ((Job) c.Args()[0]).Status = (JobStatus) c.Args()[1]);
-        }
     }
 }
