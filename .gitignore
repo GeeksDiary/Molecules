@@ -5,6 +5,7 @@ debug
 release
 testresults
 InprotechOutput
+.build
 *.user
 *.suo
 *.Cache
