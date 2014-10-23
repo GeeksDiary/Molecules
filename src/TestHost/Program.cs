@@ -48,7 +48,7 @@ namespace TestHost
                 .ThenContinue()
                 .Then<Greet>(g => g.Run("g", "h"));
 
-            //_scheduler.Schedule(sequence);
+            // _scheduler.Schedule(sequence);
 
             //_scheduler.Schedule(Activity.Parallel(
             //        Activity.Run<Greet>(g => g.Run("a", "b")).Then<Greet>(g => g.Run("e", "f")),
