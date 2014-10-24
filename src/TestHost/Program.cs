@@ -24,7 +24,7 @@ namespace TestHost
                 .SetDefaultRetryCount(1)
                 .SetDefaultRetryDelay(TimeSpan.FromSeconds(1))
                 .SetRetryTimerInterval(TimeSpan.FromSeconds(1))                
-                .UseSqlPersistenceProvider("Default", "TestHost")
+                //.UseSqlPersistenceProvider("Default", "TestHost")
                 .UseConsoleEventLogger(EventType.JobStatusChanged | EventType.Exception)                
                 //.Activity<Greet>(c => c.WithMaxQueueLength(1).WithMaxWorkers(1))
                 .CreateScheduler();
@@ -48,7 +48,7 @@ namespace TestHost
                 .ThenContinue()
                 .Then<Greet>(g => g.Run("g", "h"));
 
-            // _scheduler.Schedule(sequence);
+            _scheduler.Schedule(sequence);
 
             //_scheduler.Schedule(Activity.Parallel(
             //        Activity.Run<Greet>(g => g.Run("a", "b")).Then<Greet>(g => g.Run("e", "f")),

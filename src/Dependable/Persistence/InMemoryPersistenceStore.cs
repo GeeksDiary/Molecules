@@ -27,6 +27,8 @@ namespace Dependable.Persistence
 
         public void Store(Job job)
         {
+            Job old;
+            _items.TryRemove(job.Id, out old);
             _items.TryAdd(job.Id, job);
         }
 
