@@ -1,72 +1,66 @@
 body {
-  font-family: 'PT Sans Narrow', sans-serif;
-  font-size: 21px;
-  line-height: 28px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 17px;
+  line-height: 26px;
   background-color: #FCFCFC;
 }
-
-h2, h3, h4{
-    font-family: 'Oswald', sans-serif;
+h2,
+h3,
+h4 {
+  font-family: 'Oswald', sans-serif;
 }
-
-h1, h3{
-    margin-top: 20px;
-    margin-bottom: 3px;
+h1,
+h3 {
+  margin-top: 20px;
+  margin-bottom: 3px;
 }
-
-h2{
-    font-size:21px;
+h2 {
+  font-size: 21px;
 }
-
-pre{
-    background-color: #f8f8f8;
-    border: none;    
+pre {
+  background-color: #f8f8f8;
+  border: none;
 }
-
-.footer{
-    margin-left: 40%;
-    margin-top: 50px;
-    color: #777;
-    font-size: 0.5em;
+.footer {
+  margin-left: 40%;
+  margin-top: 50px;
+  color: #777;
+  font-size: 0.5em;
 }
-
-.navbar{
-    background: #2C3E50;
-    color: #ECF0F1;
+.navbar {
+  background: #2C3E50;
+  color: #ECF0F1;
 }
-
-.navbar h1{
-    font-family: Oswald;    
-    font-size: 2em;
+.navbar h1 {
+  font-family: Oswald;
+  font-size: 2em;
 }
-
-.navbar p
-{
-    font-size: 0.7em;
+.navbar p {
+  font-size: 0.7em;
 }
-
-.navbar-right a.icon-link:link, a.icon-link:active, a.icon-link:visited, a.icon-link:hover{
-    font-size: 2.5em;
-    color:#fff;
-    text-decoration: none;
+.navbar-right a.icon-link:link,
+a.icon-link:active,
+a.icon-link:visited,
+a.icon-link:hover {
+  font-size: 2.5em;
+  color: #fff;
+  text-decoration: none;
 }
-
-.anchor{
-    position: relative;
-    top: -160px;
-    height: 1px;
-    display: block;
+.anchor {
+  position: relative;
+  top: -160px;
+  height: 1px;
+  display: block;
 }
-
-.example-caption{
-    width: 100%;
-    background: antiquewhite;
-    padding: 6px;
-    margin-top:10px;
-    -webkit-border-top-left-radius: 5px;
-    -webkit-border-top-right-radius: 5px;
-    -moz-border-radius-topleft: 5px;
-    -moz-border-radius-topright: 5px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+.example-caption {
+  width: 100%;
+  background: antiquewhite;
+  padding: 6px;
+  margin-top: 10px;
+  -webkit-border-top-left-radius: 5px;
+  -webkit-border-top-right-radius: 5px;
+  -moz-border-radius-topleft: 5px;
+  -moz-border-radius-topright: 5px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
 }
