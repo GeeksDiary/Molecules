@@ -6,9 +6,9 @@
     <version>$version$</version>
     <authors>$author$</authors>
     <owners>$author$</owners>
-    <licenseUrl>http://dependableproject.github.io/dependable/license.html</licenseUrl>
-    <iconUrl>http://dependableproject.github.io/dependable/assets/images/Dependable.64.png</iconUrl>
-    <projectUrl>http://dependableproject.github.io/dependable/</projectUrl>
+    <licenseUrl>http://geeksdiary.github.io/dependable/license.html</licenseUrl>
+    <iconUrl>http://geeksdiary.github.io/dependable/assets/images/Dependable.64.png</iconUrl>
+    <projectUrl>http://geeksdiary.github.io/dependable/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <releaseNotes></releaseNotes>

@@ -42,8 +42,8 @@ namespace Dependable
 
             throw new InvalidOperationException(string.Format("This kind of expression is not supported - {0}. " + 
                 "Try assigning it to a local variable first. " + 
-                "For more information, visit - " + 
-                "http://dependableproject.github.io/dependable/exceptions/expression-not-supported.html",
+                "For more information, visit - " +
+                "http://geeksdiary.github.io/dependable/exceptions/expression-not-supported.html",
                 expression));
         }
     }

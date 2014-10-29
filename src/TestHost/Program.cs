@@ -102,7 +102,7 @@ namespace TestHost
             var generate = Console.ReadLine().ToUpper();
             if (generate == "Y")
             {
-                for (var i = 0; i < 1000; i++)
+                for (var i = 0; i < 1; i++)
                 {
                     var firstName = "a" + i;
                     var lastName = "b" + i;
