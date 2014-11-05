@@ -124,7 +124,7 @@ namespace Dependable.Dispatcher
 
         void CompleteJob(Job job, JobResult result)
         {
-            if (result.Activity == null)
+            if (result.Activity == null || result.Activity.IsEmptyGroup())
                 _jobCoordinator.Run(job, () => _statusChanger.Change(job, JobStatus.Completed));
             else
             {

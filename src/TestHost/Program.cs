@@ -48,7 +48,7 @@ namespace TestHost
                 .ThenContinue()
                 .Then<Greet>(g => g.Run("g", "h"));
 
-            _scheduler.Schedule(sequence);
+            // _scheduler.Schedule(sequence);
 
             //_scheduler.Schedule(Activity.Parallel(
             //        Activity.Run<Greet>(g => g.Run("a", "b")).Then<Greet>(g => g.Run("e", "f")),
@@ -76,7 +76,7 @@ namespace TestHost
             //        .Run<Greet>(g => g.Run("buddhike", "de silva"))
             //        .ExceptionFilter<LoggingFilter>((c, f) => f.Log(c, "something was wrong")));
 
-            //_scheduler.Schedule(Activity.Run<GreetMany>(a => a.Run(new[] { "a", "b" })));
+            _scheduler.Schedule(Activity.Run<GreetMany>(a => a.Run(new[] { "a", "b" })).Then<Greet>(g => g.Run("d", "e")));
 
             //var group = Activity
             //    .Parallel(
@@ -151,7 +151,7 @@ namespace TestHost
 // ReSharper disable once CSharpWarnings::CS1998
         public async Task<Activity> Run(IEnumerable<string> names)
         {
-            return Activity.Parallel(names.Select(n => Activity.Run<Greet>(g => g.Run(n, n))));
+            return Activity.Sequence(Enumerable.Empty<Activity>());
         }
     }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Dependable.Dispatcher;
@@ -116,6 +117,14 @@ namespace Dependable
 
             activityGroup.ExceptionFiltersList.Add(Dependable.ExceptionFilter.From(filter));
             return activityGroup;
+        }
+
+        internal static bool IsEmptyGroup(this Activity activity)
+        {
+            if (activity == null) throw new ArgumentNullException("activity");
+            var group = activity as ActivityGroup;
+
+            return group != null && !group.Items.Any();
         }
     }
 }
