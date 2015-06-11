@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Dependable.Core
@@ -66,6 +65,41 @@ namespace Dependable.Core
         }
     }
 
+    public struct Value
+    {
+        public static Value None => new Value();
+    }
+
+    public class NoInputAtom<TOut> : SimpleAtom<Value, TOut>
+    {
+        internal NoInputAtom(Func<Task<TOut>> impl) : base(v => impl())
+        {
+        }
+
+        public async Task<TOut> Charge()
+        {
+            return await base.Charge(Value.None);
+        }
+    }
+
+    public class IgnoreAtom<TIn, TOut> : Atom<TIn, Value>
+    {
+        readonly Atom<TIn, TOut> _source;
+
+        internal IgnoreAtom(Atom<TIn, TOut> source)
+        {
+            _source = source;
+        }
+
+        public async override Task<Value> Charge(TIn input)
+        {
+            await _source.Charge(input);
+            return await Task.FromResult(Value.None);
+        }
+
+    }
+
+
     public class MapAtom<TIn, TOut> : Atom<IEnumerable<TIn>, IEnumerable<TOut>>
     {
         internal MapAtom(Func<IEnumerable<TIn>, Task<IEnumerable<TOut>>> impl)
@@ -80,9 +114,14 @@ namespace Dependable.Core
 
     public static class Atom
     {
-        public static Atom<TIn, TOut> Of<TIn, TOut>(Func<TIn, TOut> impl)
+        public static SimpleAtom<TIn, TOut> Of<TIn, TOut>(Func<TIn, TOut> impl)
         {
             return new SimpleAtom<TIn, TOut>(i => Task.FromResult(impl(i)));
+        }
+
+        public static NoInputAtom<TOut> Of<TOut>(Func<TOut> impl)
+        {
+            return new NoInputAtom<TOut>(() => Task.FromResult(impl()));
         }
 
         public static MapAtom<TIn, TOut> Of<TIn, TOut>(Func<IEnumerable<TIn>, IEnumerable<TOut>> impl)
@@ -90,10 +129,21 @@ namespace Dependable.Core
             return new MapAtom<TIn, TOut>(i => Task.FromResult(impl(i)));
         }
 
+        public static IgnoreAtom<TIn, TOut> Ignore<TIn, TOut>(this Atom<TIn, TOut> source)
+        {
+            return new IgnoreAtom<TIn, TOut>(source);
+        } 
+
         public static LinkAtom<TIn, TIntermediate, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
             Func<TIntermediate, TOut> second)
         {
             return first.Connect(new SimpleAtom<TIntermediate, TOut>(i => Task.FromResult(second(i))));
+        }
+
+        public static LinkAtom<TIn, Value, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
+            Func<TOut> second)
+        {
+            return first.Ignore().Connect(new NoInputAtom<TOut>(() => Task.FromResult(second())));
         }
 
         public static LinkAtom<TIn, TIntermediate, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,

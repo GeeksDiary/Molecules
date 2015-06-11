@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using NSubstitute;
+using Xunit;
 
 namespace Dependable.Core.Tests
 {
@@ -34,5 +35,38 @@ namespace Dependable.Core.Tests
             Assert.Equal("a", await f.Charge(true));
             Assert.Equal("b", await f.Charge(false));
         }
+
+        [Fact]
+        public async void ShouldInvokeAtomWithoutAnyInput()
+        {
+            var a = Atom.Of(() => "a");
+            Assert.Equal("a", await a.Charge());
+        }
+
+        [Fact]
+        public async void ShouldIgnoreIntermediateValueAndConnectToNoDomainAtom()
+        {
+            var m = Substitute.For<IMethod>();
+            m.Call(0).ReturnsForAnyArgs(1);
+            m.DomainLess().ReturnsForAnyArgs(2);
+
+            var a = Atom.Of<int, int>(m.Call).Connect(m.DomainLess);
+
+            Assert.Equal(2, await a.Charge(10));
+            m.Received(1).Call(10);
+            m.Received(1).DomainLess();
+
+        }
+    }
+
+    public interface IMethod
+    {
+        void Void();
+
+        int DomainLess();
+
+        void RangeLess(int value);
+
+        int Call(int value);
     }
 }
