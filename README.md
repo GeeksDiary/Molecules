@@ -1,6 +1,4 @@
 dependable
 ==========
 
-Build reliable workflows in .NET
-
-[For more information](http://dependableproject.github.io/dependable/)
+This is an experimental branch for potential improvements to core API and runtime.

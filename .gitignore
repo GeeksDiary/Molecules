@@ -4,6 +4,8 @@ ipch
 debug
 release
 testresults
+artifacts
+.vs
 InprotechOutput
 .build
 *.user
