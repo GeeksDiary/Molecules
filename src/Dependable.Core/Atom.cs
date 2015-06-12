@@ -10,11 +10,11 @@ namespace Dependable.Core
         public abstract Task<TOut> Charge(TIn input);
     }
 
-    public class SimpleAtom<TIn, TOut> : Atom<TIn, TOut>
+    public class UnaryFuncAtom<TIn, TOut> : Atom<TIn, TOut>
     {
         readonly Func<TIn, Task<TOut>> _impl;
 
-        internal SimpleAtom(Func<TIn, Task<TOut>> impl)
+        internal UnaryFuncAtom(Func<TIn, Task<TOut>> impl)
         {
             _impl = impl;
         }
@@ -65,12 +65,12 @@ namespace Dependable.Core
         protected abstract Task<TOut> OnFalsey(TIntermediary intermediary);
     }
 
-    public class SimpleAtomJunction<TIn, TIntermediary, TOut> : JunctionAtom<TIn, TIntermediary, TOut>
+    public class UnaryFuncAtomJunction<TIn, TIntermediary, TOut> : JunctionAtom<TIn, TIntermediary, TOut>
     {
         readonly Atom<TIntermediary, TOut> _truthy;
         readonly Atom<TIntermediary, TOut> _falsey;
 
-        public SimpleAtomJunction(Atom<TIn, TIntermediary> source, 
+        public UnaryFuncAtomJunction(Atom<TIn, TIntermediary> source, 
             Predicate<TIntermediary> predicate, 
             Atom<TIntermediary, TOut> truthy, 
             Atom<TIntermediary, TOut> falsey) : base(source, predicate)
@@ -90,16 +90,16 @@ namespace Dependable.Core
         }
     }
 
-    public class NullaryAtomJuction<TIn, TIntermediary, TOut> : JunctionAtom<TIn, TIntermediary, TOut>
+    public class NullaryFuncAtomJuction<TIn, TIntermediary, TOut> : JunctionAtom<TIn, TIntermediary, TOut>
     {
-        readonly NullaryAtom<TOut> _truthy;
-        readonly NullaryAtom<TOut> _falsey;
+        readonly NullaryFuncAtom<TOut> _truthy;
+        readonly NullaryFuncAtom<TOut> _falsey;
 
-        public NullaryAtomJuction(
+        public NullaryFuncAtomJuction(
             Atom<TIn, TIntermediary> source, 
             Predicate<TIntermediary> predicate,
-            NullaryAtom<TOut> truthy,
-            NullaryAtom<TOut> falsey) : 
+            NullaryFuncAtom<TOut> truthy,
+            NullaryFuncAtom<TOut> falsey) : 
             base(source, predicate)
         {
             _truthy = truthy;
@@ -117,16 +117,16 @@ namespace Dependable.Core
         }
     }
 
-    public class VoidAtomJunction<TIn, TIntermediary> : JunctionAtom<TIn, TIntermediary, Value>
+    public class UnaryActionAtomJunction<TIn, TIntermediary> : JunctionAtom<TIn, TIntermediary, Value>
     {
-        readonly VoidAtom<TIntermediary> _truthy;
-        readonly VoidAtom<TIntermediary> _falsey;
+        readonly UnaryActionAtom<TIntermediary> _truthy;
+        readonly UnaryActionAtom<TIntermediary> _falsey;
 
-        public VoidAtomJunction(
+        public UnaryActionAtomJunction(
             Atom<TIn, TIntermediary> source, 
             Predicate<TIntermediary> predicate,
-            VoidAtom<TIntermediary> truthy,
-            VoidAtom<TIntermediary> falsey) : base(source, predicate)
+            UnaryActionAtom<TIntermediary> truthy,
+            UnaryActionAtom<TIntermediary> falsey) : base(source, predicate)
         {
             _truthy = truthy;
             _falsey = falsey;
@@ -143,16 +143,16 @@ namespace Dependable.Core
         }
     }
 
-    public class NakedAtomJunction<TIn, TIntermediary> : JunctionAtom<TIn, TIntermediary, Value>
+    public class ActionAtomJunction<TIn, TIntermediary> : JunctionAtom<TIn, TIntermediary, Value>
     {
-        readonly NakedAtom _truthy;
-        readonly NakedAtom _falsey;
+        readonly ActionAtom _truthy;
+        readonly ActionAtom _falsey;
 
-        public NakedAtomJunction(Atom<TIn, 
+        public ActionAtomJunction(Atom<TIn, 
             TIntermediary> source, 
             Predicate<TIntermediary> predicate,
-            NakedAtom truthy,
-            NakedAtom falsey) : base(source, predicate)
+            ActionAtom truthy,
+            ActionAtom falsey) : base(source, predicate)
         {
             _truthy = truthy;
             _falsey = falsey;
@@ -170,9 +170,9 @@ namespace Dependable.Core
     }
 
 
-    public class NullaryAtom<TOut> : SimpleAtom<Value, TOut>
+    public class NullaryFuncAtom<TOut> : UnaryFuncAtom<Value, TOut>
     {
-        internal NullaryAtom(Func<Task<TOut>> impl) : base(v => impl())
+        internal NullaryFuncAtom(Func<Task<TOut>> impl) : base(v => impl())
         {
         }
 
@@ -198,16 +198,16 @@ namespace Dependable.Core
         }
     }
 
-    public class VoidAtom<TIn> : SimpleAtom<TIn, Value>
+    public class UnaryActionAtom<TIn> : UnaryFuncAtom<TIn, Value>
     {
-        internal VoidAtom(Func<TIn, Task<Value>> impl) : base(impl)
+        internal UnaryActionAtom(Func<TIn, Task<Value>> impl) : base(impl)
         {
         }
     }
 
-    public class NakedAtom : SimpleAtom<Value, Value>
+    public class ActionAtom : UnaryFuncAtom<Value, Value>
     {
-        internal NakedAtom(Func<Value, Task<Value>> impl) : base(impl)
+        internal ActionAtom(Func<Value, Task<Value>> impl) : base(impl)
         {
         }
 
@@ -217,12 +217,12 @@ namespace Dependable.Core
         }
     }
 
-    public class SimpleAtomMap<TIn, TIntermediary, TOut> : Atom<TIn, IEnumerable<TOut>>
+    public class UnaryFuncAtomMap<TIn, TIntermediary, TOut> : Atom<TIn, IEnumerable<TOut>>
     {
         readonly Atom<TIn, IEnumerable<TIntermediary>> _source;
         readonly Atom<TIntermediary, TOut> _map;
 
-        public SimpleAtomMap(Atom<TIn, IEnumerable<TIntermediary>> source, Atom<TIntermediary, TOut> map)
+        public UnaryFuncAtomMap(Atom<TIn, IEnumerable<TIntermediary>> source, Atom<TIntermediary, TOut> map)
         {
             _source = source;
             _map = map;
@@ -235,9 +235,9 @@ namespace Dependable.Core
         }
     }
 
-    public class NullaryAtomMap<TIntermediary, TOut> : SimpleAtomMap<Value, TIntermediary, TOut>
+    public class NullaryFuncAtomMap<TIntermediary, TOut> : UnaryFuncAtomMap<Value, TIntermediary, TOut>
     {
-        public NullaryAtomMap(NullaryAtom<IEnumerable<TIntermediary>> source, Atom<TIntermediary, TOut> map) : 
+        public NullaryFuncAtomMap(NullaryFuncAtom<IEnumerable<TIntermediary>> source, Atom<TIntermediary, TOut> map) : 
             base(source, map)
         {
         }
@@ -250,28 +250,28 @@ namespace Dependable.Core
 
     public static class Atom
     {
-        public static SimpleAtom<TIn, TOut> Of<TIn, TOut>(Func<TIn, TOut> impl)
+        public static UnaryFuncAtom<TIn, TOut> Of<TIn, TOut>(Func<TIn, TOut> impl)
         {
-            return new SimpleAtom<TIn, TOut>(i => Task.FromResult(impl(i)));
+            return new UnaryFuncAtom<TIn, TOut>(i => Task.FromResult(impl(i)));
         }
 
-        public static NullaryAtom<TOut> Of<TOut>(Func<TOut> impl)
+        public static NullaryFuncAtom<TOut> Of<TOut>(Func<TOut> impl)
         {
-            return new NullaryAtom<TOut>(() => Task.FromResult(impl()));
+            return new NullaryFuncAtom<TOut>(() => Task.FromResult(impl()));
         }
 
-        public static VoidAtom<TIn> Of<TIn>(Action<TIn> impl)
+        public static UnaryActionAtom<TIn> Of<TIn>(Action<TIn> impl)
         {
-            return new VoidAtom<TIn>(i =>
+            return new UnaryActionAtom<TIn>(i =>
             {
                 impl(i);
                 return Value.CompletedNone;
             });
         }
 
-        public static NakedAtom Of(Action impl)
+        public static ActionAtom Of(Action impl)
         {
-            return new NakedAtom(i => {
+            return new ActionAtom(i => {
                 impl();
                 return Value.CompletedNone;
             });
@@ -331,7 +331,7 @@ namespace Dependable.Core
             Atom<TIntermediary, TOut> truthy,
             Atom<TIntermediary, TOut> falsey)
         {
-            return new SimpleAtomJunction<TIn, TIntermediary, TOut>(source, predicate, truthy, falsey);
+            return new UnaryFuncAtomJunction<TIn, TIntermediary, TOut>(source, predicate, truthy, falsey);
         }
 
         public static JunctionAtom<TIn, TIntermediary, TOut> If<TIn, TIntermediary, TOut>(
@@ -346,13 +346,13 @@ namespace Dependable.Core
         public static JunctionAtom<TIn, TIntermediary, TOut> If<TIn, TIntermediary, TOut>(
             this Atom<TIn, TIntermediary> source,
             Predicate<TIntermediary> predicate,
-            NullaryAtom<TOut> truthy,
-            NullaryAtom<TOut> falsey)
+            NullaryFuncAtom<TOut> truthy,
+            NullaryFuncAtom<TOut> falsey)
         {
-            return new NullaryAtomJuction<TIn, TIntermediary, TOut>(source, predicate, truthy, falsey);
+            return new NullaryFuncAtomJuction<TIn, TIntermediary, TOut>(source, predicate, truthy, falsey);
         }
 
-        public static VoidAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+        public static UnaryActionAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
             this Atom<TIn, TIntermediary> source,
             Predicate<TIntermediary> predicate,
             Action<TIntermediary> truthy,
@@ -361,16 +361,16 @@ namespace Dependable.Core
             return source.If(predicate, Of(truthy), Of(falsey));
         }
 
-        public static VoidAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+        public static UnaryActionAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
             this Atom<TIn, TIntermediary> source,
             Predicate<TIntermediary> predicate,
-            VoidAtom<TIntermediary> truthy,
-            VoidAtom<TIntermediary> falsey)
+            UnaryActionAtom<TIntermediary> truthy,
+            UnaryActionAtom<TIntermediary> falsey)
         {
-            return new VoidAtomJunction<TIn, TIntermediary>(source, predicate, truthy, falsey);
+            return new UnaryActionAtomJunction<TIn, TIntermediary>(source, predicate, truthy, falsey);
         }
 
-        public static NakedAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+        public static ActionAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
             this Atom<TIn, TIntermediary> source,
             Predicate<TIntermediary> predicate,
             Action truthy,
@@ -379,28 +379,28 @@ namespace Dependable.Core
             return source.If(predicate, Of(truthy), Of(falsey));
         }
 
-        public static NakedAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+        public static ActionAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
             this Atom<TIn, TIntermediary> source,
             Predicate<TIntermediary> predicate,
-            NakedAtom truthy,
-            NakedAtom falsey
+            ActionAtom truthy,
+            ActionAtom falsey
             )
         {
-            return new NakedAtomJunction<TIn, TIntermediary>(source, predicate, truthy, falsey);
+            return new ActionAtomJunction<TIn, TIntermediary>(source, predicate, truthy, falsey);
         }
 
-        public static SimpleAtomMap<TIn, TIntermediary, TOut> Map<TIn, TIntermediary, TOut>(
+        public static UnaryFuncAtomMap<TIn, TIntermediary, TOut> Map<TIn, TIntermediary, TOut>(
             this Atom<TIn, IEnumerable<TIntermediary>> source,
             Func<TIntermediary, TOut> map)
         {
-            return new SimpleAtomMap<TIn, TIntermediary, TOut>(source, Of(map));
+            return new UnaryFuncAtomMap<TIn, TIntermediary, TOut>(source, Of(map));
         }
 
-        public static NullaryAtomMap<TIntermediary, TOut> Map<TIntermediary, TOut>(
-            this NullaryAtom<IEnumerable<TIntermediary>> source,
+        public static NullaryFuncAtomMap<TIntermediary, TOut> Map<TIntermediary, TOut>(
+            this NullaryFuncAtom<IEnumerable<TIntermediary>> source,
             Func<TIntermediary, TOut> map)
         {
-            return new NullaryAtomMap<TIntermediary, TOut>(source, Of(map));
+            return new NullaryFuncAtomMap<TIntermediary, TOut>(source, Of(map));
         }
     }
 }
