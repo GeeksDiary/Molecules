@@ -3,6 +3,39 @@ using Xunit;
 
 namespace Dependable.Core.Tests
 {
+    public class AtomCreationTests
+    {
+        readonly IMethod _method = Substitute.For<IMethod>();
+
+        [Fact]
+        public async void SimpleAtom()
+        {
+            _method.Call(1).Returns(2);
+            Assert.Equal(2, await Atom.Of<int, int>(_method.Call).Charge(1));
+        }
+
+        [Fact]
+        public async void NullaryAtom()
+        {
+            _method.Nullary().Returns(1);
+            Assert.Equal(1, await Atom.Of(_method.Nullary).Charge());
+        }
+
+        [Fact]
+        public async void VoidAtom()
+        {
+            Assert.Equal(Value.None, await Atom.Of<int>(_method.Void).Charge(1));
+            _method.Received(1).Void(1);
+        }
+
+        [Fact]
+        public async void NakedAtom()
+        {
+            Assert.Equal(Value.None, await Atom.Of(_method.Naked).Charge());
+            _method.Received(1).Naked();
+        }
+    }
+
     public class AtomTests
     {
         public static int Double(int i)
@@ -48,24 +81,23 @@ namespace Dependable.Core.Tests
         {
             var m = Substitute.For<IMethod>();
             m.Call(0).ReturnsForAnyArgs(1);
-            m.DomainLess().ReturnsForAnyArgs(2);
+            m.Nullary().ReturnsForAnyArgs(2);
 
-            var a = Atom.Of<int, int>(m.Call).Connect(m.DomainLess);
+            var a = Atom.Of<int, int>(m.Call).Connect(m.Nullary);
 
             Assert.Equal(2, await a.Charge(10));
             m.Received(1).Call(10);
-            m.Received(1).DomainLess();
-
+            m.Received(1).Nullary();
         }
     }
 
     public interface IMethod
     {
-        void Void();
+        void Naked();
 
-        int DomainLess();
+        int Nullary();
 
-        void RangeLess(int value);
+        void Void(int value);
 
         int Call(int value);
     }

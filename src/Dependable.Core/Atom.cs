@@ -65,14 +65,9 @@ namespace Dependable.Core
         }
     }
 
-    public struct Value
+    public class NullaryAtom<TOut> : SimpleAtom<Value, TOut>
     {
-        public static Value None => new Value();
-    }
-
-    public class NoInputAtom<TOut> : SimpleAtom<Value, TOut>
-    {
-        internal NoInputAtom(Func<Task<TOut>> impl) : base(v => impl())
+        internal NullaryAtom(Func<Task<TOut>> impl) : base(v => impl())
         {
         }
 
@@ -96,9 +91,26 @@ namespace Dependable.Core
             await _source.Charge(input);
             return await Task.FromResult(Value.None);
         }
-
     }
 
+    public class VoidAtom<TIn> : SimpleAtom<TIn, Value>
+    {
+        internal VoidAtom(Func<TIn, Task<Value>> impl) : base(impl)
+        {
+        }
+    }
+
+    public class NakedAtom : SimpleAtom<Value, Value>
+    {
+        internal NakedAtom(Func<Value, Task<Value>> impl) : base(impl)
+        {
+        }
+
+        public async Task<Value> Charge()
+        {
+            return await base.Charge(Value.None);
+        }
+    }
 
     public class MapAtom<TIn, TOut> : Atom<IEnumerable<TIn>, IEnumerable<TOut>>
     {
@@ -119,9 +131,26 @@ namespace Dependable.Core
             return new SimpleAtom<TIn, TOut>(i => Task.FromResult(impl(i)));
         }
 
-        public static NoInputAtom<TOut> Of<TOut>(Func<TOut> impl)
+        public static NullaryAtom<TOut> Of<TOut>(Func<TOut> impl)
         {
-            return new NoInputAtom<TOut>(() => Task.FromResult(impl()));
+            return new NullaryAtom<TOut>(() => Task.FromResult(impl()));
+        }
+
+        public static VoidAtom<TIn> Of<TIn>(Action<TIn> impl)
+        {
+            return new VoidAtom<TIn>(i =>
+            {
+                impl(i);
+                return Value.CompletedNone;
+            });
+        }
+
+        public static NakedAtom Of(Action impl)
+        {
+            return new NakedAtom(i => {
+                impl();
+                return Value.CompletedNone;
+            });
         }
 
         public static MapAtom<TIn, TOut> Of<TIn, TOut>(Func<IEnumerable<TIn>, IEnumerable<TOut>> impl)
@@ -143,7 +172,7 @@ namespace Dependable.Core
         public static LinkAtom<TIn, Value, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
             Func<TOut> second)
         {
-            return first.Ignore().Connect(new NoInputAtom<TOut>(() => Task.FromResult(second())));
+            return first.Ignore().Connect(new NullaryAtom<TOut>(() => Task.FromResult(second())));
         }
 
         public static LinkAtom<TIn, TIntermediate, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
