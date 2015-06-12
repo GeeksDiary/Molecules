@@ -15,7 +15,7 @@ namespace Dependable.Core.Tests
 
             Assert.Equal(3, await Atom.Of<int, int>(_method.Call).Connect(_method.Call).Charge(1));            
         }
-
+        
         [Fact]
         public async void IgnoreIntermediaryConnection()
         {
