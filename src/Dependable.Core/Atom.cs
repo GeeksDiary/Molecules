@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Dependable.Core
@@ -112,15 +113,34 @@ namespace Dependable.Core
         }
     }
 
-    public class MapAtom<TIn, TOut> : Atom<IEnumerable<TIn>, IEnumerable<TOut>>
+    public class SimpleAtomMap<TIn, TIntermediary, TOut> : Atom<TIn, IEnumerable<TOut>>
     {
-        internal MapAtom(Func<IEnumerable<TIn>, Task<IEnumerable<TOut>>> impl)
+        readonly Atom<TIn, IEnumerable<TIntermediary>> _source;
+        readonly Atom<TIntermediary, TOut> _map;
+
+        public SimpleAtomMap(Atom<TIn, IEnumerable<TIntermediary>> source, Atom<TIntermediary, TOut> map)
+        {
+            _source = source;
+            _map = map;
+        }
+        
+        public async override Task<IEnumerable<TOut>> Charge(TIn input)
+        {
+            var d = await _source.Charge(input);
+            return await Task.WhenAll(d.Select(i => _map.Charge(i)));
+        }
+    }
+
+    public class NullaryAtomMap<TIntermediary, TOut> : SimpleAtomMap<Value, TIntermediary, TOut>
+    {
+        public NullaryAtomMap(NullaryAtom<IEnumerable<TIntermediary>> source, Atom<TIntermediary, TOut> map) : 
+            base(source, map)
         {
         }
 
-        public override Task<IEnumerable<TOut>> Charge(IEnumerable<TIn> input)
+        public async Task<IEnumerable<TOut>> Charge()
         {
-            throw new NotImplementedException();
+            return await base.Charge(Value.None);
         }
     }
 
@@ -153,23 +173,20 @@ namespace Dependable.Core
             });
         }
 
-        public static MapAtom<TIn, TOut> Of<TIn, TOut>(Func<IEnumerable<TIn>, IEnumerable<TOut>> impl)
-        {
-            return new MapAtom<TIn, TOut>(i => Task.FromResult(impl(i)));
-        }
-
         public static IgnoreAtom<TIn, TOut> Ignore<TIn, TOut>(this Atom<TIn, TOut> source)
         {
             return new IgnoreAtom<TIn, TOut>(source);
         } 
 
-        public static LinkAtom<TIn, TIntermediate, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
+        public static LinkAtom<TIn, TIntermediate, TOut> Connect<TIn, TIntermediate, TOut>(
+            this Atom<TIn, TIntermediate> first,
             Func<TIntermediate, TOut> second)
         {
             return first.Connect(Of(second));
         }
 
-        public static LinkAtom<TIn, Value, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
+        public static LinkAtom<TIn, Value, TOut> Connect<TIn, TIntermediate, TOut>(
+            this Atom<TIn, TIntermediate> first,
             Func<TOut> second)
         {
             return first.Ignore().Connect(Of(second));
@@ -212,6 +229,20 @@ namespace Dependable.Core
             Atom<TIntermediary, TOut> falsey)
         {
             return new JunctionAtom<TIn, TIntermediary, TOut>(source, predicate, truthy, falsey);
+        }
+
+        public static SimpleAtomMap<TIn, TIntermediary, TOut> Map<TIn, TIntermediary, TOut>(
+            this Atom<TIn, IEnumerable<TIntermediary>> source,
+            Func<TIntermediary, TOut> map)
+        {
+            return new SimpleAtomMap<TIn, TIntermediary, TOut>(source, Of(map));
+        }
+
+        public static NullaryAtomMap<TIntermediary, TOut> Map<TIntermediary, TOut>(
+            this NullaryAtom<IEnumerable<TIntermediary>> source,
+            Func<TIntermediary, TOut> map)
+        {
+            return new NullaryAtomMap<TIntermediary, TOut>(source, Of(map));
         }
     }
 }
