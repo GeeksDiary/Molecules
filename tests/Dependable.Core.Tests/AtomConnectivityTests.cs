@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Dependable.Core.Tests
 {
-    public class AttomConnectivityTests
+    public class AtomConnectivityTests
     {
         readonly IMethod _method = Substitute.For<IMethod>();
         
