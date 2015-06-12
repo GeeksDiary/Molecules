@@ -43,28 +43,132 @@ namespace Dependable.Core
         }
     }
 
-    public class JunctionAtom<TIn, TIntermediary, TOut> : Atom<TIn, TOut>
+    public abstract class JunctionAtom<TIn, TIntermediary, TOut> : Atom<TIn, TOut>
     {
         readonly Atom<TIn, TIntermediary> _source;
         readonly Predicate<TIntermediary> _predicate;
-        readonly Atom<TIntermediary, TOut> _truthy;
-        readonly Atom<TIntermediary, TOut> _falsey;
 
-        public JunctionAtom(Atom<TIn, TIntermediary> source, 
-            Predicate<TIntermediary> predicate, Atom<TIntermediary, TOut> truthy, Atom<TIntermediary, TOut> falsey)
+        protected JunctionAtom(Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate)
         {
             _source = source;
-            _predicate = predicate;
-            _truthy = truthy;
-            _falsey = falsey;
-        }
+            _predicate = predicate;        }
 
         public async override Task<TOut> Charge(TIn input)
         {
             var i = await _source.Charge(input);
-            return await (_predicate(i) ? _truthy.Charge(i) : _falsey.Charge(i));
+            return await(_predicate(i) ? OnTruthy(i) : OnFalsey(i));
+        }
+
+        protected abstract Task<TOut> OnTruthy(TIntermediary intermediary);
+
+        protected abstract Task<TOut> OnFalsey(TIntermediary intermediary);
+    }
+
+    public class SimpleAtomJunction<TIn, TIntermediary, TOut> : JunctionAtom<TIn, TIntermediary, TOut>
+    {
+        readonly Atom<TIntermediary, TOut> _truthy;
+        readonly Atom<TIntermediary, TOut> _falsey;
+
+        public SimpleAtomJunction(Atom<TIn, TIntermediary> source, 
+            Predicate<TIntermediary> predicate, 
+            Atom<TIntermediary, TOut> truthy, 
+            Atom<TIntermediary, TOut> falsey) : base(source, predicate)
+        {
+            _truthy = truthy;
+            _falsey = falsey;
+        }
+
+        protected async override Task<TOut> OnTruthy(TIntermediary intermediary)
+        {
+            return await _truthy.Charge(intermediary);
+        }
+
+        protected async override Task<TOut> OnFalsey(TIntermediary intermediary)
+        {
+            return await _falsey.Charge(intermediary);
         }
     }
+
+    public class NullaryAtomJuction<TIn, TIntermediary, TOut> : JunctionAtom<TIn, TIntermediary, TOut>
+    {
+        readonly NullaryAtom<TOut> _truthy;
+        readonly NullaryAtom<TOut> _falsey;
+
+        public NullaryAtomJuction(
+            Atom<TIn, TIntermediary> source, 
+            Predicate<TIntermediary> predicate,
+            NullaryAtom<TOut> truthy,
+            NullaryAtom<TOut> falsey) : 
+            base(source, predicate)
+        {
+            _truthy = truthy;
+            _falsey = falsey;
+        }
+
+        protected async override Task<TOut> OnTruthy(TIntermediary intermediary)
+        {
+            return await _truthy.Charge();
+        }
+
+        protected override async Task<TOut> OnFalsey(TIntermediary intermediary)
+        {
+            return await _falsey.Charge();
+        }
+    }
+
+    public class VoidAtomJunction<TIn, TIntermediary> : JunctionAtom<TIn, TIntermediary, Value>
+    {
+        readonly VoidAtom<TIntermediary> _truthy;
+        readonly VoidAtom<TIntermediary> _falsey;
+
+        public VoidAtomJunction(
+            Atom<TIn, TIntermediary> source, 
+            Predicate<TIntermediary> predicate,
+            VoidAtom<TIntermediary> truthy,
+            VoidAtom<TIntermediary> falsey) : base(source, predicate)
+        {
+            _truthy = truthy;
+            _falsey = falsey;
+        }
+
+        protected async override Task<Value> OnTruthy(TIntermediary intermediary)
+        {
+            return await _truthy.Charge(intermediary);
+        }
+
+        protected async override Task<Value> OnFalsey(TIntermediary intermediary)
+        {
+            return await _falsey.Charge(intermediary);
+        }
+    }
+
+    public class NakedAtomJunction<TIn, TIntermediary> : JunctionAtom<TIn, TIntermediary, Value>
+    {
+        readonly NakedAtom _truthy;
+        readonly NakedAtom _falsey;
+
+        public NakedAtomJunction(Atom<TIn, 
+            TIntermediary> source, 
+            Predicate<TIntermediary> predicate,
+            NakedAtom truthy,
+            NakedAtom falsey) : base(source, predicate)
+        {
+            _truthy = truthy;
+            _falsey = falsey;
+        }
+
+        protected override async Task<Value> OnTruthy(TIntermediary intermediary)
+        {
+            return await _truthy.Charge();
+        }
+
+        protected override async Task<Value> OnFalsey(TIntermediary intermediary)
+        {
+            return await _falsey.Charge();
+        }
+    }
+
 
     public class NullaryAtom<TOut> : SimpleAtom<Value, TOut>
     {
@@ -218,8 +322,7 @@ namespace Dependable.Core
             Func<TIntermediary, TOut> truthy,
             Func<TIntermediary, TOut> falsey)
         {
-            return source.If(predicate, new SimpleAtom<TIntermediary, TOut>(i => Task.FromResult(truthy(i))),
-                new SimpleAtom<TIntermediary, TOut>(i => Task.FromResult(falsey(i))));
+            return source.If(predicate, Of(truthy), Of(falsey));
         }
 
         public static JunctionAtom<TIn, TIntermediary, TOut> If<TIn, TIntermediary, TOut>(
@@ -228,7 +331,62 @@ namespace Dependable.Core
             Atom<TIntermediary, TOut> truthy,
             Atom<TIntermediary, TOut> falsey)
         {
-            return new JunctionAtom<TIn, TIntermediary, TOut>(source, predicate, truthy, falsey);
+            return new SimpleAtomJunction<TIn, TIntermediary, TOut>(source, predicate, truthy, falsey);
+        }
+
+        public static JunctionAtom<TIn, TIntermediary, TOut> If<TIn, TIntermediary, TOut>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            Func<TOut> truthy,
+            Func<TOut> falsey)
+        {
+            return source.If(predicate, Of(truthy), Of(falsey));
+        }
+
+        public static JunctionAtom<TIn, TIntermediary, TOut> If<TIn, TIntermediary, TOut>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            NullaryAtom<TOut> truthy,
+            NullaryAtom<TOut> falsey)
+        {
+            return new NullaryAtomJuction<TIn, TIntermediary, TOut>(source, predicate, truthy, falsey);
+        }
+
+        public static VoidAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            Action<TIntermediary> truthy,
+            Action<TIntermediary> falsey)
+        {
+            return source.If(predicate, Of(truthy), Of(falsey));
+        }
+
+        public static VoidAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            VoidAtom<TIntermediary> truthy,
+            VoidAtom<TIntermediary> falsey)
+        {
+            return new VoidAtomJunction<TIn, TIntermediary>(source, predicate, truthy, falsey);
+        }
+
+        public static NakedAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            Action truthy,
+            Action falsey)
+        {
+            return source.If(predicate, Of(truthy), Of(falsey));
+        }
+
+        public static NakedAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            NakedAtom truthy,
+            NakedAtom falsey
+            )
+        {
+            return new NakedAtomJunction<TIn, TIntermediary>(source, predicate, truthy, falsey);
         }
 
         public static SimpleAtomMap<TIn, TIntermediary, TOut> Map<TIn, TIntermediary, TOut>(
