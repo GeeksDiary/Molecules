@@ -166,13 +166,27 @@ namespace Dependable.Core
         public static LinkAtom<TIn, TIntermediate, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
             Func<TIntermediate, TOut> second)
         {
-            return first.Connect(new SimpleAtom<TIntermediate, TOut>(i => Task.FromResult(second(i))));
+            return first.Connect(Of(second));
         }
 
         public static LinkAtom<TIn, Value, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
             Func<TOut> second)
         {
-            return first.Ignore().Connect(new NullaryAtom<TOut>(() => Task.FromResult(second())));
+            return first.Ignore().Connect(Of(second));
+        }
+
+        public static LinkAtom<TIn, TIntermediary, Value> Connect<TIn, TIntermediary>(
+            this Atom<TIn, TIntermediary> first,
+            Action<TIntermediary> second)
+        {
+            return first.Connect(Of(second));
+        }
+
+        public static LinkAtom<TIn, Value, Value> Connect<TIn, TIntermediary>(
+            this Atom<TIn, TIntermediary> first,
+            Action second)
+        {
+            return first.Ignore().Connect(Of(second));
         }
 
         public static LinkAtom<TIn, TIntermediate, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
