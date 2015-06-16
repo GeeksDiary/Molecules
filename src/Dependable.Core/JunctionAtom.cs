@@ -3,6 +3,29 @@ using System.Threading.Tasks;
 
 namespace Dependable.Core
 {
+    public abstract class JunctionAtom<TIn, TIntermediary, TOut> : Atom<TIn, TOut>
+    {
+        readonly Atom<TIn, TIntermediary> _source;
+        readonly Predicate<TIntermediary> _predicate;
+
+        protected JunctionAtom(Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate)
+        {
+            _source = source;
+            _predicate = predicate;
+        }
+
+        public async override Task<TOut> Charge(TIn input)
+        {
+            var i = await _source.Charge(input);
+            return await (_predicate(i) ? OnTruthy(i) : OnFalsey(i));
+        }
+
+        protected abstract Task<TOut> OnTruthy(TIntermediary intermediary);
+
+        protected abstract Task<TOut> OnFalsey(TIntermediary intermediary);
+    }
+
     public class ActionAtomJunction<TIn, TIntermediary> : 
         JunctionAtom<TIn, TIntermediary, Value>
     {
@@ -110,27 +133,71 @@ namespace Dependable.Core
             return await _falsey.Charge(intermediary);
         }
     }
-
-    public abstract class JunctionAtom<TIn, TIntermediary, TOut> : Atom<TIn, TOut>
+    
+    public static partial class Atom
     {
-        readonly Atom<TIn, TIntermediary> _source;
-        readonly Predicate<TIntermediary> _predicate;
-
-        protected JunctionAtom(Atom<TIn, TIntermediary> source,
-            Predicate<TIntermediary> predicate)
+        public static JunctionAtom<TIn, TIntermediary, TOut> If<TIn, TIntermediary, TOut>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            Atom<TIntermediary, TOut> truthy,
+            Atom<TIntermediary, TOut> falsey)
         {
-            _source = source;
-            _predicate = predicate;
+            return new UnaryFuncAtomJunction<TIn, TIntermediary, TOut>(source, predicate, truthy, falsey);
         }
 
-        public async override Task<TOut> Charge(TIn input)
+        public static JunctionAtom<TIn, TIntermediary, TOut> If<TIn, TIntermediary, TOut>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            Func<TOut> truthy,
+            Func<TOut> falsey)
         {
-            var i = await _source.Charge(input);
-            return await(_predicate(i) ? OnTruthy(i) : OnFalsey(i));
+            return source.If(predicate, Of(truthy), Of(falsey));
         }
 
-        protected abstract Task<TOut> OnTruthy(TIntermediary intermediary);
+        public static JunctionAtom<TIn, TIntermediary, TOut> If<TIn, TIntermediary, TOut>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            NullaryFuncAtom<TOut> truthy,
+            NullaryFuncAtom<TOut> falsey)
+        {
+            return new NullaryFuncAtomJuction<TIn, TIntermediary, TOut>(source, predicate, truthy, falsey);
+        }
 
-        protected abstract Task<TOut> OnFalsey(TIntermediary intermediary);
+        public static UnaryActionAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            Action<TIntermediary> truthy,
+            Action<TIntermediary> falsey)
+        {
+            return source.If(predicate, Of(truthy), Of(falsey));
+        }
+
+        public static UnaryActionAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            UnaryActionAtom<TIntermediary> truthy,
+            UnaryActionAtom<TIntermediary> falsey)
+        {
+            return new UnaryActionAtomJunction<TIn, TIntermediary>(source, predicate, truthy, falsey);
+        }
+
+        public static ActionAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            Action truthy,
+            Action falsey)
+        {
+            return source.If(predicate, Of(truthy), Of(falsey));
+        }
+
+        public static ActionAtomJunction<TIn, TIntermediary> If<TIn, TIntermediary>(
+            this Atom<TIn, TIntermediary> source,
+            Predicate<TIntermediary> predicate,
+            ActionAtom truthy,
+            ActionAtom falsey
+            )
+        {
+            return new ActionAtomJunction<TIn, TIntermediary>(source, predicate, truthy, falsey);
+        }
     }
 }
