@@ -13,7 +13,10 @@ namespace Dependable.Core.Tests
             _method.Call(1).Returns(2);
             _method.Call(2).Returns(3);
 
-            Assert.Equal(3, await Atom.Of<int, int>(_method.Call).Connect(_method.Call).Charge(1));            
+            Assert.Equal(3, 
+                await Atom.Of((int i) => _method.Call(i))
+                .Connect(_method.Call)
+                .Charge(1));            
         }
         
         [Fact]
@@ -22,7 +25,10 @@ namespace Dependable.Core.Tests
             _method.Call(1).Returns(1);
             _method.Nullary().Returns(2);
 
-            Assert.Equal(2, await Atom.Of<int, int>(_method.Call).Connect(_method.Nullary).Charge(1));
+            Assert.Equal(2, 
+                await Atom.Of((int i) => _method.Call(i))
+                .Connect(_method.Nullary)
+                .Charge(1));
 
             Received.InOrder(() =>
             {
@@ -38,7 +44,10 @@ namespace Dependable.Core.Tests
             _method.Nullary().Returns(2);
 
             Assert.Equal(Value.None,
-                await Atom.Of<int, int>(_method.Call).Connect(_method.Nullary).Connect(_method.Naked).Charge(1));
+                await Atom.Of((int i) => _method.Call(i))
+                .Connect(_method.Nullary)
+                .Connect(_method.Naked)
+                .Charge(1));
 
             Received.InOrder(() =>
             {
@@ -46,6 +55,19 @@ namespace Dependable.Core.Tests
                 _method.Nullary();
                 _method.Naked();
             });
+        }
+
+        [Fact]
+        public async void AnonMethodConnection()
+        {
+            _method.Call(1).Returns(2);
+            _method.Call(2).Returns(3);
+
+            var v = await Atom.Of((int i) => _method.Call(i))
+                .Connect(i => _method.Call(i))
+                .Charge(1);
+
+            Assert.Equal(3, v);
         }
     }
 }

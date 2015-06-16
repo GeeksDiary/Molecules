@@ -34,5 +34,12 @@ namespace Dependable.Core.Tests
             Assert.Equal(Value.None, await Atom.Of(_method.Naked).Charge());
             _method.Received(1).Naked();
         }
+
+        [Fact]
+        public async void AnonMethod()
+        {
+            await Atom.Of(() => _method.Naked()).Charge();
+            _method.Received(1).Naked();
+        }
     }
 }
