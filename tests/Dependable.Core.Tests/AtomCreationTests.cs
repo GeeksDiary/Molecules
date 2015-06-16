@@ -24,14 +24,14 @@ namespace Dependable.Core.Tests
         [Fact]
         public async void UnaryActionAtom()
         {
-            Assert.Equal(Value.None, await Atom.Of<int>(_method.Void).Charge(1));
+            Assert.Equal(Unit.None, await Atom.Of<int>(_method.Void).Charge(1));
             _method.Received(1).Void(1);
         }
 
         [Fact]
         public async void ActionAtom()
         {
-            Assert.Equal(Value.None, await Atom.Of(_method.Naked).Charge());
+            Assert.Equal(Unit.None, await Atom.Of(_method.Naked).Charge());
             _method.Received(1).Naked();
         }
 
