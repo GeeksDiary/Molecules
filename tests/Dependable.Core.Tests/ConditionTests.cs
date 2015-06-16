@@ -2,7 +2,7 @@ using Xunit;
 
 namespace Dependable.Core.Tests
 {
-    public class JunctionAtomTests
+    public class ConditionTests
     {
         [Fact]
         public async void ShouldChooseTheCorrectTurnAtTheJunction()

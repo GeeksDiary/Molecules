@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace Dependable.Core
 {
-    public class IgnoreAtom<TIn, TOut> : Atom<TIn, Value>
+    public class IgnoreAtom<TIn, TOut> : Atom<TIn, Unit>
     {
         readonly Atom<TIn, TOut> _source;
 
@@ -11,10 +11,10 @@ namespace Dependable.Core
             _source = source;
         }
 
-        public async override Task<Value> Charge(TIn input)
+        public async override Task<Unit> Charge(TIn input)
         {
             await _source.Charge(input);
-            return await Task.FromResult(Value.None);
+            return await Task.FromResult(Unit.None);
         }
     }
 

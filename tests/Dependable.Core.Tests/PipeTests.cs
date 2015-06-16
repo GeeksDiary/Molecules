@@ -43,7 +43,7 @@ namespace Dependable.Core.Tests
             _method.Call(1).Returns(1);
             _method.Nullary().Returns(2);
 
-            Assert.Equal(Value.None,
+            Assert.Equal(Unit.None,
                 await Atom.Of((int i) => _method.Call(i))
                 .Pipe(_method.Nullary)
                 .Pipe(_method.Naked)

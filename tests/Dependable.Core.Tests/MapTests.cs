@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Dependable.Core.Tests
 {
-    public class AtomMappingTests
+    public class MapTests
     {
         [Fact]
         public async void MapsSourceToDestination()

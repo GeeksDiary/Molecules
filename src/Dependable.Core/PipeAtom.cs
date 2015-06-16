@@ -30,21 +30,21 @@ namespace Dependable.Core
             return first.Pipe(Of(second));
         }
 
-        public static PipeAtom<TIn, Value, TOut> Pipe<TIn, TIntermediate, TOut>(
+        public static PipeAtom<TIn, Unit, TOut> Pipe<TIn, TIntermediate, TOut>(
             this Atom<TIn, TIntermediate> first,
             Func<TOut> second)
         {
             return first.Ignore().Pipe(Of(second));
         }
 
-        public static PipeAtom<TIn, TIntermediary, Value> Pipe<TIn, TIntermediary>(
+        public static PipeAtom<TIn, TIntermediary, Unit> Pipe<TIn, TIntermediary>(
             this Atom<TIn, TIntermediary> first,
             Action<TIntermediary> second)
         {
             return first.Pipe(Of(second));
         }
 
-        public static PipeAtom<TIn, Value, Value> Pipe<TIn, TIntermediary>(
+        public static PipeAtom<TIn, Unit, Unit> Pipe<TIn, TIntermediary>(
             this Atom<TIn, TIntermediary> first,
             Action second)
         {
@@ -58,7 +58,7 @@ namespace Dependable.Core
             return new PipeAtom<TIn, TIntermediate, TOut>(first, second);
         }
 
-        public static JunctionAtom<TIn, TIntermediary, TOut> If<TIn, TIntermediary, TOut>(
+        public static ConditionAtom<TIn, TIntermediary, TOut> If<TIn, TIntermediary, TOut>(
             this Atom<TIn, TIntermediary> source,
             Predicate<TIntermediary> predicate,
             Func<TIntermediary, TOut> truthy,

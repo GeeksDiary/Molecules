@@ -23,7 +23,7 @@ namespace Dependable.Core
         }
     }
 
-    public class NullaryFuncAtomMap<TIntermediary, TOut> : UnaryFuncAtomMap<Value, TIntermediary, TOut>
+    public class NullaryFuncAtomMap<TIntermediary, TOut> : UnaryFuncAtomMap<Unit, TIntermediary, TOut>
     {
         public NullaryFuncAtomMap(NullaryFuncAtom<IEnumerable<TIntermediary>> source, Atom<TIntermediary, TOut> map) :
             base(source, map)
@@ -32,7 +32,7 @@ namespace Dependable.Core
 
         public async Task<IEnumerable<TOut>> Charge()
         {
-            return await base.Charge(Value.None);
+            return await base.Charge(Unit.None);
         }
     }
 

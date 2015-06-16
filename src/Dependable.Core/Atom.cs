@@ -24,26 +24,26 @@ namespace Dependable.Core
         }
     }
 
-    public class ActionAtom : UnaryFuncAtom<Value, Value>
+    public class ActionAtom : UnaryFuncAtom<Unit, Unit>
     {
-        internal ActionAtom(Func<Value, Task<Value>> impl) : base(impl)
+        internal ActionAtom(Func<Unit, Task<Unit>> impl) : base(impl)
         {
         }
 
-        public async Task<Value> Charge()
+        public async Task<Unit> Charge()
         {
-            return await base.Charge(Value.None);
+            return await base.Charge(Unit.None);
         }
     }
 
-    public class UnaryActionAtom<TIn> : UnaryFuncAtom<TIn, Value>
+    public class UnaryActionAtom<TIn> : UnaryFuncAtom<TIn, Unit>
     {
-        internal UnaryActionAtom(Func<TIn, Task<Value>> impl) : base(impl)
+        internal UnaryActionAtom(Func<TIn, Task<Unit>> impl) : base(impl)
         {
         }
     }
 
-    public class NullaryFuncAtom<TOut> : UnaryFuncAtom<Value, TOut>
+    public class NullaryFuncAtom<TOut> : UnaryFuncAtom<Unit, TOut>
     {
         internal NullaryFuncAtom(Func<Task<TOut>> impl) : base(v => impl())
         {
@@ -51,7 +51,7 @@ namespace Dependable.Core
 
         public async Task<TOut> Charge()
         {
-            return await base.Charge(Value.None);
+            return await base.Charge(Unit.None);
         }
     }
     
@@ -72,7 +72,7 @@ namespace Dependable.Core
             return new UnaryActionAtom<TIn>(i =>
             {
                 impl(i);
-                return Value.CompletedNone;
+                return Unit.CompletedUnit;
             });
         }
 
@@ -80,7 +80,7 @@ namespace Dependable.Core
         {
             return new ActionAtom(i => {
                 impl();
-                return Value.CompletedNone;
+                return Unit.CompletedUnit;
             });
         }         
     }
