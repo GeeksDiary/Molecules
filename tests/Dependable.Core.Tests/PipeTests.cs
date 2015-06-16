@@ -3,31 +3,31 @@ using Xunit;
 
 namespace Dependable.Core.Tests
 {
-    public class AtomConnectivityTests
+    public class PipeTests
     {
         readonly IMethod _method = Substitute.For<IMethod>();
         
         [Fact]
-        public async void PassThroughConnection()
+        public async void ToUnaryFuncAtom()
         {
             _method.Call(1).Returns(2);
             _method.Call(2).Returns(3);
 
             Assert.Equal(3, 
                 await Atom.Of((int i) => _method.Call(i))
-                .Connect(_method.Call)
+                .Pipe(_method.Call)
                 .Charge(1));            
         }
         
         [Fact]
-        public async void IgnoreIntermediaryConnection()
+        public async void ToFuncAtom()
         {
             _method.Call(1).Returns(1);
             _method.Nullary().Returns(2);
 
             Assert.Equal(2, 
                 await Atom.Of((int i) => _method.Call(i))
-                .Connect(_method.Nullary)
+                .Pipe(_method.Nullary)
                 .Charge(1));
 
             Received.InOrder(() =>
@@ -38,15 +38,15 @@ namespace Dependable.Core.Tests
         }
 
         [Fact]
-        public async void IgnoreAllConnection()
+        public async void ToActionAtom()
         {
             _method.Call(1).Returns(1);
             _method.Nullary().Returns(2);
 
             Assert.Equal(Value.None,
                 await Atom.Of((int i) => _method.Call(i))
-                .Connect(_method.Nullary)
-                .Connect(_method.Naked)
+                .Pipe(_method.Nullary)
+                .Pipe(_method.Naked)
                 .Charge(1));
 
             Received.InOrder(() =>
@@ -55,19 +55,6 @@ namespace Dependable.Core.Tests
                 _method.Nullary();
                 _method.Naked();
             });
-        }
-
-        [Fact]
-        public async void AnonMethodConnection()
-        {
-            _method.Call(1).Returns(2);
-            _method.Call(2).Returns(3);
-
-            var v = await Atom.Of((int i) => _method.Call(i))
-                .Connect(i => _method.Call(i))
-                .Charge(1);
-
-            Assert.Equal(3, v);
-        }
+        }        
     }
 }

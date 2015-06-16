@@ -155,35 +155,35 @@ namespace Dependable.Core
             return new IgnoreAtom<TIn, TOut>(source);
         } 
 
-        public static LinkAtom<TIn, TIntermediate, TOut> Connect<TIn, TIntermediate, TOut>(
+        public static LinkAtom<TIn, TIntermediate, TOut> Pipe<TIn, TIntermediate, TOut>(
             this Atom<TIn, TIntermediate> first,
             Func<TIntermediate, TOut> second)
         {
-            return first.Connect(Of(second));
+            return first.Pipe(Of(second));
         }
 
-        public static LinkAtom<TIn, Value, TOut> Connect<TIn, TIntermediate, TOut>(
+        public static LinkAtom<TIn, Value, TOut> Pipe<TIn, TIntermediate, TOut>(
             this Atom<TIn, TIntermediate> first,
             Func<TOut> second)
         {
-            return first.Ignore().Connect(Of(second));
+            return first.Ignore().Pipe(Of(second));
         }
 
-        public static LinkAtom<TIn, TIntermediary, Value> Connect<TIn, TIntermediary>(
+        public static LinkAtom<TIn, TIntermediary, Value> Pipe<TIn, TIntermediary>(
             this Atom<TIn, TIntermediary> first,
             Action<TIntermediary> second)
         {
-            return first.Connect(Of(second));
+            return first.Pipe(Of(second));
         }
 
-        public static LinkAtom<TIn, Value, Value> Connect<TIn, TIntermediary>(
+        public static LinkAtom<TIn, Value, Value> Pipe<TIn, TIntermediary>(
             this Atom<TIn, TIntermediary> first,
             Action second)
         {
-            return first.Ignore().Connect(Of(second));
+            return first.Ignore().Pipe(Of(second));
         }
 
-        public static LinkAtom<TIn, TIntermediate, TOut> Connect<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
+        public static LinkAtom<TIn, TIntermediate, TOut> Pipe<TIn, TIntermediate, TOut>(this Atom<TIn, TIntermediate> first,
             Atom<TIntermediate, TOut> second)
         {
             return new LinkAtom<TIn, TIntermediate, TOut>(first, second);
