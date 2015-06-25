@@ -22,6 +22,23 @@ namespace Dependable.Core.Tests
 
         public IntegrationTest()
         {
+            /*
+                A hypothetical workflow which consumes a few API services.
+
+                It's executed with a string parameter indicating an email
+                address of a person.
+                
+                First it attempts to load user profile for the given email.
+                Then it uses the Twitter handle available in profile to retrieve 
+                recent tweets by that person.
+                Recent tweets are then piped into a psychological assessment 
+                service for evaluation.
+                If 5 or more recent tweets were evaluated as aggravated, 
+                workflow will use medicate number in profile to retrieve 
+                recent prescription medicine obtain by the user.
+                Finally, it returns a result with user profile and the list 
+                of recent prescription medication if there was any.
+            */
             _workflow =
                 from profile in Atom.Of<string, Profile>(s => _api.LoadProfile(s))
                 from tweets in Atom.Of(() => _api.RecentTweets(profile.TwitterHandle))
