@@ -44,7 +44,7 @@ namespace Dependable.Core
             Func<TSource, TOut> truthy,
             Func<TSource, TOut> falsey)
         {
-            return If(source, predicate, From(truthy), From(falsey));
+            return If(source, predicate, Of(truthy), Of(falsey));
         }
 
         public static Atom<TOut> If<TSource, TOut>(this Atom<TSource> source,
@@ -52,7 +52,7 @@ namespace Dependable.Core
             Func<TOut> truthy,
             Func<TOut> falsey)
         {
-            return If(source, predicate, From(truthy), From(falsey));
+            return If(source, predicate, Of(truthy), Of(falsey));
         }
     }
 }

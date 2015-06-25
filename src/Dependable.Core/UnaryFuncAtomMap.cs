@@ -36,14 +36,14 @@ namespace Dependable.Core
             this Atom<IEnumerable<TSource>> source,
             Func<TSource, TOut> map)
         {
-            return Map(source, From(map));
+            return Map(source, Of(map));
         }
 
         public static MapAtom<TSource, TOut> Map<TSource, TOut>(
             this Atom<IEnumerable<TSource>> source,
             Func<TOut> map)
         {
-            return Map(source, From(map));
+            return Map(source, Of(map));
         }
     }
 }

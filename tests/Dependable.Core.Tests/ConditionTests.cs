@@ -7,7 +7,7 @@ namespace Dependable.Core.Tests
         [Fact]
         public async void ShouldChooseTheCorrectTurnAtTheJunction()
         {
-            var f = Atom.From<bool, bool>(b => b)
+            var f = Atom.Of<bool, bool>(b => b)
                         .If(b => b, 
                             () => "a", 
                             () => "b");

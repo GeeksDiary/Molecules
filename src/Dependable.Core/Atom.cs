@@ -24,22 +24,22 @@ namespace Dependable.Core
     
     public static partial class Atom
     {
-        public static Atom<TOut> From<TIn, TOut>(Func<TIn, TOut> impl)
+        public static Atom<TOut> Of<TIn, TOut>(Func<TIn, TOut> impl)
         {
-            return From<TIn, TOut>(i => Task.FromResult(impl(i)));
+            return Of<TIn, TOut>(i => Task.FromResult(impl(i)));
         }
 
-        public static Atom<T> From<T>(Func<T> impl)
+        public static Atom<T> Of<T>(Func<T> impl)
         {
-            return From(() => Task.FromResult(impl()));
+            return Of(() => Task.FromResult(impl()));
         }
 
-        public static Atom<T> From<T>(Func<Task<T>> impl)
+        public static Atom<T> Of<T>(Func<Task<T>> impl)
         {
             return new Atom<T>(_ => impl());
         }
 
-        public static Atom<TOut> From<TIn, TOut>(Func<TIn, Task<TOut>> impl)
+        public static Atom<TOut> Of<TIn, TOut>(Func<TIn, Task<TOut>> impl)
         {
             return new Atom<TOut>(i => impl((TIn)i));
         }

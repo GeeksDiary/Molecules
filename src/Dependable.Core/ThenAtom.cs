@@ -27,14 +27,14 @@ namespace Dependable.Core
             this Atom<TIn> first,
             Func<TOut> second)
         {
-            return first.Then(From(second));
+            return first.Then(Of(second));
         }
 
         public static ThenAtom<TIn, TOut> Then<TIn, TOut>(
             this Atom<TIn> first,
             Func<TIn, TOut> second)
         {
-            return first.Then(From(second));
+            return first.Then(Of(second));
         }
         
         public static ThenAtom<TIn, TOut> Then<TIn, TOut>(
