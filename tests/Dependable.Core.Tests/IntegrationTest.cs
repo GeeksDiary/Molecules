@@ -40,7 +40,7 @@ namespace Dependable.Core.Tests
                 of recent prescription medication if there was any.
             */
             _workflow =
-                from profile in Atom.Of<string, Profile>(s => _api.LoadProfile(s))
+                from profile in Atom.Of((string s) => _api.LoadProfile(s))
                 from tweets in Atom.Of(() => _api.RecentTweets(profile.TwitterHandle))
                     .Map(tweet => _api.PsychologicalAssessment(tweet.Text))
                     .If(

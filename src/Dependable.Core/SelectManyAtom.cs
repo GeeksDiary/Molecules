@@ -6,8 +6,8 @@ namespace Dependable.Core
 {
     public class SelectManyAtom<TFirst, TSecond, TOut> : Atom<TOut>
     {
-        Func<TFirst, Atom<TSecond>> _selector;
-        Func<TFirst, TSecond, TOut> _projector;
+        readonly Func<TFirst, Atom<TSecond>> _selector;
+        readonly Func<TFirst, TSecond, TOut> _projector;
 
         public Atom<TFirst> Source { get; }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Dependable.Core
@@ -30,9 +31,9 @@ namespace Dependable.Core
 
     public static partial class Atom
     {
-        public static UnitAtom Of(Action impl)
+        public static UnitAtom Of(Expression<Action> impl)
         {
-            return new UnitAtom(impl);
+            return new UnitAtom(impl.Compile());
         }
 
         public static UnitAtom Of(Func<Task> impl)
