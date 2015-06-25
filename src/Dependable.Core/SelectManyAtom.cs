@@ -5,24 +5,26 @@ namespace Dependable.Core
 {
     public class SelectManyAtom<TFirst, TSecond, TOut> : Atom<TOut>
     {
-        readonly Atom<TFirst> _first;
-        readonly Func<TFirst, Atom<TSecond>> _second;
-        readonly Func<TFirst, TSecond, TOut> _projector;
+        public Atom<TFirst> First { get; }
+
+        public Func<TFirst, Atom<TSecond>> Second { get; }
+
+        public Func<TFirst, TSecond, TOut> Projector { get; }
 
         public SelectManyAtom(Atom<TFirst> first, 
             Func<TFirst, Atom<TSecond>> second, 
             Func<TFirst, TSecond, TOut> projector)
         {
-            _first = first;
-            _second = second;
-            _projector = projector;
+            First = first;
+            Second = second;
+            Projector = projector;
         }
         
         public override async Task<TOut> Charge(object input = null)
         {
-            var first = await _first.Charge(input);
-            var second = await _second(first).Charge();
-            return _projector(first, second);
+            var first = await First.Charge(input);
+            var second = await Second(first).Charge();
+            return Projector(first, second);
         }
     }
 

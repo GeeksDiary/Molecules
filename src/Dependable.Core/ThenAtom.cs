@@ -5,19 +5,20 @@ namespace Dependable.Core
 {
     public class ThenAtom<TFirst, TSecond> : Atom<TSecond>
     {
-        readonly Atom<TFirst> _first;
-        readonly Atom<TSecond> _second;
+        public Atom<TFirst> First { get; }
+
+        public Atom<TSecond> Second { get; }
 
         public ThenAtom(Atom<TFirst> first, Atom<TSecond> second)
         {
-            _first = first;
-            _second = second;
+            First = first;
+            Second = second;
         }
 
         public override async Task<TSecond> Charge(object input = null)
         {
-            var i = await _first.Charge(input);
-            return await _second.Charge(i);
+            var i = await First.Charge(input);
+            return await Second.Charge(i);
         }
     }
 

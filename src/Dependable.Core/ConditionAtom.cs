@@ -5,26 +5,26 @@ namespace Dependable.Core
 {
     public class ConditionAtom<TSource, TOut> : Atom<TOut>
     {
-        readonly Atom<TSource> _source;
-        readonly Predicate<TSource> _predicate;
-        readonly Atom<TOut> _truthy;
-        readonly Atom<TOut> _falsey;
+        public Atom<TSource> Source { get; }
+        public Predicate<TSource> Condition { get; }
+        public Atom<TOut> Truthy { get; }
+        public Atom<TOut> Falsey { get; }
 
         public ConditionAtom(Atom<TSource> source,
             Predicate<TSource> predicate,
             Atom<TOut> truthy,
             Atom<TOut> falsey)
         {
-            _source = source;
-            _predicate = predicate;
-            _truthy = truthy;
-            _falsey = falsey;
+            Source = source;
+            Condition = predicate;
+            Truthy = truthy;
+            Falsey = falsey;
         }
 
         public async override Task<TOut> Charge(object input = null)
         {
-            var i = await _source.Charge(input);
-            var next = _predicate(i) ? _truthy : _falsey;
+            var i = await Source.Charge(input);
+            var next = Condition(i) ? Truthy : Falsey;
             return await next.Charge(i);
         }        
     }

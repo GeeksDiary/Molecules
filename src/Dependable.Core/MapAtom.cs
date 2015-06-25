@@ -7,19 +7,19 @@ namespace Dependable.Core
 {
     public class MapAtom<TSource, TOut> : Atom<IEnumerable<TOut>>
     {
-        readonly Atom<IEnumerable<TSource>> _source;
-        readonly Atom<TOut> _map;
+        public Atom<IEnumerable<TSource>> Source { get; }
+        public Atom<TOut> Map { get; }
 
         public MapAtom(Atom<IEnumerable<TSource>> source, Atom<TOut> map)
         {
-            _source = source;
-            _map = map;
+            Source = source;
+            Map = map;
         }
 
         public async override Task<IEnumerable<TOut>> Charge(object input = null)
         {
-            var d = await _source.Charge(input);
-            return await Task.WhenAll(d.Select(i => _map.Charge(i)));
+            var d = await Source.Charge(input);
+            return await Task.WhenAll(d.Select(i => Map.Charge(i)));
         }
     }
     
