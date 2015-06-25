@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Dependable.Core
@@ -41,16 +42,16 @@ namespace Dependable.Core
 
         public static Atom<TOut> If<TSource, TOut>(this Atom<TSource> source,
             Predicate<TSource> predicate,
-            Func<TSource, TOut> truthy,
-            Func<TSource, TOut> falsey)
+            Expression<Func<TSource, TOut>> truthy,
+            Expression<Func<TSource, TOut>> falsey)
         {
             return If(source, predicate, Of(truthy), Of(falsey));
         }
 
         public static Atom<TOut> If<TSource, TOut>(this Atom<TSource> source,
             Predicate<TSource> predicate,
-            Func<TOut> truthy,
-            Func<TOut> falsey)
+            Expression<Func<TOut>> truthy,
+            Expression<Func<TOut>> falsey)
         {
             return If(source, predicate, Of(truthy), Of(falsey));
         }

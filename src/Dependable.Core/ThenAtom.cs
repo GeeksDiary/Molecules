@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Dependable.Core
@@ -26,14 +27,14 @@ namespace Dependable.Core
     {
         public static ThenAtom<TIn, TOut> Then<TIn, TOut>(
             this Atom<TIn> first,
-            Func<TOut> second)
+            Expression<Func<TOut>> second)
         {
             return first.Then(Of(second));
         }
 
         public static ThenAtom<TIn, TOut> Then<TIn, TOut>(
             this Atom<TIn> first,
-            Func<TIn, TOut> second)
+            Expression<Func<TIn, TOut>> second)
         {
             return first.Then(Of(second));
         }
@@ -45,7 +46,8 @@ namespace Dependable.Core
             return new ThenAtom<TIn, TOut>(first, second);
         }
         
-        public static Atom<TOut> Select<TIn, TOut>(this Atom<TIn> atom, Func<TIn, TOut> projector)
+        public static Atom<TOut> Select<TIn, TOut>(this Atom<TIn> atom, 
+            Expression<Func<TIn, TOut>> projector)
         {
             return atom.Then(projector);
         }

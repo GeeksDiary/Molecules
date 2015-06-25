@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Dependable.Core
@@ -34,14 +35,14 @@ namespace Dependable.Core
 
         public static MapAtom<TSource, TOut> Map<TSource, TOut>(
             this Atom<IEnumerable<TSource>> source,
-            Func<TSource, TOut> map)
+            Expression<Func<TSource, TOut>> map)
         {
             return Map(source, Of(map));
         }
 
         public static MapAtom<TSource, TOut> Map<TSource, TOut>(
             this Atom<IEnumerable<TSource>> source,
-            Func<TOut> map)
+            Expression<Func<TOut>> map)
         {
             return Map(source, Of(map));
         }

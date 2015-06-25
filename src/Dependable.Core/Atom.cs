@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Dependable.Core
@@ -7,13 +8,16 @@ namespace Dependable.Core
     {
         readonly Func<object, Task<T>> _impl;
 
+        public Expression Body { get; }
+    
         internal Atom()
         {            
         }
 
-        internal Atom(Func<object, Task<T>> impl)
+        internal Atom(Func<object, Task<T>> impl, Expression body)
         {
             _impl = impl;
+            Body = body;
         }
 
         public virtual Task<T> Charge(object input = null)
@@ -24,24 +28,33 @@ namespace Dependable.Core
     
     public static partial class Atom
     {
-        public static Atom<TOut> Of<TIn, TOut>(Func<TIn, TOut> impl)
+        static Atom<TOut> Of<TIn, TOut>(Func<TIn, Task<TOut>> impl, Expression body)
         {
-            return Of<TIn, TOut>(i => Task.FromResult(impl(i)));
+            return new Atom<TOut>(i => impl((TIn)i), body);
         }
 
-        public static Atom<T> Of<T>(Func<T> impl)
+        public static Atom<TOut> Of<TIn, TOut>(Expression<Func<TIn, Task<TOut>>> body)
         {
-            return Of(() => Task.FromResult(impl()));
+            var compiled = body.Compile();
+            return Of(compiled, body);
         }
 
-        public static Atom<T> Of<T>(Func<Task<T>> impl)
+        public static Atom<TOut> Of<TIn, TOut>(Expression<Func<TIn, TOut>> body)
         {
-            return new Atom<T>(_ => impl());
+            var compiled = body.Compile();
+            return Of<TIn, TOut>(i => Task.FromResult(compiled(i)), body);
         }
 
-        public static Atom<TOut> Of<TIn, TOut>(Func<TIn, Task<TOut>> impl)
+        public static Atom<T> Of<T>(Expression<Func<T>> body)
         {
-            return new Atom<TOut>(i => impl((TIn)i));
+            var compiled = body.Compile();
+            return Of<object, T>(_ => Task.FromResult(compiled()), body);
         }
+
+        public static Atom<T> Of<T>(Expression<Func<Task<T>>> body)
+        {
+            var compiled = body.Compile();
+            return Of<object, T>(_ => compiled(), body);
+        }             
     }    
 }
