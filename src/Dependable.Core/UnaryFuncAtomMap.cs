@@ -5,52 +5,45 @@ using System.Threading.Tasks;
 
 namespace Dependable.Core
 {
-    public class UnaryFuncAtomMap<TIn, TIntermediary, TOut> : Atom<TIn, IEnumerable<TOut>>
+    public class MapAtom<TSource, TOut> : Atom<IEnumerable<TOut>>
     {
-        readonly Atom<TIn, IEnumerable<TIntermediary>> _source;
-        readonly Atom<TIntermediary, TOut> _map;
+        readonly Atom<IEnumerable<TSource>> _source;
+        readonly Atom<TOut> _map;
 
-        public UnaryFuncAtomMap(Atom<TIn, IEnumerable<TIntermediary>> source, Atom<TIntermediary, TOut> map)
+        public MapAtom(Atom<IEnumerable<TSource>> source, Atom<TOut> map)
         {
             _source = source;
             _map = map;
         }
 
-        public async override Task<IEnumerable<TOut>> Charge(TIn input)
+        public async override Task<IEnumerable<TOut>> Charge(object input = null)
         {
             var d = await _source.Charge(input);
             return await Task.WhenAll(d.Select(i => _map.Charge(i)));
         }
     }
-
-    public class NullaryFuncAtomMap<TIntermediary, TOut> : UnaryFuncAtomMap<Unit, TIntermediary, TOut>
-    {
-        public NullaryFuncAtomMap(NullaryFuncAtom<IEnumerable<TIntermediary>> source, Atom<TIntermediary, TOut> map) :
-            base(source, map)
-        {
-        }
-
-        public async Task<IEnumerable<TOut>> Charge()
-        {
-            return await base.Charge(Unit.None);
-        }
-    }
-
-
+    
     public static partial class Atom
     {
-        public static UnaryFuncAtomMap<TIn, TIntermediary, TOut> Map<TIn, TIntermediary, TOut>(
-            this Atom<TIn, IEnumerable<TIntermediary>> source,
-            Func<TIntermediary, TOut> map)
+        public static MapAtom<TSource, TOut> Map<TSource, TOut>(
+            this Atom<IEnumerable<TSource>> source,
+            Atom<TOut> map)
         {
-            return new UnaryFuncAtomMap<TIn, TIntermediary, TOut>(source, Of(map));
+            return new MapAtom<TSource, TOut>(source, map);
         }
 
-        public static NullaryFuncAtomMap<TIntermediary, TOut> Map<TIntermediary, TOut>(
-            this NullaryFuncAtom<IEnumerable<TIntermediary>> source,
-            Func<TIntermediary, TOut> map)
+        public static MapAtom<TSource, TOut> Map<TSource, TOut>(
+            this Atom<IEnumerable<TSource>> source,
+            Func<TSource, TOut> map)
         {
-            return new NullaryFuncAtomMap<TIntermediary, TOut>(source, Of(map));
+            return Map(source, From(map));
+        }
+
+        public static MapAtom<TSource, TOut> Map<TSource, TOut>(
+            this Atom<IEnumerable<TSource>> source,
+            Func<TOut> map)
+        {
+            return Map(source, From(map));
         }
     }
 }

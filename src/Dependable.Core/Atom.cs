@@ -3,84 +3,45 @@ using System.Threading.Tasks;
 
 namespace Dependable.Core
 {
-    public abstract class Atom<TIn, TOut>
+    public class Atom<T>
     {
-        public abstract Task<TOut> Charge(TIn input);
-    }
+        readonly Func<object, Task<T>> _impl;
 
-    public class UnaryFuncAtom<TIn, TOut> : Atom<TIn, TOut>
-    {
-        readonly Func<TIn, Task<TOut>> _impl;
+        internal Atom()
+        {            
+        }
 
-        internal UnaryFuncAtom(Func<TIn, Task<TOut>> impl)
+        internal Atom(Func<object, Task<T>> impl)
         {
             _impl = impl;
         }
 
-        public override Task<TOut> Charge(TIn input)
+        public virtual Task<T> Charge(object input = null)
         {
             return _impl(input);
-        }
-    }
-
-    public class ActionAtom : UnaryFuncAtom<Unit, Unit>
-    {
-        internal ActionAtom(Func<Unit, Task<Unit>> impl) : base(impl)
-        {
-        }
-
-        public async Task<Unit> Charge()
-        {
-            return await base.Charge(Unit.None);
-        }
-    }
-
-    public class UnaryActionAtom<TIn> : UnaryFuncAtom<TIn, Unit>
-    {
-        internal UnaryActionAtom(Func<TIn, Task<Unit>> impl) : base(impl)
-        {
-        }
-    }
-
-    public class NullaryFuncAtom<TOut> : UnaryFuncAtom<Unit, TOut>
-    {
-        internal NullaryFuncAtom(Func<Task<TOut>> impl) : base(v => impl())
-        {
-        }
-
-        public async Task<TOut> Charge()
-        {
-            return await base.Charge(Unit.None);
         }
     }
     
     public static partial class Atom
     {
-        public static UnaryFuncAtom<TIn, TOut> Of<TIn, TOut>(Func<TIn, TOut> impl)
+        public static Atom<TOut> From<TIn, TOut>(Func<TIn, TOut> impl)
         {
-            return new UnaryFuncAtom<TIn, TOut>(i => Task.FromResult(impl(i)));
+            return From<TIn, TOut>(i => Task.FromResult(impl(i)));
         }
 
-        public static NullaryFuncAtom<TOut> Of<TOut>(Func<TOut> impl)
+        public static Atom<T> From<T>(Func<T> impl)
         {
-            return new NullaryFuncAtom<TOut>(() => Task.FromResult(impl()));
+            return From(() => Task.FromResult(impl()));
         }
 
-        public static UnaryActionAtom<TIn> Of<TIn>(Action<TIn> impl)
+        public static Atom<T> From<T>(Func<Task<T>> impl)
         {
-            return new UnaryActionAtom<TIn>(i =>
-            {
-                impl(i);
-                return Unit.CompletedUnit;
-            });
+            return new Atom<T>(_ => impl());
         }
 
-        public static ActionAtom Of(Action impl)
+        public static Atom<TOut> From<TIn, TOut>(Func<TIn, Task<TOut>> impl)
         {
-            return new ActionAtom(i => {
-                impl();
-                return Unit.CompletedUnit;
-            });
-        }         
-    }
+            return new Atom<TOut>(i => impl((TIn)i));
+        }
+    }    
 }
