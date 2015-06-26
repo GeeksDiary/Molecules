@@ -7,6 +7,7 @@ namespace Dependable.Core
     public class RetryAtom<T> : Atom<T>
     {
         public Atom<T> Source { get; }
+
         public int Count { get; }
 
         public TimeSpan Delay { get; private set; }
