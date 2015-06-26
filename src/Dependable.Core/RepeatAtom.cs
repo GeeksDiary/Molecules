@@ -25,4 +25,12 @@ namespace Dependable.Core
             return results;
         }
     }
+
+    public static partial class Atom
+    {
+        public static RepeatAtom<T> Repeat<T>(this Atom<T> source, int count)
+        {
+            return new RepeatAtom<T>(source, count);
+        }
+    }
 }
