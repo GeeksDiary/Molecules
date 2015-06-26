@@ -41,11 +41,12 @@ namespace Molecules.Core
 
                     if (--remainingAttempts == 0)
                         throw;
-
-                    if (Delay != TimeSpan.Zero)
-                        await Task.Delay(Delay);
+                    
                 }
-            }            
+
+                if (Delay != TimeSpan.Zero)
+                    await Task.Delay(Delay);
+            }
         }
     }
 
