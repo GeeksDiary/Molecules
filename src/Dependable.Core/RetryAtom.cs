@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Dependable.Core.Utilities;
 
 namespace Dependable.Core
 {
@@ -24,8 +25,11 @@ namespace Dependable.Core
                 {
                     return await Source.Charge(input);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    if (e.IsFatal())
+                        throw;
+
                     if (--remainingAttempts == 0)
                         throw;
                 }
