@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Xunit;
@@ -46,5 +47,29 @@ namespace Dependable.Core.Tests
             Assert.Equal(1, await a.Charge(1));
             _api.Received(2).Call(1);
         }
+
+        [Fact]
+        public async void ShouldWaitBeforeRetrying()
+        {
+            var q = new Queue<Action>();
+            var watch = new Stopwatch();
+            q.Enqueue(() =>
+            {
+                watch.Start();
+                throw new InvalidOperationException();
+            });
+
+            q.Enqueue(() =>
+            {
+                watch.Stop();
+            });
+
+            await Atom.Of(() => q.Dequeue()())
+                .Retry(1)
+                .After(TimeSpan.FromSeconds(2))
+                .Charge();
+
+            Assert.True(watch.Elapsed >= TimeSpan.FromSeconds(2));
+        }       
     }
 }

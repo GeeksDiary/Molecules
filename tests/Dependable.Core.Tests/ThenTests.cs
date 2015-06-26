@@ -5,24 +5,46 @@ namespace Dependable.Core.Tests
 {
     public class ThenTests
     {
-        readonly IApi _api = Substitute.For<IApi>();
-        
+        readonly ISignature _signature = Substitute.For<ISignature>();
+
         [Fact]
-        public async void StandardQueryOperator()
+        public async void ShouldPipeFirstAtomsOutputToNext()
         {
-            _api.Call(1).Returns(2);
-            _api.Call(2).Returns(3);
-            _api.Call(3).Returns(4);
+            _signature.Func(1).Returns(2);
+            _signature.Func(2).Returns(3);
 
-            var k = 
-                from a in Atom.Of<int, int>(i => _api.Call(i))
-                from b in Atom.Of(() => _api.Call(a))
-                from c in Atom.Of(() => _api.Call(b))
-                select a + b + c;
+            Assert.Equal(3,
+                await Atom.Of((int i) => _signature.Func(i))
+                    .Then(i => _signature.Func(i))
+                    .Charge(1));
 
-            var result = await k.Charge(1);
+            await Atom.Of((int i) => _signature.Func(i))
+                .Then(i => _signature.Action(i))
+                .Charge(1);
 
-            Assert.Equal(9, result);
-        }     
+            _signature.Received(1).Action(2);
+        }
+
+        [Fact]
+        public async void ShouldIgnoreFirstOutputIfNextDoesNotRequireInput()
+        {
+            _signature.Func(1).Returns(2);
+            _signature.Func().Returns(3);
+
+            Assert.Equal(3,
+                await Atom.Of((int i) => _signature.Func(i))
+                    .Then(() => _signature.Func())
+                    .Charge(1));
+        }
+
+        [Fact]
+        public async void ShouldConnectMultipleActions()
+        {
+            await Atom.Of(() => _signature.Action())
+                .Then(() => _signature.Action())
+                .Charge();
+
+            _signature.Received(2).Action();
+        }
     }
 }

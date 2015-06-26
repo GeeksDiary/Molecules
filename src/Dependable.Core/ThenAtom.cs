@@ -45,7 +45,21 @@ namespace Dependable.Core
         {
             return new ThenAtom<TIn, TOut>(first, second);
         }
-        
+
+        public static ThenAtom<T, Unit> Then<T>(
+            this Atom<T> first,
+            Expression<Action<T>> second)
+        {
+            return first.Then(Of(second));
+        }
+
+        public static ThenAtom<T, Unit> Then<T>(
+            this Atom<T> first,
+            Expression<Action> second)
+        {
+            return first.Then(Of(second));
+        }
+
         public static Atom<TOut> Select<TIn, TOut>(this Atom<TIn> atom, 
             Expression<Func<TIn, TOut>> projector)
         {

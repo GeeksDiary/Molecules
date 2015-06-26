@@ -9,10 +9,18 @@ namespace Dependable.Core
         public Atom<T> Source { get; }
         public int Count { get; }
 
+        public TimeSpan Delay { get; private set; }
+
         public RetryAtom(Atom<T> source, int count)
         {
             Source = source;
             Count = count;
+        }
+
+        public RetryAtom<T> After(TimeSpan delay)
+        {
+            Delay = delay;
+            return this;
         }
 
         protected async override Task<T> OnCharge(object input = null)
@@ -32,6 +40,9 @@ namespace Dependable.Core
 
                     if (--remainingAttempts == 0)
                         throw;
+
+                    if (Delay != TimeSpan.Zero)
+                        await Task.Delay(Delay);
                 }
             }            
         }
