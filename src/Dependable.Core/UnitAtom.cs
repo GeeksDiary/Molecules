@@ -4,41 +4,63 @@ using System.Threading.Tasks;
 
 namespace Dependable.Core
 {
-    public class UnitAtom : Atom<Unit>
+    public class UnitAtom : FuncAtom<Unit>
     {
-        public Func<Task> Action { get; }
-
-        public UnitAtom(Action action)
+        internal UnitAtom(Func<object, Task<Unit>> impl, Expression body) :
+            base(impl, body)
         {
-            Action = () =>
-            {
-                action();
-                return Unit.CompletedTask;
-            };
-        }
-
-        public UnitAtom(Func<Task> action)
-        {
-            Action = action;
-        }
-
-        public override async Task<Unit> Charge(object input = null)
-        {
-            await Action();
-            return Unit.Value;
         }
     }
 
     public static partial class Atom
     {
-        public static UnitAtom Of(Expression<Action> impl)
+        static UnitAtom Of(Func<Task<Unit>> impl, Expression body)
         {
-            return new UnitAtom(impl.Compile());
+            return new UnitAtom(_ => impl(), body);
         }
 
-        public static UnitAtom Of(Func<Task> impl)
+        public static UnitAtom Of(Expression<Func<Task>> body)
         {
-            return new UnitAtom(impl);
+            var compiled = body.Compile();
+            return Of(async () =>
+            {
+                await compiled();
+                return Unit.Value;
+            }, body);
+        }
+
+        public static UnitAtom Of(Expression<Action> body)
+        {
+            var compiled = body.Compile();            
+            return Of(() => {
+                compiled();
+                return Unit.CompletedTask;
+            }, body);
+        }
+
+        static UnitAtom Of<T>(Func<T, Task<Unit>> impl, Expression body)
+        {
+            return new UnitAtom(i => impl((T)i), body);
+        }
+
+        public static UnitAtom Of<T>(Expression<Action<T>> body)
+        {
+            var compiled = body.Compile();
+            return Of<T>(i =>
+            {
+                compiled(i);
+                return Unit.CompletedTask;
+            }, body);
+        }
+
+        public static UnitAtom Of<T>(Expression<Func<T, Task>> body)
+        {
+            var compiled = body.Compile();
+            return Of<T>(async i =>
+            {
+                await compiled(i);
+                return Unit.Value;
+            }, body);
         }
     }
 }
