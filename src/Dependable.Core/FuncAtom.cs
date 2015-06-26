@@ -16,7 +16,7 @@ namespace Dependable.Core
             Body = body;
         }
 
-        public override Task<T> Charge(object input = null)
+        protected override Task<T> OnCharge(object input = null)
         {
             return _impl(input);
         }

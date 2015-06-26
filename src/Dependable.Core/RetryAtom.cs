@@ -14,7 +14,7 @@ namespace Dependable.Core
             Count = count;
         }
 
-        public async override Task<T> Charge(object input = null)
+        protected async override Task<T> OnCharge(object input = null)
         {
             var remainingAttempts = Count + 1;
 

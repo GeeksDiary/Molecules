@@ -16,7 +16,7 @@ namespace Dependable.Core
             Second = second;
         }
 
-        public override async Task<TSecond> Charge(object input = null)
+        protected override async Task<TSecond> OnCharge(object input = null)
         {
             var i = await First.Charge(input);
             return await Second.Charge(i);

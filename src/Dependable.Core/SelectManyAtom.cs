@@ -26,8 +26,8 @@ namespace Dependable.Core
             _selector = selector.Compile();
             _projector = projector.Compile();
         }
-        
-        public override async Task<TOut> Charge(object input = null)
+
+        protected override async Task<TOut> OnCharge(object input = null)
         {
             var first = await Source.Charge(input);
             var second = await _selector(first).Charge();

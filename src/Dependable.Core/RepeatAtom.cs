@@ -15,7 +15,7 @@ namespace Dependable.Core
             Count = count;
         }
 
-        public override async Task<IEnumerable<T>> Charge(object input = null)
+        protected override async Task<IEnumerable<T>> OnCharge(object input = null)
         {
             var results = new T[Count];
 

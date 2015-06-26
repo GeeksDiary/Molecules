@@ -17,7 +17,7 @@ namespace Dependable.Core
             Map = map;
         }
 
-        public async override Task<IEnumerable<TOut>> Charge(object input = null)
+        protected async override Task<IEnumerable<TOut>> OnCharge(object input = null)
         {
             var d = await Source.Charge(input);
             return await Task.WhenAll(d.Select(i => Map.Charge(i)));

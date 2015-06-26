@@ -22,7 +22,7 @@ namespace Dependable.Core
             Falsey = falsey;
         }
 
-        public async override Task<TOut> Charge(object input = null)
+        protected async override Task<TOut> OnCharge(object input = null)
         {
             var i = await Source.Charge(input);
             var next = Condition(i) ? Truthy : Falsey;
