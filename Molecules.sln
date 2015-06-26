@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22823.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1F9969B-C4E1-4707-8937-94801485E4A7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{4BBE9301-06A1-4BA6-B53C-CA4EF65171EC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{03F70D3D-D373-4E67-894B-69325BED38D5}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Molecules.Core", "src\Molecules.Core\Molecules.Core.csproj", "{C181FE76-4325-47DE-BFEE-49A91AE1AFC9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Molecules.Core.Tests", "tests\Molecules.Core.Tests\Molecules.Core.Tests.csproj", "{1E8D4F6D-EF05-4160-BB8B-687F5DB5704F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C181FE76-4325-47DE-BFEE-49A91AE1AFC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C181FE76-4325-47DE-BFEE-49A91AE1AFC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C181FE76-4325-47DE-BFEE-49A91AE1AFC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C181FE76-4325-47DE-BFEE-49A91AE1AFC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E8D4F6D-EF05-4160-BB8B-687F5DB5704F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E8D4F6D-EF05-4160-BB8B-687F5DB5704F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E8D4F6D-EF05-4160-BB8B-687F5DB5704F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E8D4F6D-EF05-4160-BB8B-687F5DB5704F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C181FE76-4325-47DE-BFEE-49A91AE1AFC9} = {A1F9969B-C4E1-4707-8937-94801485E4A7}
+		{1E8D4F6D-EF05-4160-BB8B-687F5DB5704F} = {4BBE9301-06A1-4BA6-B53C-CA4EF65171EC}
+	EndGlobalSection
+EndGlobal
