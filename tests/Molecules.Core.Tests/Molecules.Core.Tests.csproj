@@ -70,6 +70,7 @@
     <Compile Include="RetryTests.cs" />
     <Compile Include="SelectManyTests.cs" />
     <Compile Include="ThenTests.cs" />
+    <Compile Include="WhileTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Molecules.Core\Molecules.Core.csproj">

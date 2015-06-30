@@ -22,20 +22,33 @@ namespace Molecules.Core
         }
     }
 
+    public class FuncAtom<TIn, TOut> : FuncAtom<TOut>
+    {
+        internal FuncAtom(Func<TIn, Task<TOut>> impl, Expression body) :
+            base(o => impl((TIn)o), body)
+        {
+        }
+    }
+
     public static partial class Atom
     {
-        static Atom<TOut> Of<TIn, TOut>(Func<TIn, Task<TOut>> impl, Expression body)
+        static FuncAtom<TIn, TOut> Of<TIn, TOut>(Func<TIn, Task<TOut>> impl, Expression body)
         {
-            return new FuncAtom<TOut>(i => impl((TIn)i), body);
+            return new FuncAtom<TIn, TOut>(impl, body);
         }
 
-        public static Atom<TOut> Of<TIn, TOut>(Expression<Func<TIn, Task<TOut>>> body)
+        static FuncAtom<TOut> Of<TOut>(Func<Task<TOut>> impl, Expression body)
+        {
+            return new FuncAtom<TOut>(_ => impl(), body);
+        }
+
+        public static FuncAtom<TIn, TOut> Of<TIn, TOut>(Expression<Func<TIn, Task<TOut>>> body)
         {
             var compiled = body.Compile();
             return Of(compiled, body);
         }
 
-        public static Atom<TOut> Of<TIn, TOut>(Expression<Func<TIn, TOut>> body)
+        public static FuncAtom<TIn, TOut> Of<TIn, TOut>(Expression<Func<TIn, TOut>> body)
         {
             var compiled = body.Compile();
             return Of<TIn, TOut>(i => Task.FromResult(compiled(i)), body);
@@ -44,13 +57,13 @@ namespace Molecules.Core
         public static Atom<T> Of<T>(Expression<Func<T>> body)
         {
             var compiled = body.Compile();
-            return Of<object, T>(_ => Task.FromResult(compiled()), body);
+            return Of(() => Task.FromResult(compiled()), body);
         }
 
         public static Atom<T> Of<T>(Expression<Func<Task<T>>> body)
         {
             var compiled = body.Compile();
-            return Of<object, T>(_ => compiled(), body);
+            return Of(compiled, body);
         }
     }
 }

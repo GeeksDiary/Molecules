@@ -9,6 +9,6 @@ namespace Molecules.Core.Tests
         {
             Assert.Equal(new[] {1, 1, 1}, 
                 await Atom.Of((int i) => i).Repeat(3).Charge(1));
-        } 
+        }
     }
 }

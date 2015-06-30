@@ -52,6 +52,7 @@
     <Compile Include="Unit.cs" />
     <Compile Include="UnitAtom.cs" />
     <Compile Include="Utilities\ExceptionUtility.cs" />
+    <Compile Include="WhileAtom.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
