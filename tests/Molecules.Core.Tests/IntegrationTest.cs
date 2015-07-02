@@ -78,7 +78,7 @@ namespace Molecules.Core.Tests
             _api.PsychologicalAssessment(null).Returns(Mode.Happy);
 
 
-            var result = await _workflow.AsReceivable().Of<string>().Charge("alice@wonderland.com");
+            var result = await _workflow.Charge("alice@wonderland.com");
 
             Assert.Equal(_profile, result.Item1);
             Assert.Equal(Prescription.NotRequired, result.Item2);
@@ -96,7 +96,7 @@ namespace Molecules.Core.Tests
             var prescription = new Prescription();
             _api.RecentlyAcquiredMedication(null).Returns(new[] {prescription});
 
-            var result = await _workflow.AsReceivable().Of<string>().Charge("alice@wonderland.com");
+            var result = await _workflow.Charge("alice@wonderland.com");
 
             Assert.Equal(_profile, result.Item1);
             Assert.Contains(prescription, result.Item2);
