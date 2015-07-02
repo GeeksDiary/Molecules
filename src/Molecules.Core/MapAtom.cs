@@ -19,8 +19,8 @@ namespace Molecules.Core
 
         protected async override Task<IEnumerable<TOut>> OnCharge(object input = null)
         {
-            var d = await Source.Charge(input);
-            return await Task.WhenAll(d.Select(i => Map.Charge(i)));
+            var d = await Source.ChargeCore(input);
+            return await Task.WhenAll(d.Select(i => Map.ChargeCore(i)));
         }
     }
     

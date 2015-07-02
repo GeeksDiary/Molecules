@@ -10,7 +10,8 @@ namespace Molecules.Core.Tests
             var f = Atom.Of<bool, bool>(b => b)
                         .If(b => b, 
                             () => "a", 
-                            () => "b");
+                            () => "b")
+                        .AsReceivable().Of<bool>();
 
             Assert.Equal("a", await f.Charge(true));
             Assert.Equal("b", await f.Charge(false));

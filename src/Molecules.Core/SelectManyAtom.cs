@@ -29,8 +29,8 @@ namespace Molecules.Core
 
         protected override async Task<TOut> OnCharge(object input = null)
         {
-            var first = await Source.Charge(input);
-            var second = await _selector(first).Charge();
+            var first = await Source.ChargeCore(input);
+            var second = await _selector(first).ChargeCore();
             return _projector(first, second);
         }
     }

@@ -32,7 +32,7 @@ namespace Molecules.Core
             {
                 try
                 {
-                    return await Source.Charge(input);
+                    return await Source.ChargeCore(input);
                 }
                 catch (Exception e)
                 {

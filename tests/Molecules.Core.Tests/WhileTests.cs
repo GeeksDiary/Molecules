@@ -14,7 +14,9 @@ namespace Molecules.Core.Tests
             var a = Atom.Of((int k) => k)
                 .While(k => k < 10)
                 .Do(i => _signature.Func(i))
-                .With((k, _) => k + 1);
+                .With((k, _) => k + 1)
+                .AsReceivable()
+                .Of<int>();
 
             Assert.Equal(9, await a.Charge(0));
             _signature.ReceivedWithAnyArgs(10).Func(0);
@@ -24,10 +26,13 @@ namespace Molecules.Core.Tests
         public async void ShouldNotInvokeTheBodyIfTestPassesDuringFirstAttempt()
         {
             _signature.Func(0).Returns(0);
-            var a = Atom.Of((int k) => k)
-                .While(k => k != 0)
-                .Do(i => _signature.Func(i))
-                .With((k, _) => k + 1);
+            var a = 
+                Atom.Of((int k) => k)
+                    .While(k => k != 0)
+                    .Do(i => _signature.Func(i))
+                    .With((k, _) => k + 1)
+                .AsReceivable()
+                .Of<int>();
 
             await a.Charge(0);
 

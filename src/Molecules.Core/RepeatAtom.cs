@@ -20,7 +20,7 @@ namespace Molecules.Core
             var results = new T[Count];
 
             for (var i = 0; i < Count; i++)            
-                results[i] = await Source.Charge(input);
+                results[i] = await Source.ChargeCore(input);
             
             return results;
         }

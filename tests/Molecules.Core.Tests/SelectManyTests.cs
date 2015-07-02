@@ -20,7 +20,7 @@ namespace Molecules.Core.Tests
                 from c in Atom.Of(() => _api.Call(b))
                 select a + b + c;
 
-            var result = await k.Charge(1);
+            var result = await k.AsReceivable().Of<int>().Charge(1);
 
             Assert.Equal(9, result);
         }     

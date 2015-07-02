@@ -2,35 +2,30 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace Molecules.Core.Tests
 {
     public class RetryTests
     {
-        readonly IApi _api = Substitute.For<IApi>();
+        readonly ISignature _signature = Substitute.For<ISignature>();
 
         [Fact]
         public async void ExecutesNonFailingAtomOnlyOnce()
         {
-            _api.Call(1).Returns(1);
-            var a = Atom.Of<int, int>(i => _api.Call(i)).Retry();
-
-            await a.Charge(1);
-
-            _api.Received(1).Call(1);
+            await Atom.Of(() => _signature.Action()).Retry().AsInvocable().Charge();
+            _signature.Received(1).Action();
         }
 
         [Fact]
         public async void FailsAfterReachingRetryCount()
         {
-            _api.Call(1).Throws(new InvalidOperationException());
+            _signature.When(s => s.Action()).Throw(new InvalidOperationException());
+            var a = Atom.Of(() => _signature.Action()).Retry().AsInvocable();
 
-            var a = Atom.Of<int, int>(i => _api.Call(i)).Retry();
+            await Assert.ThrowsAsync<InvalidOperationException>(() => a.Charge());
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => a.Charge(1));
-            _api.Received(2).Call(1);
+            _signature.Received(2).Action();
         }
 
         [Fact]
@@ -40,12 +35,12 @@ namespace Molecules.Core.Tests
             q.Enqueue(() => { throw new InvalidOperationException(); });
             q.Enqueue(() => 1);
 
-            _api.Call(1).Returns(_ => q.Dequeue()());
+            _signature.Func(1).Returns(_ => q.Dequeue()());
 
-            var a = Atom.Of<int, int>(i => _api.Call(i)).Retry(2);
+            var a = Atom.Of<int, int>(i => _signature.Func(i)).Retry(2).AsReceivable().Of<int>();
 
             Assert.Equal(1, await a.Charge(1));
-            _api.Received(2).Call(1);
+            _signature.Received(2).Func(1);
         }
 
         [Fact]
@@ -65,8 +60,9 @@ namespace Molecules.Core.Tests
             });
 
             await Atom.Of(() => q.Dequeue()())
-                .Retry(1)
+                .Retry()
                 .After(TimeSpan.FromSeconds(2))
+                .AsInvocable()                
                 .Charge();
 
             Assert.True(watch.Elapsed >= TimeSpan.FromSeconds(2));

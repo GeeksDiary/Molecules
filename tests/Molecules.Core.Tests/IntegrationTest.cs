@@ -9,7 +9,7 @@ namespace Molecules.Core.Tests
     public class IntegrationTest
     {
         readonly IApi _api = Substitute.For<IApi>();
-        readonly Atom<Tuple<Profile, IEnumerable<Prescription>>> _workflow;
+        readonly ReceivableAtom<string, Tuple<Profile, IEnumerable<Prescription>>> _workflow;
 
         readonly Profile _profile = new Profile
         {
@@ -40,14 +40,18 @@ namespace Molecules.Core.Tests
                 of recent prescription medication if there was any.
             */
             _workflow =
-                from profile in Atom.Of((string s) => _api.LoadProfile(s))
-                from tweets in Atom.Of(() => _api.RecentTweets(profile.TwitterHandle))
-                    .Map(tweet => _api.PsychologicalAssessment(tweet.Text))
-                    .If(
-                        modes => modes.Count(mode => mode == Mode.Aggravated) >= 5,
-                        Atom.Of(() => _api.RecentlyAcquiredMedication(profile.MedicareNumber)),
-                        Atom.Of(() => Prescription.NotRequired))
-                select Tuple.Create(profile, tweets);
+                (
+                    from profile in Atom.Of((string s) => _api.LoadProfile(s))
+                    from tweets in Atom.Of(() => _api.RecentTweets(profile.TwitterHandle))
+                        .Map(tweet => _api.PsychologicalAssessment(tweet.Text))
+                        .If(
+                            modes => modes.Count(mode => mode == Mode.Aggravated) >= 5,
+                            Atom.Of(() => _api.RecentlyAcquiredMedication(profile.MedicareNumber)),
+                            Atom.Of(() => Prescription.NotRequired))
+                    select Tuple.Create(profile, tweets)
+                )
+                .AsReceivable()
+                .Of<string>();
 
             _api.LoadProfile(null).ReturnsForAnyArgs(_profile);
         }
@@ -74,7 +78,7 @@ namespace Molecules.Core.Tests
             _api.PsychologicalAssessment(null).Returns(Mode.Happy);
 
 
-            var result = await _workflow.Charge("alice@wonderland.com");
+            var result = await _workflow.AsReceivable().Of<string>().Charge("alice@wonderland.com");
 
             Assert.Equal(_profile, result.Item1);
             Assert.Equal(Prescription.NotRequired, result.Item2);
@@ -92,7 +96,7 @@ namespace Molecules.Core.Tests
             var prescription = new Prescription();
             _api.RecentlyAcquiredMedication(null).Returns(new[] {prescription});
 
-            var result = await _workflow.Charge("alice@wonderland.com");
+            var result = await _workflow.AsReceivable().Of<string>().Charge("alice@wonderland.com");
 
             Assert.Equal(_profile, result.Item1);
             Assert.Contains(prescription, result.Item2);

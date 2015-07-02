@@ -18,8 +18,8 @@ namespace Molecules.Core
 
         protected override async Task<TSecond> OnCharge(object input = null)
         {
-            var i = await First.Charge(input);
-            return await Second.Charge(i);
+            var i = await First.ChargeCore(input);
+            return await Second.ChargeCore(i);
         }
     }
 

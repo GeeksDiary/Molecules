@@ -43,6 +43,8 @@
     <Compile Include="Atom.cs" />
     <Compile Include="ConditionAtom.cs" />
     <Compile Include="FuncAtom.cs" />
+    <Compile Include="InvocableAtom.cs" />
+    <Compile Include="ReceivableAtom.cs" />
     <Compile Include="MapAtom.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RepeatAtom.cs" />

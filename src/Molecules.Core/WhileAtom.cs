@@ -39,14 +39,14 @@ namespace Molecules.Core
         protected override async Task<TOut> OnCharge(object input = null)
         {
             var w = (TIn) input;
-            var t = await Test.Charge(w);
+            var t = await Test.ChargeCore(w);
             var r = default(TOut);
 
             while (_predicate(t))
             {
-                r = await Body.Charge(t);
+                r = await Body.ChargeCore(t);
                 w = _with(w, t);
-                t = await Test.Charge(w);
+                t = await Test.ChargeCore(w);
             }
 
             return r;
