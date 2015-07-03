@@ -52,7 +52,7 @@ namespace Molecules.Core
 
     public static partial class Atom
     {
-        public static RetryAtom<T> Retry<T>(this Atom<T> source, int count = 1)
+        public static RetryAtom<T> Retry<T>(this Atom<T> source, int count)
         {
             var result = source as RetryAtom<T>;
             return result == null ? new RetryAtom<T>(source, count) 

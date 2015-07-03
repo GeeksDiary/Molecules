@@ -4,79 +4,82 @@ using System.Threading.Tasks;
 
 namespace Molecules.Core
 {
-    public class WhileAtom<TIn, TTest, TOut> : Atom<TOut>
+    public class WhileAtom<TTest, TOut> : Atom<TOut>
     {
         readonly Predicate<TTest> _predicate;
-        readonly Func<TIn, TTest, TIn> _with;
-
-        public Atom<TTest> Test { get; set; }
-
-        public Expression<Predicate<TTest>> PredicateExpression { get; }
-
-        public Expression<Func<TIn, TTest, TIn>> WithExpression { get; }
-
-        public Atom<TOut> Body { get; set; }
-
-        public WhileAtom<TIn, TTest, TOut> With(Expression<Func<TIn, TTest, TIn>> with)
-        {
-            return new WhileAtom<TIn, TTest, TOut>(Test, PredicateExpression, Body, with);
-        }
+        
+        public Atom<TTest> Test { get; }
+        
+        public Atom<TOut> Body { get; }
 
         public WhileAtom(Atom<TTest> test, 
-            Expression<Predicate<TTest>> predicate,
-            Atom<TOut> body,
-            Expression<Func<TIn, TTest, TIn>> with = null
+            Predicate<TTest> predicate,
+            Atom<TOut> body            
             )
         {
             Test = test;
-            PredicateExpression = predicate;
             Body = body;
-            WithExpression = with ?? ((i, _) => i);
-            _with = WithExpression.Compile();
-            _predicate = predicate.Compile();
+            _predicate = predicate;
         }
 
         protected override async Task<TOut> OnCharge(object input = null)
         {
-            var w = (TIn) input;
-            var t = await Test.ChargeCore(w);
+            var t = await Test.ChargeCore(input);
             var r = default(TOut);
 
             while (_predicate(t))
             {
                 r = await Body.ChargeCore(t);
-                w = _with(w, t);
-                t = await Test.ChargeCore(w);
-            }
+                t = await Test.ChargeCore(input);
+            }            
 
             return r;
         }
     }
 
-    public class WhileAtomBuilder<TIn, TTest>
+    public class WhileAtomBuilder<TTest>
     {
-        readonly FuncAtom<TIn, TTest> _test;
-        readonly Expression<Predicate<TTest>> _predicate;
-        
-        public WhileAtomBuilder(FuncAtom<TIn, TTest> test, 
-            Expression<Predicate<TTest>> predicate)
+        readonly Atom<TTest> _test;
+        readonly Predicate<TTest> _predicate;
+
+        public WhileAtomBuilder(Atom<TTest> test, Predicate<TTest> predicate)
         {
             _test = test;
             _predicate = predicate;
         }
 
-        public WhileAtom<TIn, TTest, TOut> Do<TOut>(Expression<Func<TTest, TOut>> body)
+        public WhileAtom<TTest, TBody> Do<TBody>(Atom<TBody> body)
         {
-            return new WhileAtom<TIn, TTest, TOut>(_test, _predicate, Atom.Of(body));
-        }       
+            return new WhileAtom<TTest, TBody>(_test, _predicate, body);
+        }
+
+        public WhileAtom<TTest, TBody> Do<TBody>(Expression<Func<TTest, Task<TBody>>> body)
+        {
+            return Do(Atom.Of(body));
+        }
+
+        public WhileAtom<TTest, TBody> Do<TBody>(Expression<Func<TTest, TBody>> body)
+        {
+            return Do(Atom.Of(body));
+        }
+
+        public WhileAtom<TTest, TBody> Do<TBody>(Expression<Func<TBody>> body)
+        {
+            return Do(Atom.Of(body));
+        }
+
+        public WhileAtom<TTest, TBody> Do<TBody>(Expression<Func<Task<TBody>>> body)
+        {
+            return Do(Atom.Of(body));
+        }
     }
 
     public static partial class Atom
     {
-        public static WhileAtomBuilder<TIn, TTest> While<TIn, TTest>(this FuncAtom<TIn, TTest> test,
-            Expression<Predicate<TTest>> predicate)
+        public static WhileAtomBuilder<TTest> While<TTest>(this Atom<TTest> test,
+            Predicate<TTest> predicate)
         {
-            return new WhileAtomBuilder<TIn, TTest>(test, predicate);
+            return new WhileAtomBuilder<TTest>(test, predicate);
         }
     }
 }

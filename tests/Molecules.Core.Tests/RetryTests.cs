@@ -13,7 +13,7 @@ namespace Molecules.Core.Tests
         [Fact]
         public async void ExecutesNonFailingAtomOnlyOnce()
         {
-            await Atom.Of(() => _signature.Action()).Retry().AsInvocable().Charge();
+            await Atom.Of(() => _signature.Action()).Retry(1).AsInvocable().Charge();
             _signature.Received(1).Action();
         }
 
@@ -21,7 +21,7 @@ namespace Molecules.Core.Tests
         public async void FailsAfterReachingRetryCount()
         {
             _signature.When(s => s.Action()).Throw(new InvalidOperationException());
-            var a = Atom.Of(() => _signature.Action()).Retry().AsInvocable();
+            var a = Atom.Of(() => _signature.Action()).Retry(1).AsInvocable();
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => a.Charge());
 
@@ -60,7 +60,7 @@ namespace Molecules.Core.Tests
             });
 
             await Atom.Of(() => q.Dequeue()())
-                .Retry()
+                .Retry(1)
                 .After(TimeSpan.FromSeconds(2))
                 .AsInvocable()                
                 .Charge();
