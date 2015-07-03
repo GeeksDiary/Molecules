@@ -29,6 +29,15 @@ namespace Molecules.Core.Tests
         }
 
         [Fact]
+        public async void ReturnsTheSpecifiedValueAfterFailure()
+        {
+            _signature.When(s => s.Func()).Throw(new InvalidOperationException());
+            var a = Atom.Of(() => _signature.Action()).Catch().Return(3).AsReceivable().Of<int>();
+
+            Assert.Equal(3, await a.Charge(1));
+        }
+
+        [Fact]
         public async void RecoveringAtomsAreNotRetried()
         {
             var q = new Queue<Func<int>>();
