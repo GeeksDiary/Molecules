@@ -92,10 +92,7 @@ namespace Molecules.Core.Tests.Samples
                 from order in Atom.With<Order>()
                 from paymentStatus in
                     Atom.Of(() => Services.TakePayment(order.Payment))
-                        .Catch()
-                        .Wait(20).Seconds
-                        .Retry(3)
-                        .Return(PaymentStatus.Failed)
+                        .Catch().Wait(20).Seconds.Retry(3).Return(PaymentStatus.Failed)
                 from status in
                     paymentStatus == PaymentStatus.Success
                         ? Atom.Of(() => Services.DispatchToStore(order.Store, order.Delivery))
@@ -103,13 +100,10 @@ namespace Molecules.Core.Tests.Samples
                 from polledStatus in
                     status == InStoreStatus.DidNotReceive
                         ? Atom.Of(() => Services.Refund(order.Payment))
-                            .Catch()
-                            .Wait(20).Seconds
-                            .Retry(3)
-                            .Return(status)
-                        : Atom.Of(() => Services.CheckStatus(order.Id)).Catch().Wait(30).Seconds.Return(status)
-                            .While(s => s == InStoreStatus.OnItsWay)                           
-                            .Do(s => Services.Notify(s))                            
+                            .Catch().Wait(20).Seconds.Retry(3).Return(status)
+                        : Atom.Of(() => Services.CheckStatus(order.Id)).Catch().Wait(30).Seconds.Retry(3)
+                            .While(s => s != InStoreStatus.OnItsWay)                           
+                            .Do(s => Services.Notify(s))                                                        
                 select order)
                 .AsReceivable()
                 .Of<Order>();

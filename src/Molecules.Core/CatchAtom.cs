@@ -70,7 +70,11 @@ namespace Molecules.Core
                         throw;
 
                     if (--remainingAttempts == 0)
-                        throw;                    
+                    {
+                        if (ReturnValue == null)
+                            throw;
+                        return ReturnValue();
+                    }
                 }
 
                 if (Delay != TimeSpan.Zero)
