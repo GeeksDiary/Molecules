@@ -23,7 +23,8 @@ namespace Molecules.Core.Tests.Samples
     {
         Success,
         InsufficientFunds,
-        Busy
+        Busy,
+        Failed
     }
 
     public enum InStoreStatus
@@ -85,26 +86,30 @@ namespace Molecules.Core.Tests.Samples
 
     public class PizzaDeliveryWorkflow
     {
-        public Atom<Order> Build()
+        public ReceivableAtom<Order, Order> Build()
         {
             return (
                 from order in Atom.With<Order>()
                 from paymentStatus in
                     Atom.Of(() => Services.TakePayment(order.Payment))
+                        .Catch()
+                        .Wait(20).Seconds
                         .Retry(3)
-                        .After(TimeSpan.FromMinutes(1))
+                        .Return(PaymentStatus.Failed)
                 from status in
                     paymentStatus == PaymentStatus.Success
                         ? Atom.Of(() => Services.DispatchToStore(order.Store, order.Delivery))
-                        : Atom.Of(() => InStoreStatus.DidNotReceive)
+                        : Atom.Return(InStoreStatus.DidNotReceive)
                 from polledStatus in
                     status == InStoreStatus.DidNotReceive
                         ? Atom.Of(() => Services.Refund(order.Payment))
+                            .Catch()
+                            .Wait(20).Seconds
                             .Retry(3)
                             .Return(status)
-                        : Atom.Of(() => Services.CheckStatus(order.Id))
-                            .While(s => s == InStoreStatus.OnItsWay)
-                            .Do(s => Services.Notify(s))
+                        : Atom.Of(() => Services.CheckStatus(order.Id)).Catch().Wait(30).Seconds.Return(status)
+                            .While(s => s == InStoreStatus.OnItsWay)                           
+                            .Do(s => Services.Notify(s))                            
                 select order)
                 .AsReceivable()
                 .Of<Order>();

@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using Molecules.Core.Utilities;
 
 namespace Molecules.Core
 {
@@ -42,5 +44,30 @@ namespace Molecules.Core
         {
             return source.Then(new ReturnAtom<T>(value));
         }
+
+        public static Atom<T> Return<T>(T value)
+        {
+            return new ReturnAtom<T>(value);
+        }
+    }
+
+    public class TimeSpanBuilder<T>
+    {
+        readonly int _size;
+        readonly Func<TimeSpan, T> _innerBuilder;
+
+        public TimeSpanBuilder(int size, Func<TimeSpan, T> innerBuilder)
+        {
+            _size = size;
+            _innerBuilder = innerBuilder;
+        }
+
+        public T Minutes => _innerBuilder(TimeSpan.FromMinutes(_size));
+
+        public T Seconds => _innerBuilder(TimeSpan.FromSeconds(_size));
+
+        public T Hours => _innerBuilder(TimeSpan.FromHours(_size));
+
+        public T MilliSeconds => _innerBuilder(TimeSpan.FromMilliseconds(_size));
     }
 }

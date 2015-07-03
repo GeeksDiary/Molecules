@@ -49,7 +49,7 @@
     <Compile Include="MapAtom.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RepeatAtom.cs" />
-    <Compile Include="RetryAtom.cs" />
+    <Compile Include="CatchAtom.cs" />
     <Compile Include="SelectManyAtom.cs" />
     <Compile Include="ThenAtom.cs" />
     <Compile Include="Unit.cs" />

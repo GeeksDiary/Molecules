@@ -6,14 +6,14 @@ using Xunit;
 
 namespace Molecules.Core.Tests
 {
-    public class RetryTests
+    public class CatchTests
     {
         readonly ISignature _signature = Substitute.For<ISignature>();
 
         [Fact]
         public async void ExecutesNonFailingAtomOnlyOnce()
         {
-            await Atom.Of(() => _signature.Action()).Retry(1).AsInvocable().Charge();
+            await Atom.Of(() => _signature.Action()).Catch().AsInvocable().Charge();
             _signature.Received(1).Action();
         }
 
@@ -21,7 +21,7 @@ namespace Molecules.Core.Tests
         public async void FailsAfterReachingRetryCount()
         {
             _signature.When(s => s.Action()).Throw(new InvalidOperationException());
-            var a = Atom.Of(() => _signature.Action()).Retry(1).AsInvocable();
+            var a = Atom.Of(() => _signature.Action()).Catch().AsInvocable();
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => a.Charge());
 
@@ -37,7 +37,7 @@ namespace Molecules.Core.Tests
 
             _signature.Func(1).Returns(_ => q.Dequeue()());
 
-            var a = Atom.Of<int, int>(i => _signature.Func(i)).Retry(2).AsReceivable().Of<int>();
+            var a = Atom.Of<int, int>(i => _signature.Func(i)).Catch().Retry(2).AsReceivable().Of<int>();
 
             Assert.Equal(1, await a.Charge(1));
             _signature.Received(2).Func(1);
@@ -60,8 +60,9 @@ namespace Molecules.Core.Tests
             });
 
             await Atom.Of(() => q.Dequeue()())
-                .Retry(1)
-                .After(TimeSpan.FromSeconds(2))
+                .Catch()
+                .Wait(2)
+                .Seconds
                 .AsInvocable()                
                 .Charge();
 

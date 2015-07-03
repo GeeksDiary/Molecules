@@ -67,7 +67,7 @@
     <Compile Include="MapTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RepeatTests.cs" />
-    <Compile Include="RetryTests.cs" />
+    <Compile Include="CatchTests.cs" />
     <Compile Include="Samples\PizzaDeliveryWorkflow.cs" />
     <Compile Include="SelectManyTests.cs" />
     <Compile Include="ThenTests.cs" />
