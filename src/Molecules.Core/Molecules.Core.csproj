@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Atom.cs" />
+    <Compile Include="AtomContext.cs" />
     <Compile Include="ConditionAtom.cs" />
     <Compile Include="Experimental.cs" />
     <Compile Include="FuncAtom.cs" />

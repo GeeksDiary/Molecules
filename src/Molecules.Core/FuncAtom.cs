@@ -16,7 +16,7 @@ namespace Molecules.Core
             Body = body;
         }
 
-        protected override Task<T> OnCharge(object input = null)
+        internal override Task<T> ChargeCore(AtomContext context, object input = null)
         {
             return _impl(input);
         }

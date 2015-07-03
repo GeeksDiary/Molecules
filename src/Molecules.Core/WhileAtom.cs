@@ -22,15 +22,15 @@ namespace Molecules.Core
             _predicate = predicate;
         }
 
-        protected override async Task<TOut> OnCharge(object input = null)
+        internal override async Task<TOut> ChargeCore(AtomContext context, object input = null)
         {
-            var t = await Test.ChargeCore(input);
+            var t = await Test.ChargeCore(context, input);
             var r = default(TOut);
 
             while (_predicate(t))
             {
-                r = await Body.ChargeCore(t);
-                t = await Test.ChargeCore(input);
+                r = await Body.ChargeCore(context, t);
+                t = await Test.ChargeCore(context, input);
             }            
 
             return r;

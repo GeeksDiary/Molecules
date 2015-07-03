@@ -7,8 +7,11 @@ namespace Molecules.Core
     public class ConditionAtom<TSource, TOut> : Atom<TOut>
     {
         public Atom<TSource> Source { get; }
+
         public Predicate<TSource> Condition { get; }
+
         public Atom<TOut> Truthy { get; }
+
         public Atom<TOut> Falsey { get; }
 
         public ConditionAtom(Atom<TSource> source,
@@ -22,11 +25,11 @@ namespace Molecules.Core
             Falsey = falsey;
         }
 
-        protected async override Task<TOut> OnCharge(object input = null)
+        internal async override Task<TOut> ChargeCore(AtomContext context, object input = null)
         {
-            var i = await Source.ChargeCore(input);
+            var i = await Source.ChargeCore(context, input);
             var next = Condition(i) ? Truthy : Falsey;
-            return await next.ChargeCore(i);
+            return await next.ChargeCore(context, i);
         }        
     }
 
