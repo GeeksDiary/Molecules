@@ -69,4 +69,20 @@ namespace Molecules.Core
 
         public T MilliSeconds => _innerBuilder(TimeSpan.FromMilliseconds(_size));
     }
+
+    public class InstanceAtom<T> : Atom<T>
+    {
+        internal override Task<T> ChargeCore(AtomContext context, object input = null)
+        {
+            return Task.FromResult(Activator.CreateInstance<T>());
+        }
+    }
+
+    public static partial class Atom
+    {
+        public static InstanceAtom<T> Instance<T>()
+        {
+            return new InstanceAtom<T>();
+        }
+    }
 }
