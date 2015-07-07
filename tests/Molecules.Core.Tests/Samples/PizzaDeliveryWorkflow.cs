@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Molecules.Core.Tests.Samples
 {
@@ -56,32 +55,16 @@ namespace Molecules.Core.Tests.Samples
         public Store Store { get; set; }
     }
 
-    public static class Services
+    public interface IStore
     {
-        public static PaymentStatus TakePayment(Payment payment)
-        {
-            throw new NotImplementedException();
-        }
+        InStoreStatus DispatchToStore(Store store, Delivery delivery);
 
-        public static InStoreStatus DispatchToStore(Store store, Delivery delivery)
-        {
-            throw new NotImplementedException();
-        }
+        InStoreStatus CheckStatus(string orderId);
+    }
 
-        public static RefundStatus Refund(Payment payment)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static InStoreStatus CheckStatus(string orderId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static InStoreStatus Notify(InStoreStatus status)
-        {
-            throw new NotImplementedException();
-        }
+    public interface ICustomer
+    {
+        InStoreStatus Notify(InStoreStatus status);
     }
 
     public interface IPaymentService
@@ -97,20 +80,26 @@ namespace Molecules.Core.Tests.Samples
         {
             return (
                 from order in Atom.With<Order>()
-                from paymentStatus in Atom.Instance<IPaymentService>()
-                    .Then(p => p.TakePayment(order.Payment))
-                    .Catch().Wait(20).Seconds.Retry(3).Return(PaymentStatus.Failed)
+                from paymentStatus in
+                    Atom.Func(c => c.Resolve<IPaymentService>().TakePayment(order.Payment))
+                        .Catch().Wait(20).Seconds.Retry(3).Return(PaymentStatus.Failed)
                 from status in
                     paymentStatus == PaymentStatus.Success
-                        ? Atom.Of(() => Services.DispatchToStore(order.Store, order.Delivery))
+                        ? Atom.Func(c =>
+                            c.Resolve<IStore>().DispatchToStore(order.Store, order.Delivery))
                         : Atom.Return(InStoreStatus.DidNotReceive)
                 from polledStatus in
                     status == InStoreStatus.DidNotReceive
-                        ? Atom.Of(() => Services.Refund(order.Payment))
+                        ? Atom.Func(c => c.Resolve<IPaymentService>().Refund(order.Payment))
                             .Catch().Wait(20).Seconds.Retry(3).Return(status)
-                        : Atom.Of(() => Services.CheckStatus(order.Id)).Catch().Wait(30).Seconds.Retry(3)
+                        : Atom.Func(c =>
+                            c.Resolve<IStore>()
+                                .CheckStatus(order.Id))
+                            .Catch()
+                            .Wait(30)
+                            .Seconds.Retry(3)
                             .While(s => s != InStoreStatus.OnItsWay)
-                            .Do(s => Services.Notify(s))
+                            .Do(c => c.Resolve<ICustomer>().Notify(c.Input))
                 select order)
                 .AsReceivable()
                 .Of<Order>();

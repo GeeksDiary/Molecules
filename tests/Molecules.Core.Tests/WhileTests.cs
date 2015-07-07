@@ -14,9 +14,9 @@ namespace Molecules.Core.Tests
             _signature.Func(0).ReturnsForAnyArgs(c => c.Args()[0]);
             var q = new Queue<int>(new[] {0, 1, 2});
 
-            var a = Atom.Of(() => q.Dequeue())
+            var a = Atom.Func(() => q.Dequeue())
                 .While(k => k < 2)
-                .Do(i => _signature.Func(i))
+                .Do(i => _signature.Func(i.Input))
                 .AsReceivable()
                 .Of<int>();
 
@@ -29,9 +29,9 @@ namespace Molecules.Core.Tests
         {
             _signature.Func(0).Returns(0);
             var a =
-                Atom.Of((int k) => k)
+                Atom.Func<int, int>(k => k.Input)
                     .While(k => k != 0)
-                    .Do(i => _signature.Func(i))
+                    .Do(i => _signature.Func(i.Input))
                     .AsReceivable()
                     .Of<int>();
 

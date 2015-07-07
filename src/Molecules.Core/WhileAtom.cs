@@ -22,15 +22,15 @@ namespace Molecules.Core
             _predicate = predicate;
         }
 
-        internal override async Task<TOut> ChargeCore(AtomContext context, object input = null)
+        internal override async Task<TOut> ChargeCore(AtomContext atomContext)
         {
-            var t = await Test.ChargeCore(context, input);
+            var t = await Test.ChargeCore(atomContext);
             var r = default(TOut);
 
             while (_predicate(t))
             {
-                r = await Body.ChargeCore(context, t);
-                t = await Test.ChargeCore(context, input);
+                r = await Body.ChargeCore(AtomContext.For(t));
+                t = await Test.ChargeCore(atomContext);
             }            
 
             return r;
@@ -53,24 +53,24 @@ namespace Molecules.Core
             return new WhileAtom<TTest, TBody>(_test, _predicate, body);
         }
 
-        public WhileAtom<TTest, TBody> Do<TBody>(Expression<Func<TTest, Task<TBody>>> body)
+        public WhileAtom<TTest, TBody> Do<TBody>(Func<AtomContext<TTest>, Task<TBody>> body)
         {
-            return Do(Atom.Of(body));
+            return Do(Atom.Func(body));
         }
 
-        public WhileAtom<TTest, TBody> Do<TBody>(Expression<Func<TTest, TBody>> body)
+        public WhileAtom<TTest, TBody> Do<TBody>(Func<AtomContext<TTest>, TBody> body)
         {
-            return Do(Atom.Of(body));
+            return Do(Atom.Func(body));
         }
 
-        public WhileAtom<TTest, TBody> Do<TBody>(Expression<Func<TBody>> body)
+        public WhileAtom<TTest, TBody> Do<TBody>(Func<TBody> body)
         {
-            return Do(Atom.Of(body));
+            return Do(Atom.Func(body));
         }
 
-        public WhileAtom<TTest, TBody> Do<TBody>(Expression<Func<Task<TBody>>> body)
+        public WhileAtom<TTest, TBody> Do<TBody>(Func<Task<TBody>> body)
         {
-            return Do(Atom.Of(body));
+            return Do(Atom.Func(body));
         }
     }
 

@@ -54,7 +54,6 @@
     <Compile Include="SelectManyAtom.cs" />
     <Compile Include="ThenAtom.cs" />
     <Compile Include="Unit.cs" />
-    <Compile Include="UnitAtom.cs" />
     <Compile Include="Utilities\ExceptionUtility.cs" />
     <Compile Include="WhileAtom.cs" />
   </ItemGroup>

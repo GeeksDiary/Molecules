@@ -15,9 +15,9 @@ namespace Molecules.Core.Tests
             _api.Call(3).Returns(4);
 
             var k = 
-                from a in Atom.Of<int, int>(i => _api.Call(i))
-                from b in Atom.Of(() => _api.Call(a))
-                from c in Atom.Of(() => _api.Call(b))
+                from a in Atom.Func<int, int>(i => _api.Call(i.Input))
+                from b in Atom.Func(() => _api.Call(a))
+                from c in Atom.Func(() => _api.Call(b))
                 select a + b + c;
 
             var result = await k.AsReceivable().Of<int>().Charge(1);

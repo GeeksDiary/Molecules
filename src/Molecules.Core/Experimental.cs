@@ -5,9 +5,9 @@ namespace Molecules.Core
 {
     public class WithAtom<T> : Atom<T>
     {
-        internal override Task<T> ChargeCore(AtomContext context, object input = null)
+        internal override Task<T> ChargeCore(AtomContext atomContext)
         {
-            return Task.FromResult((T) input);
+            return Task.FromResult((T)atomContext.InputObject);
         }
     }
 
@@ -20,7 +20,7 @@ namespace Molecules.Core
             Value = value;
         }
 
-        internal override Task<T> ChargeCore(AtomContext context, object input = null)
+        internal override Task<T> ChargeCore(AtomContext input1)
         {
             return Task.FromResult(Value);
         }
@@ -68,21 +68,5 @@ namespace Molecules.Core
         public T Hours => _innerBuilder(TimeSpan.FromHours(_size));
 
         public T MilliSeconds => _innerBuilder(TimeSpan.FromMilliseconds(_size));
-    }
-
-    public class InstanceAtom<T> : Atom<T>
-    {
-        internal override Task<T> ChargeCore(AtomContext context, object input = null)
-        {
-            return Task.FromResult(Activator.CreateInstance<T>());
-        }
-    }
-
-    public static partial class Atom
-    {
-        public static InstanceAtom<T> Instance<T>()
-        {
-            return new InstanceAtom<T>();
-        }
-    }
+    }    
 }

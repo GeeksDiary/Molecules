@@ -16,52 +16,48 @@ namespace Molecules.Core
             Second = second;
         }
 
-        internal override async Task<TSecond> ChargeCore(AtomContext context, object input = null)
+        internal override async Task<TSecond> ChargeCore(AtomContext atomContext)
         {
-            var i = await First.ChargeCore(context, input);
-            return await Second.ChargeCore(context, i);
+            var i = await First.ChargeCore(atomContext);
+            return await Second.ChargeCore(AtomContext.For(i));
         }
     }
 
     public static partial class Atom
     {
-        public static ThenAtom<TIn, TOut> Then<TIn, TOut>(
-            this Atom<TIn> first,
-            Expression<Func<TOut>> second)
+        public static ThenAtom<TIn, TOut> Then<TIn, TOut>(this Atom<TIn> first,
+            Func<TOut> second)
         {
-            return first.Then(Of(second));
+            return first.Then(Func(second));
         }
 
-        public static ThenAtom<TIn, TOut> Then<TIn, TOut>(
-            this Atom<TIn> first,
-            Expression<Func<TIn, TOut>> second)
+        public static ThenAtom<TIn, TOut> Then<TIn, TOut>(this Atom<TIn> first,
+            Func<AtomContext<TIn>, TOut> second)
         {
-            return first.Then(Of(second));
+            return first.Then(Func(second));
         }
         
-        public static ThenAtom<TIn, TOut> Then<TIn, TOut>(
-            this Atom<TIn> first,
+        public static ThenAtom<TIn, TOut> Then<TIn, TOut>(this Atom<TIn> first,
             Atom<TOut> second)
         {
             return new ThenAtom<TIn, TOut>(first, second);
         }
 
-        public static ThenAtom<T, Unit> Then<T>(
-            this Atom<T> first,
-            Expression<Action<T>> second)
+        public static ThenAtom<T, Unit> Then<T>(this Atom<T> first,
+            Action<AtomContext<T>> second)
         {
-            return first.Then(Of(second));
+            return first.Then(Action(second));
         }
 
         public static ThenAtom<T, Unit> Then<T>(
             this Atom<T> first,
-            Expression<Action> second)
+            Action second)
         {
-            return first.Then(Of(second));
+            return first.Then(Action(second));
         }
 
         public static Atom<TOut> Select<TIn, TOut>(this Atom<TIn> atom, 
-            Expression<Func<TIn, TOut>> projector)
+            Func<AtomContext<TIn>, TOut> projector)
         {
             return atom.Then(projector);
         }

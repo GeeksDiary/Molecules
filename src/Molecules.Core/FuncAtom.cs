@@ -1,69 +1,98 @@
 ﻿using System;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Molecules.Core
 {
     public class FuncAtom<T> : Atom<T>
     {
-        readonly Func<object, Task<T>> _impl;
+        readonly Func<AtomContext, Task<T>> _impl;
 
-        public Expression Body { get; }
-
-        internal FuncAtom(Func<object, Task<T>> impl, Expression body)
+        internal FuncAtom(Func<AtomContext, Task<T>> impl)
         {
             _impl = impl;
-            Body = body;
         }
 
-        internal override Task<T> ChargeCore(AtomContext context, object input = null)
+        internal override Task<T> ChargeCore(AtomContext atomContext)
         {
-            return _impl(input);
+            return _impl(atomContext);
         }
     }
-
-    public class FuncAtom<TIn, TOut> : FuncAtom<TOut>
-    {
-        internal FuncAtom(Func<TIn, Task<TOut>> impl, Expression body) :
-            base(o => impl((TIn)o), body)
-        {
-        }
-    }
-
+    
     public static partial class Atom
     {
-        static FuncAtom<TIn, TOut> Of<TIn, TOut>(Func<TIn, Task<TOut>> impl, Expression body)
+        public static FuncAtom<TOut> Func<TIn, TOut>(Func<AtomContext<TIn>, Task<TOut>> impl)
         {
-            return new FuncAtom<TIn, TOut>(impl, body);
+            return new FuncAtom<TOut>(i => impl(AtomContext.For((TIn)i.InputObject)));
         }
 
-        static FuncAtom<TOut> Of<TOut>(Func<Task<TOut>> impl, Expression body)
+        public static FuncAtom<TOut> Func<TIn, TOut>(Func<AtomContext<TIn>, TOut> impl)
         {
-            return new FuncAtom<TOut>(_ => impl(), body);
+            return Func<TIn, TOut>(i => Task.FromResult(impl(i)));
         }
 
-        public static FuncAtom<TIn, TOut> Of<TIn, TOut>(Expression<Func<TIn, Task<TOut>>> body)
+        public static FuncAtom<TOut> Func<TOut>(Func<AtomContext, Task<TOut>> impl)
         {
-            var compiled = body.Compile();
-            return Of(compiled, body);
+            return new FuncAtom<TOut>(impl);
         }
 
-        public static FuncAtom<TIn, TOut> Of<TIn, TOut>(Expression<Func<TIn, TOut>> body)
+        public static FuncAtom<TOut> Func<TOut>(Func<AtomContext, TOut> impl)
         {
-            var compiled = body.Compile();
-            return Of<TIn, TOut>(i => Task.FromResult(compiled(i)), body);
+            return new FuncAtom<TOut>(c => Task.FromResult(impl(c)));
         }
 
-        public static Atom<T> Of<T>(Expression<Func<T>> body)
+        public static FuncAtom<TOut> Func<TOut>(Func<Task<TOut>> impl)
         {
-            var compiled = body.Compile();
-            return Of(() => Task.FromResult(compiled()), body);
+            return new FuncAtom<TOut>(_ => impl());
+        }
+                
+        public static Atom<T> Func<T>(Func<T> impl)
+        {
+            return Func(() => Task.FromResult(impl()));
         }
 
-        public static Atom<T> Of<T>(Expression<Func<Task<T>>> body)
+        public static FuncAtom<Unit> Func<T>(Func<AtomContext<T>, Task> impl)
         {
-            var compiled = body.Compile();
-            return Of(compiled, body);
+            Func<AtomContext<T>, Task<Unit>> wrapper = async i =>
+            {
+                await impl(i);
+                return Unit.Value;
+            };
+
+            return Func(wrapper);
+        }
+
+        static FuncAtom<Unit> Action(Func<Task<Unit>> impl)
+        {
+            return new FuncAtom<Unit>(_ => impl());
+        }
+
+        public static FuncAtom<Unit> Action(Func<Task> impl)
+        {
+            return Action(async () =>
+            {
+                await impl();
+                return Unit.Value;
+            });
+        }
+
+        public static FuncAtom<Unit> Action(Action body)
+        {
+            return Action(() => 
+            {
+                body();
+                return Unit.CompletedTask;
+            });
+        }
+        
+        public static FuncAtom<Unit> Action<T>(Action<AtomContext<T>> body)
+        {
+            Func<AtomContext<T>, Task<Unit>> wrapper = i =>
+            {
+                body(i);
+                return Unit.CompletedTask;
+            };
+
+            return Func(wrapper);
         }
     }
 }

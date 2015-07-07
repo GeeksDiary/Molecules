@@ -7,7 +7,7 @@ namespace Molecules.Core.Tests
         [Fact]
         public async void ShouldChooseTheCorrectTurnAtTheJunction()
         {
-            var f = Atom.Of<bool, bool>(b => b)
+            var f = Atom.Func<bool, bool>(b => b.Input)
                         .If(b => b, 
                             () => "a", 
                             () => "b")

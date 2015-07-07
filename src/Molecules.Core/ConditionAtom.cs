@@ -25,11 +25,11 @@ namespace Molecules.Core
             Falsey = falsey;
         }
 
-        internal async override Task<TOut> ChargeCore(AtomContext context, object input = null)
+        internal async override Task<TOut> ChargeCore(AtomContext atomContext)
         {
-            var i = await Source.ChargeCore(context, input);
+            var i = await Source.ChargeCore(atomContext);
             var next = Condition(i) ? Truthy : Falsey;
-            return await next.ChargeCore(context, i);
+            return await next.ChargeCore(AtomContext.For(i));
         }        
     }
 
@@ -45,18 +45,18 @@ namespace Molecules.Core
 
         public static Atom<TOut> If<TSource, TOut>(this Atom<TSource> source,
             Predicate<TSource> predicate,
-            Expression<Func<TSource, TOut>> truthy,
-            Expression<Func<TSource, TOut>> falsey)
+            Func<AtomContext<TSource>, TOut> truthy,
+            Func<AtomContext<TSource>, TOut> falsey)
         {
-            return If(source, predicate, Of(truthy), Of(falsey));
+            return If(source, predicate, Func(truthy), Func(falsey));
         }
 
         public static Atom<TOut> If<TSource, TOut>(this Atom<TSource> source,
             Predicate<TSource> predicate,
-            Expression<Func<TOut>> truthy,
-            Expression<Func<TOut>> falsey)
+            Func<TOut> truthy,
+            Func<TOut> falsey)
         {
-            return If(source, predicate, Of(truthy), Of(falsey));
+            return If(source, predicate, Func(truthy), Func(falsey));
         }
     }
 }

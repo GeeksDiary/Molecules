@@ -41,13 +41,13 @@ namespace Molecules.Core.Tests
             */
             _workflow =
                 (
-                    from profile in Atom.Of((string s) => _api.LoadProfile(s))
-                    from tweets in Atom.Of(() => _api.RecentTweets(profile.TwitterHandle))
-                        .Map(tweet => _api.PsychologicalAssessment(tweet.Text))
+                    from profile in Atom.Func<string, Profile>(s => _api.LoadProfile(s.Input))
+                    from tweets in Atom.Func(() => _api.RecentTweets(profile.TwitterHandle))
+                        .Map(tweet => _api.PsychologicalAssessment(tweet.Input.Text))
                         .If(
                             modes => modes.Count(mode => mode == Mode.Aggravated) >= 5,
-                            Atom.Of(() => _api.RecentlyAcquiredMedication(profile.MedicareNumber)),
-                            Atom.Of(() => Prescription.NotRequired))
+                            Atom.Func(() => _api.RecentlyAcquiredMedication(profile.MedicareNumber)),
+                            Atom.Func(() => Prescription.NotRequired))
                     select Tuple.Create(profile, tweets)
                 )
                 .AsReceivable()

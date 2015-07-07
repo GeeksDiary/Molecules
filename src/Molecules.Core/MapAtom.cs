@@ -9,6 +9,7 @@ namespace Molecules.Core
     public class MapAtom<TSource, TOut> : Atom<IEnumerable<TOut>>
     {
         public Atom<IEnumerable<TSource>> Source { get; }
+
         public Atom<TOut> Map { get; }
 
         public MapAtom(Atom<IEnumerable<TSource>> source, Atom<TOut> map)
@@ -17,10 +18,10 @@ namespace Molecules.Core
             Map = map;
         }
 
-        internal async override Task<IEnumerable<TOut>> ChargeCore(AtomContext context, object input = null)
+        internal async override Task<IEnumerable<TOut>> ChargeCore(AtomContext atomContext)
         {
-            var d = await Source.ChargeCore(context, input);
-            return await Task.WhenAll(d.Select(i => Map.ChargeCore(context, i)));
+            var d = await Source.ChargeCore(atomContext);
+            return await Task.WhenAll(d.Select(i => Map.ChargeCore(AtomContext.For(i))));
         }
     }
     
@@ -35,16 +36,16 @@ namespace Molecules.Core
 
         public static MapAtom<TSource, TOut> Map<TSource, TOut>(
             this Atom<IEnumerable<TSource>> source,
-            Expression<Func<TSource, TOut>> map)
+            Func<AtomContext<TSource>, TOut> map)
         {
-            return Map(source, Of(map));
+            return Map(source, Func(map));
         }
 
         public static MapAtom<TSource, TOut> Map<TSource, TOut>(
             this Atom<IEnumerable<TSource>> source,
-            Expression<Func<TOut>> map)
+            Func<TOut> map)
         {
-            return Map(source, Of(map));
+            return Map(source, Func(map));
         }
     }
 }

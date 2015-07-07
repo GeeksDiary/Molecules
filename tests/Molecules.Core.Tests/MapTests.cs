@@ -8,9 +8,9 @@ namespace Molecules.Core.Tests
         [Fact]
         public async void MapsSourceToDestination()
         {
-            var r = await Atom.Of(() => new[] { 1, 2, 3 }
+            var r = await Atom.Func(() => new[] { 1, 2, 3 }
             .AsEnumerable())
-            .Map(i => i * 2)
+            .Map(i => i.Input * 2)
             .AsInvocable()
             .Charge();
 

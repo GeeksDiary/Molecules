@@ -13,10 +13,10 @@ namespace Molecules.Core
 
         public async Task<T> Charge()
         {
-            return await Target.ChargeCore(new AtomContext());
+            return await Target.ChargeCore(AtomContext.For(Unit.Value));
         }
 
-        internal override Task<T> ChargeCore(AtomContext context, object input = null)
+        internal override Task<T> ChargeCore(AtomContext input1)
         {
             throw new System.NotImplementedException();
         }

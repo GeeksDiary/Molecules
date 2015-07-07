@@ -14,14 +14,14 @@ namespace Molecules.Core.Tests
             _signature.Func(2).Returns(3);
 
             Assert.Equal(3,
-                await Atom.Of((int i) => _signature.Func(i))
-                    .Then(i => _signature.Func(i))
+                await Atom.Func<int, int>(i => _signature.Func(i.Input))
+                    .Then(i => _signature.Func(i.Input))
                     .AsReceivable()
                     .Of<int>()
                     .Charge(1));
 
-            await Atom.Of((int i) => _signature.Func(i))
-                .Then(i => _signature.Action(i))
+            await Atom.Func<int, int>(i => _signature.Func(i.Input))
+                .Then(i => _signature.Action(i.Input))
                 .AsReceivable()
                 .Of<int>()
                 .Charge(1);
@@ -36,7 +36,7 @@ namespace Molecules.Core.Tests
             _signature.Func().Returns(3);
 
             Assert.Equal(3,
-                await Atom.Of((int i) => _signature.Func(i))
+                await Atom.Func<int, int>(i => _signature.Func(i.Input))
                     .Then(() => _signature.Func())
                     .AsReceivable()
                     .Of<int>()
@@ -46,7 +46,7 @@ namespace Molecules.Core.Tests
         [Fact]
         public async void ShouldConnectMultipleActions()
         {
-            await Atom.Of(() => _signature.Action())
+            await Atom.Action(() => _signature.Action())
                 .Then(() => _signature.Action())
                 .AsInvocable()
                 .Charge();
