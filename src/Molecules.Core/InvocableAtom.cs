@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Molecules.Core.Runtime;
 
 namespace Molecules.Core
 {
@@ -13,7 +14,7 @@ namespace Molecules.Core
 
         public async Task<T> Charge()
         {
-            return await Target.ChargeCore(AtomContext.For(Unit.Value));
+            return await AtomChargerFactory.Create().Run(Target, AtomContext.For(Unit.Value));
         }
 
         internal override Task<T> ChargeCore(AtomContext input1)

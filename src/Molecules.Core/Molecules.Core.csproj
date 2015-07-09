@@ -51,6 +51,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RepeatAtom.cs" />
     <Compile Include="CatchAtom.cs" />
+    <Compile Include="Runtime\AtomCharger.cs" />
+    <Compile Include="Runtime\AtomChargerFactory.cs" />
+    <Compile Include="Runtime\InvocationCharger.cs" />
     <Compile Include="SelectManyAtom.cs" />
     <Compile Include="ThenAtom.cs" />
     <Compile Include="Unit.cs" />
