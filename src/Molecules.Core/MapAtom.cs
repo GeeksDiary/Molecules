@@ -18,10 +18,10 @@ namespace Molecules.Core
             Map = map;
         }
 
-        internal async override Task<IEnumerable<TOut>> ChargeCore(IAtomContext atomContext)
+        internal async override Task<IEnumerable<TOut>> ChargeCore(IAtomContext context)
         {
-            var d = await Source.ChargeCore(atomContext);
-            return await Task.WhenAll(d.Select(i => Map.ChargeCore(AtomContext.For(i))));
+            var d = await Source.ChargeCore(context);
+            return await Task.WhenAll(d.Select(i => Map.ChargeCore(context.Clone(i))));
         }
     }
     

@@ -14,13 +14,16 @@ namespace Molecules.Core
 
         public async Task<T> Charge()
         {
-            return await MoleculesHost
-                .Configuration
-                .Processor
-                .Process(Target, AtomContext.For(Unit.Value));
+            using (var scope = MoleculesHost.Configuration.DependencyResolver.BeginScope())
+            {
+                return await MoleculesHost
+                    .Configuration
+                    .Processor
+                    .Process(Target, new AtomContext(scope));
+            }                
         }
 
-        internal override Task<T> ChargeCore(IAtomContext input1)
+        internal override Task<T> ChargeCore(IAtomContext context)
         {
             throw new System.NotImplementedException();
         }

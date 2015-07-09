@@ -54,7 +54,7 @@ namespace Molecules.Core
             };
         }
 
-        internal async override Task<T> ChargeCore(IAtomContext atomContext)
+        internal async override Task<T> ChargeCore(IAtomContext context)
         {
             var remainingAttempts = RetryCount + 1;
 
@@ -62,7 +62,7 @@ namespace Molecules.Core
             {
                 try
                 {
-                    return await Source.ChargeCore(atomContext);
+                    return await Source.ChargeCore(context);
                 }
                 catch (Exception e)
                 {

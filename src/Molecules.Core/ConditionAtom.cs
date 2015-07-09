@@ -25,11 +25,11 @@ namespace Molecules.Core
             Falsey = falsey;
         }
 
-        internal async override Task<TOut> ChargeCore(IAtomContext atomContext)
+        internal async override Task<TOut> ChargeCore(IAtomContext context)
         {
-            var i = await Source.ChargeCore(atomContext);
+            var i = await Source.ChargeCore(context);
             var next = Condition(i) ? Truthy : Falsey;
-            return await next.ChargeCore(AtomContext.For(i));
+            return await next.ChargeCore(context.Clone(i));
         }        
     }
 

@@ -1,4 +1,6 @@
-﻿namespace Molecules.Core.Runtime
+﻿using Molecules.Core.Depenencies;
+
+namespace Molecules.Core.Runtime
 {
     public class MoleculesHost
     {        
@@ -8,6 +10,7 @@
         {
             Configuration = new Configuration();
             Configuration.UseProcessor(new InvocationProcessor());
+            Configuration.UseDependencyResolver(new DefaultDependencyResolver());
         }
     }
 }

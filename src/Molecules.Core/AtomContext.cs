@@ -1,48 +1,53 @@
-﻿using System;
+﻿using Molecules.Core.Depenencies;
 
 namespace Molecules.Core
 {
     public interface IAtomContext
     {
         T Resolve<T>();
+
+        IAtomContext Clone();
+
+        IAtomContext<T> Clone<T>(T input);
     }
 
     public interface IAtomContext<out T> : IAtomContext
     {
-        T Input { get; }
+        T Input { get; }        
     }
 
     internal class AtomContext : IAtomContext
     {
-        internal object InputObject { get; }
+        readonly IDependencyScope _scope;
 
-        protected AtomContext(object inputObject)
+        public AtomContext(IDependencyScope scope)
         {
-            InputObject = inputObject;
+            _scope = scope;
         }
-
-        public static AtomContext For(object value)
-        {
-            return new AtomContext(value);
-        }
-
-        public static AtomContext<T> For<T>(T value)
-        {
-            return new AtomContext<T>(value);
-        }
-
+        
         public T Resolve<T>()
         {
-            return Activator.CreateInstance<T>();
+            return _scope.Resolve<T>();
+        }
+
+        public virtual IAtomContext Clone()
+        {
+            return new AtomContext(_scope);
+        }
+
+        public IAtomContext<T> Clone<T>(T input)
+        {
+            return new AtomContext<T>(_scope, input);
         }
     }
 
     internal class AtomContext<T> : AtomContext, IAtomContext<T>
     {
-        public T Input => (T) InputObject;
+        public T Input { get; }
 
-        internal AtomContext(T value) : base(value)
+        internal AtomContext(IDependencyScope scope, T input) : base(scope)
         {
+            Input = input;
         }
     }
 }

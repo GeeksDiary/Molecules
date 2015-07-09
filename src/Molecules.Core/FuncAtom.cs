@@ -12,9 +12,9 @@ namespace Molecules.Core
             _impl = impl;
         }
 
-        internal override Task<T> ChargeCore(IAtomContext atomContext)
+        internal override Task<T> ChargeCore(IAtomContext context)
         {
-            return _impl(atomContext);
+            return _impl(context);
         }
     }
 
@@ -27,9 +27,9 @@ namespace Molecules.Core
             _impl = impl;
         }
 
-        internal override Task<TOut> ChargeCore(IAtomContext atomContext)
+        internal override Task<TOut> ChargeCore(IAtomContext context)
         {
-            return _impl((IAtomContext<TIn>) atomContext);
+            return _impl((IAtomContext<TIn>) context);
         }
     }
 

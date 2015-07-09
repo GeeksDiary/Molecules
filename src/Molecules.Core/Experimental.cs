@@ -5,9 +5,9 @@ namespace Molecules.Core
 {
     public class WithAtom<T> : Atom<T>
     {
-        internal override Task<T> ChargeCore(IAtomContext atomContext)
+        internal override Task<T> ChargeCore(IAtomContext context)
         {
-            return Task.FromResult(((IAtomContext<T>)atomContext).Input);
+            return Task.FromResult(((IAtomContext<T>)context).Input);
         }
     }
 
@@ -20,7 +20,7 @@ namespace Molecules.Core
             Value = value;
         }
 
-        internal override Task<T> ChargeCore(IAtomContext input1)
+        internal override Task<T> ChargeCore(IAtomContext context)
         {
             return Task.FromResult(Value);
         }

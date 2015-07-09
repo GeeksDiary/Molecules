@@ -16,10 +16,10 @@ namespace Molecules.Core
             Second = second;
         }
 
-        internal override async Task<TSecond> ChargeCore(IAtomContext atomContext)
+        internal override async Task<TSecond> ChargeCore(IAtomContext context)
         {
-            var i = await First.ChargeCore(atomContext);
-            return await Second.ChargeCore(AtomContext.For(i));
+            var i = await First.ChargeCore(context);
+            return await Second.ChargeCore(context.Clone(i));
         }
     }
 
