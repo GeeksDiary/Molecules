@@ -5,37 +5,52 @@ namespace Molecules.Core
 {
     public class FuncAtom<T> : Atom<T>
     {
-        readonly Func<AtomContext, Task<T>> _impl;
+        readonly Func<IAtomContext, Task<T>> _impl;
 
-        internal FuncAtom(Func<AtomContext, Task<T>> impl)
+        internal FuncAtom(Func<IAtomContext, Task<T>> impl)
         {
             _impl = impl;
         }
 
-        internal override Task<T> ChargeCore(AtomContext atomContext)
+        internal override Task<T> ChargeCore(IAtomContext atomContext)
         {
             return _impl(atomContext);
         }
     }
-    
-    public static partial class Atom
+
+    public class FuncAtom<TIn, TOut> : Atom<TOut>
     {
-        public static FuncAtom<TOut> Func<TIn, TOut>(Func<AtomContext<TIn>, Task<TOut>> impl)
+        readonly Func<IAtomContext<TIn>, Task<TOut>> _impl;
+
+        internal FuncAtom(Func<IAtomContext<TIn>, Task<TOut>> impl)
         {
-            return new FuncAtom<TOut>(i => impl(AtomContext.For((TIn)i.InputObject)));
+            _impl = impl;
         }
 
-        public static FuncAtom<TOut> Func<TIn, TOut>(Func<AtomContext<TIn>, TOut> impl)
+        internal override Task<TOut> ChargeCore(IAtomContext atomContext)
+        {
+            return _impl((IAtomContext<TIn>) atomContext);
+        }
+    }
+
+    public static partial class Atom
+    {
+        public static FuncAtom<TIn, TOut> Func<TIn, TOut>(Func<IAtomContext<TIn>, Task<TOut>> impl)
+        {
+            return new FuncAtom<TIn, TOut>(impl);
+        }
+
+        public static FuncAtom<TIn, TOut> Func<TIn, TOut>(Func<IAtomContext<TIn>, TOut> impl)
         {
             return Func<TIn, TOut>(i => Task.FromResult(impl(i)));
         }
 
-        public static FuncAtom<TOut> Func<TOut>(Func<AtomContext, Task<TOut>> impl)
+        public static FuncAtom<TOut> Func<TOut>(Func<IAtomContext, Task<TOut>> impl)
         {
             return new FuncAtom<TOut>(impl);
         }
 
-        public static FuncAtom<TOut> Func<TOut>(Func<AtomContext, TOut> impl)
+        public static FuncAtom<TOut> Func<TOut>(Func<IAtomContext, TOut> impl)
         {
             return new FuncAtom<TOut>(c => Task.FromResult(impl(c)));
         }
@@ -50,9 +65,9 @@ namespace Molecules.Core
             return Func(() => Task.FromResult(impl()));
         }
 
-        public static FuncAtom<Unit> Func<T>(Func<AtomContext<T>, Task> impl)
+        public static FuncAtom<T, Unit> Func<T>(Func<IAtomContext<T>, Task> impl)
         {
-            Func<AtomContext<T>, Task<Unit>> wrapper = async i =>
+            Func<IAtomContext<T>, Task<Unit>> wrapper = async i =>
             {
                 await impl(i);
                 return Unit.Value;
@@ -84,9 +99,9 @@ namespace Molecules.Core
             });
         }
         
-        public static FuncAtom<Unit> Action<T>(Action<AtomContext<T>> body)
+        public static FuncAtom<T, Unit> Action<T>(Action<IAtomContext<T>> body)
         {
-            Func<AtomContext<T>, Task<Unit>> wrapper = i =>
+            Func<IAtomContext<T>, Task<Unit>> wrapper = i =>
             {
                 body(i);
                 return Unit.CompletedTask;

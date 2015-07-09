@@ -8,7 +8,7 @@ namespace Molecules.Core.Runtime
         {
         }
 
-        public override async Task<T> Process<T>(Atom<T> atom, AtomContext context)
+        public override async Task<T> Process<T>(Atom<T> atom, IAtomContext context)
         {
             return await atom.ChargeCore(context);
         }        

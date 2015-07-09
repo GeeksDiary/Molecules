@@ -2,7 +2,17 @@
 
 namespace Molecules.Core
 {
-    public class AtomContext
+    public interface IAtomContext
+    {
+        T Resolve<T>();
+    }
+
+    public interface IAtomContext<out T> : IAtomContext
+    {
+        T Input { get; }
+    }
+
+    internal class AtomContext : IAtomContext
     {
         internal object InputObject { get; }
 
@@ -27,13 +37,12 @@ namespace Molecules.Core
         }
     }
 
-    public class AtomContext<T> : AtomContext
+    internal class AtomContext<T> : AtomContext, IAtomContext<T>
     {
-        public T Input => (T)InputObject;
+        public T Input => (T) InputObject;
 
         internal AtomContext(T value) : base(value)
         {
         }
     }
-
 }

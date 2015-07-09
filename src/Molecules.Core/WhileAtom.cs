@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Molecules.Core
@@ -22,7 +21,7 @@ namespace Molecules.Core
             _predicate = predicate;
         }
 
-        internal override async Task<TOut> ChargeCore(AtomContext atomContext)
+        internal override async Task<TOut> ChargeCore(IAtomContext atomContext)
         {
             var t = await Test.ChargeCore(atomContext);
             var r = default(TOut);
@@ -53,12 +52,12 @@ namespace Molecules.Core
             return new WhileAtom<TTest, TBody>(_test, _predicate, body);
         }
 
-        public WhileAtom<TTest, TBody> Do<TBody>(Func<AtomContext<TTest>, Task<TBody>> body)
+        public WhileAtom<TTest, TBody> Do<TBody>(Func<IAtomContext<TTest>, Task<TBody>> body)
         {
             return Do(Atom.Func(body));
         }
 
-        public WhileAtom<TTest, TBody> Do<TBody>(Func<AtomContext<TTest>, TBody> body)
+        public WhileAtom<TTest, TBody> Do<TBody>(Func<IAtomContext<TTest>, TBody> body)
         {
             return Do(Atom.Func(body));
         }

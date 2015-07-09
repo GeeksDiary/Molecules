@@ -12,6 +12,6 @@ namespace Molecules.Core.Runtime
             Next = next;
         }
 
-        public abstract Task<T> Process<T>(Atom<T> atom, AtomContext context);
+        public abstract Task<T> Process<T>(Atom<T> atom, IAtomContext context);
     }
 }

@@ -15,7 +15,7 @@ namespace Molecules.Core
             Count = count;
         }
 
-        internal override async Task<IEnumerable<T>> ChargeCore(AtomContext atomContext)
+        internal override async Task<IEnumerable<T>> ChargeCore(IAtomContext atomContext)
         {
             var results = new T[Count];
 

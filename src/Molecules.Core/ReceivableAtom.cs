@@ -20,7 +20,7 @@ namespace Molecules.Core
                 .Process(Target, AtomContext.For(input));            
         }
 
-        internal override Task<TOut> ChargeCore(AtomContext input1)
+        internal override Task<TOut> ChargeCore(IAtomContext input1)
         {
             throw new System.NotImplementedException();
         }
