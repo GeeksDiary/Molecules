@@ -14,7 +14,10 @@ namespace Molecules.Core
 
         public async Task<T> Charge()
         {
-            return await AtomChargerFactory.Create().Run(Target, AtomContext.For(Unit.Value));
+            return await MoleculesHost
+                .Configuration
+                .Processor
+                .Process(Target, AtomContext.For(Unit.Value));
         }
 
         internal override Task<T> ChargeCore(AtomContext input1)
