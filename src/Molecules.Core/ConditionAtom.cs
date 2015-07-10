@@ -1,5 +1,4 @@
 using System;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Molecules.Core
@@ -25,7 +24,7 @@ namespace Molecules.Core
             Falsey = falsey;
         }
 
-        internal async override Task<TOut> ChargeCore(IAtomContext context)
+        internal async override Task<TOut> ChargeCore(AtomContext context)
         {
             var i = await Source.ChargeCore(context);
             var next = Condition(i) ? Truthy : Falsey;
@@ -45,8 +44,8 @@ namespace Molecules.Core
 
         public static Atom<TOut> If<TSource, TOut>(this Atom<TSource> source,
             Predicate<TSource> predicate,
-            Func<IAtomContext<TSource>, TOut> truthy,
-            Func<IAtomContext<TSource>, TOut> falsey)
+            Func<AtomContext<TSource>, TOut> truthy,
+            Func<AtomContext<TSource>, TOut> falsey)
         {
             return If(source, predicate, Func(truthy), Func(falsey));
         }

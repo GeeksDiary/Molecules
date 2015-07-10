@@ -2,21 +2,7 @@
 
 namespace Molecules.Core
 {
-    public interface IAtomContext
-    {
-        T Resolve<T>();
-
-        IAtomContext Clone();
-
-        IAtomContext<T> Clone<T>(T input);
-    }
-
-    public interface IAtomContext<out T> : IAtomContext
-    {
-        T Input { get; }        
-    }
-
-    internal class AtomContext : IAtomContext
+    public class AtomContext
     {
         readonly IDependencyScope _scope;
 
@@ -30,18 +16,18 @@ namespace Molecules.Core
             return _scope.Resolve<T>();
         }
 
-        public virtual IAtomContext Clone()
+        public virtual AtomContext Clone()
         {
             return new AtomContext(_scope);
         }
 
-        public IAtomContext<T> Clone<T>(T input)
+        public AtomContext<T> Clone<T>(T input)
         {
             return new AtomContext<T>(_scope, input);
         }
     }
 
-    internal class AtomContext<T> : AtomContext, IAtomContext<T>
+    public class AtomContext<T> : AtomContext
     {
         public T Input { get; }
 

@@ -21,7 +21,7 @@ namespace Molecules.Core
             _predicate = predicate;
         }
 
-        internal override async Task<TOut> ChargeCore(IAtomContext context)
+        internal override async Task<TOut> ChargeCore(AtomContext context)
         {
             var t = await Test.ChargeCore(context);
             var r = default(TOut);
@@ -52,12 +52,12 @@ namespace Molecules.Core
             return new WhileAtom<TTest, TBody>(_test, _predicate, body);
         }
 
-        public WhileAtom<TTest, TBody> Do<TBody>(Func<IAtomContext<TTest>, Task<TBody>> body)
+        public WhileAtom<TTest, TBody> Do<TBody>(Func<AtomContext<TTest>, Task<TBody>> body)
         {
             return Do(Atom.Func(body));
         }
 
-        public WhileAtom<TTest, TBody> Do<TBody>(Func<IAtomContext<TTest>, TBody> body)
+        public WhileAtom<TTest, TBody> Do<TBody>(Func<AtomContext<TTest>, TBody> body)
         {
             return Do(Atom.Func(body));
         }

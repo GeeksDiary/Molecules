@@ -18,7 +18,7 @@ namespace Molecules.Core
             Map = map;
         }
 
-        internal async override Task<IEnumerable<TOut>> ChargeCore(IAtomContext context)
+        internal async override Task<IEnumerable<TOut>> ChargeCore(AtomContext context)
         {
             var d = await Source.ChargeCore(context);
             return await Task.WhenAll(d.Select(i => Map.ChargeCore(context.Clone(i))));
@@ -36,7 +36,7 @@ namespace Molecules.Core
 
         public static MapAtom<TSource, TOut> Map<TSource, TOut>(
             this Atom<IEnumerable<TSource>> source,
-            Func<IAtomContext<TSource>, TOut> map)
+            Func<AtomContext<TSource>, TOut> map)
         {
             return Map(source, Func(map));
         }

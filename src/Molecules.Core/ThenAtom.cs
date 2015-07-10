@@ -16,7 +16,7 @@ namespace Molecules.Core
             Second = second;
         }
 
-        internal override async Task<TSecond> ChargeCore(IAtomContext context)
+        internal override async Task<TSecond> ChargeCore(AtomContext context)
         {
             var i = await First.ChargeCore(context);
             return await Second.ChargeCore(context.Clone(i));
@@ -32,7 +32,7 @@ namespace Molecules.Core
         }
 
         public static ThenAtom<TIn, TOut> Then<TIn, TOut>(this Atom<TIn> first,
-            Func<IAtomContext<TIn>, TOut> second)
+            Func<AtomContext<TIn>, TOut> second)
         {
             return first.Then(Func(second));
         }
@@ -44,7 +44,7 @@ namespace Molecules.Core
         }
 
         public static ThenAtom<T, Unit> Then<T>(this Atom<T> first,
-            Action<IAtomContext<T>> second)
+            Action<AtomContext<T>> second)
         {
             return first.Then(Action(second));
         }
@@ -57,7 +57,7 @@ namespace Molecules.Core
         }
 
         public static Atom<TOut> Select<TIn, TOut>(this Atom<TIn> atom, 
-            Func<IAtomContext<TIn>, TOut> projector)
+            Func<AtomContext<TIn>, TOut> projector)
         {
             return atom.Then(projector);
         }

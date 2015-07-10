@@ -23,7 +23,7 @@ namespace Molecules.Core
             }                
         }
 
-        internal override Task<T> ChargeCore(IAtomContext context)
+        internal override Task<T> ChargeCore(AtomContext context)
         {
             throw new System.NotImplementedException();
         }

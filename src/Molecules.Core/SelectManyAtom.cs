@@ -27,7 +27,7 @@ namespace Molecules.Core
             _projector = projector.Compile();
         }
 
-        internal override async Task<TOut> ChargeCore(IAtomContext context)
+        internal override async Task<TOut> ChargeCore(AtomContext context)
         {
             var first = await Source.ChargeCore(context);
             var second = await _selector(first).ChargeCore(context);
