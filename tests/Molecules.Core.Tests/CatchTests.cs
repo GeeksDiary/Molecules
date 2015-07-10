@@ -13,7 +13,7 @@ namespace Molecules.Core.Tests
         [Fact]
         public async void ExecutesNonFailingAtomOnlyOnce()
         {
-            await Atom.Action(() => _signature.Action()).Catch().AsInvocable().Charge();
+            await Atom.Action(() => _signature.Action()).Catch().Invoker().Charge();
             _signature.Received(1).Action();
         }
 
@@ -21,7 +21,7 @@ namespace Molecules.Core.Tests
         public async void FailsAfterReachingRetryCount()
         {
             _signature.When(s => s.Action()).Throw(new InvalidOperationException());
-            var a = Atom.Action(() => _signature.Action()).Catch().AsInvocable();
+            var a = Atom.Action(() => _signature.Action()).Catch().Invoker();
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => a.Charge());
 
@@ -32,7 +32,7 @@ namespace Molecules.Core.Tests
         public async void ReturnsTheSpecifiedValueAfterFailure()
         {
             _signature.When(s => s.Func()).Throw(new InvalidOperationException());
-            var a = Atom.Action(() => _signature.Action()).Catch().Return(3).AsReceivable().Of<int>();
+            var a = Atom.Action(() => _signature.Action()).Catch().Return(3).Receiver().Listen<int>();
 
             Assert.Equal(3, await a.Charge(1));
         }
@@ -46,7 +46,7 @@ namespace Molecules.Core.Tests
 
             _signature.Func(1).Returns(_ => q.Dequeue()());
 
-            var a = Atom.Func<int, int>(i => _signature.Func(i.Input)).Catch().Retry(2).AsReceivable().Of<int>();
+            var a = Atom.Func<int, int>(i => _signature.Func(i.Input)).Catch().Retry(2).Receiver().Listen<int>();
 
             Assert.Equal(1, await a.Charge(1));
             _signature.Received(2).Func(1);
@@ -72,7 +72,7 @@ namespace Molecules.Core.Tests
                 .Catch()
                 .Wait(2)
                 .Seconds
-                .AsInvocable()                
+                .Invoker()                
                 .Charge();
 
             Assert.True(watch.Elapsed >= TimeSpan.FromSeconds(2));

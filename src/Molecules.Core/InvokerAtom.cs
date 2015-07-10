@@ -3,11 +3,11 @@ using Molecules.Core.Runtime;
 
 namespace Molecules.Core
 {
-    public class InvocableAtom<T> : Atom<T>
+    public class InvokerAtom<T> : Atom<T>
     {
         public Atom<T> Target { get; }
 
-        public InvocableAtom(Atom<T> target)
+        public InvokerAtom(Atom<T> target)
         {
             Target = target;
         }
@@ -31,9 +31,9 @@ namespace Molecules.Core
 
     public static partial class Atom
     {
-        public static InvocableAtom<T> AsInvocable<T>(this Atom<T> target)
+        public static InvokerAtom<T> Invoker<T>(this Atom<T> target)
         {
-            return new InvocableAtom<T>(target);
+            return new InvokerAtom<T>(target);
         }
     }
 }

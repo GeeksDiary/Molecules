@@ -76,7 +76,7 @@ namespace Molecules.Core.Tests.Samples
 
     public class PizzaDeliveryWorkflow
     {
-        public ReceivableAtom<Order, Order> Build()
+        public ReceiverAtom<Order, Order> Build()
         {
             return (
                 from order in Atom.With<Order>()
@@ -101,8 +101,8 @@ namespace Molecules.Core.Tests.Samples
                             .While(s => s != InStoreStatus.OnItsWay)
                             .Do(c => c.Resolve<ICustomer>().Notify(c.Input))
                 select order)
-                .AsReceivable()
-                .Of<Order>();
+                .Receiver()
+                .Listen<Order>();
         }
     }
 }

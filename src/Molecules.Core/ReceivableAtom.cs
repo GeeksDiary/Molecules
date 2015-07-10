@@ -3,11 +3,11 @@ using Molecules.Core.Runtime;
 
 namespace Molecules.Core
 {
-    public class ReceivableAtom<TIn, TOut> : Atom<TOut>
+    public class ReceiverAtom<TIn, TOut> : Atom<TOut>
     {
         public Atom<TOut> Target { get; }
 
-        public ReceivableAtom(Atom<TOut> target)
+        public ReceiverAtom(Atom<TOut> target)
         {
             Target = target;
         }
@@ -29,26 +29,26 @@ namespace Molecules.Core
         }
     }
 
-    public class ReceivableAtomBuilder<T>
+    public class ReceiverAtomBuilder<T>
     {
         readonly Atom<T> _target;
 
-        public ReceivableAtomBuilder(Atom<T> target)
+        public ReceiverAtomBuilder(Atom<T> target)
         {
             _target = target;
         }
 
-        public ReceivableAtom<TIn, T> Of<TIn>()
+        public ReceiverAtom<TIn, T> Listen<TIn>()
         {
-            return new ReceivableAtom<TIn, T>(_target);
+            return new ReceiverAtom<TIn, T>(_target);
         }
     }
 
     public static partial class Atom
     {
-        public static ReceivableAtomBuilder<T> AsReceivable<T>(this Atom<T> target)
+        public static ReceiverAtomBuilder<T> Receiver<T>(this Atom<T> target)
         {
-            return new ReceivableAtomBuilder<T>(target);
+            return new ReceiverAtomBuilder<T>(target);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Molecules.Core.Tests
             var r = await Atom.Func(() => new[] { 1, 2, 3 }
             .AsEnumerable())
             .Map(i => i.Input * 2)
-            .AsInvocable()
+            .Invoker()
             .Charge();
 
             Assert.Equal(new [] { 2, 4, 6}, r);

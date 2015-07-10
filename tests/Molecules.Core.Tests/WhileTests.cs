@@ -17,8 +17,8 @@ namespace Molecules.Core.Tests
             var a = Atom.Func(() => q.Dequeue())
                 .While(k => k < 2)
                 .Do(i => _signature.Func(i.Input))
-                .AsReceivable()
-                .Of<int>();
+                .Receiver()
+                .Listen<int>();
 
             Assert.Equal(1, await a.Charge(0));
             _signature.ReceivedWithAnyArgs(2).Func(0);
@@ -32,8 +32,8 @@ namespace Molecules.Core.Tests
                 Atom.Func<int, int>(k => k.Input)
                     .While(k => k != 0)
                     .Do(i => _signature.Func(i.Input))
-                    .AsReceivable()
-                    .Of<int>();
+                    .Receiver()
+                    .Listen<int>();
 
             await a.Charge(0);
 

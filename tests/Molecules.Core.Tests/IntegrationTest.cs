@@ -9,7 +9,7 @@ namespace Molecules.Core.Tests
     public class IntegrationTest
     {
         readonly IApi _api = Substitute.For<IApi>();
-        readonly ReceivableAtom<string, Tuple<Profile, IEnumerable<Prescription>>> _workflow;
+        readonly ReceiverAtom<string, Tuple<Profile, IEnumerable<Prescription>>> _workflow;
 
         readonly Profile _profile = new Profile
         {
@@ -51,8 +51,8 @@ namespace Molecules.Core.Tests
                             Atom.Func(() => Prescription.NotRequired))
                     select Tuple.Create(profile, tweets)
                 )
-                .AsReceivable()
-                .Of<string>();
+                .Receiver()
+                .Listen<string>();
 
             _api.LoadProfile(null).ReturnsForAnyArgs(_profile);
         }

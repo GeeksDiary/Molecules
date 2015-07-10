@@ -16,14 +16,14 @@ namespace Molecules.Core.Tests
             Assert.Equal(3,
                 await Atom.Func<int, int>(i => _signature.Func(i.Input))
                     .Then(i => _signature.Func(i.Input))
-                    .AsReceivable()
-                    .Of<int>()
+                    .Receiver()
+                    .Listen<int>()
                     .Charge(1));
 
             await Atom.Func<int, int>(i => _signature.Func(i.Input))
                 .Then(i => _signature.Action(i.Input))
-                .AsReceivable()
-                .Of<int>()
+                .Receiver()
+                .Listen<int>()
                 .Charge(1);
 
             _signature.Received(1).Action(2);
@@ -38,8 +38,8 @@ namespace Molecules.Core.Tests
             Assert.Equal(3,
                 await Atom.Func<int, int>(i => _signature.Func(i.Input))
                     .Then(() => _signature.Func())
-                    .AsReceivable()
-                    .Of<int>()
+                    .Receiver()
+                    .Listen<int>()
                     .Charge(1));
         }
 
@@ -48,7 +48,7 @@ namespace Molecules.Core.Tests
         {
             await Atom.Action(() => _signature.Action())
                 .Then(() => _signature.Action())
-                .AsInvocable()
+                .Invoker()
                 .Charge();
 
             _signature.Received(2).Action();

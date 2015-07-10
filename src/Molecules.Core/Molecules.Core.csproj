@@ -47,7 +47,7 @@
     <Compile Include="Depenencies\IDependencyResolver.cs" />
     <Compile Include="Experimental.cs" />
     <Compile Include="FuncAtom.cs" />
-    <Compile Include="InvocableAtom.cs" />
+    <Compile Include="InvokerAtom.cs" />
     <Compile Include="ReceivableAtom.cs" />
     <Compile Include="MapAtom.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

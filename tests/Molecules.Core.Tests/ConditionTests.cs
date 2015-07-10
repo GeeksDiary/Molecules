@@ -11,7 +11,7 @@ namespace Molecules.Core.Tests
                         .If(b => b, 
                             () => "a", 
                             () => "b")
-                        .AsReceivable().Of<bool>();
+                        .Receiver().Listen<bool>();
 
             Assert.Equal("a", await f.Charge(true));
             Assert.Equal("b", await f.Charge(false));
