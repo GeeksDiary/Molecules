@@ -1,5 +1,4 @@
 using System;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Molecules.Core
@@ -10,21 +9,14 @@ namespace Molecules.Core
         readonly Func<TFirst, TSecond, TOut> _projector;
 
         public Atom<TFirst> Source { get; }
-
-        public Expression<Func<TFirst, Atom<TSecond>>> Selector { get; }
-
-        public Expression<Func<TFirst, TSecond, TOut>> Projector { get; }
-
+        
         public SelectManyAtom(Atom<TFirst> source, 
-            Expression<Func<TFirst, Atom<TSecond>>> selector, 
-            Expression<Func<TFirst, TSecond, TOut>> projector)
+            Func<TFirst, Atom<TSecond>> selector, 
+            Func<TFirst, TSecond, TOut> projector)
         {
-            Source = source;            
-            Selector = selector;
-            Projector = projector;
-
-            _selector = selector.Compile();
-            _projector = projector.Compile();
+            Source = source;      
+            _selector = selector;
+            _projector = projector;
         }
 
         internal override async Task<TOut> ChargeCore(AtomContext context)
@@ -39,8 +31,8 @@ namespace Molecules.Core
     {
         public static Atom<TOut> SelectMany<TFirst, TSecond, TOut>(
             this Atom<TFirst> first,
-            Expression<Func<TFirst, Atom<TSecond>>> selector,
-            Expression<Func<TFirst, TSecond, TOut>> projector
+            Func<TFirst, Atom<TSecond>> selector,
+            Func<TFirst, TSecond, TOut> projector
             )
         {
             return new SelectManyAtom<TFirst, TSecond, TOut>(first, selector, projector);
