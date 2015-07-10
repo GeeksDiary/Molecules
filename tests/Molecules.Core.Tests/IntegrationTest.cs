@@ -41,7 +41,8 @@ namespace Molecules.Core.Tests
             */
             _workflow =
                 (
-                    from profile in Atom.Func<string, Profile>(s => _api.LoadProfile(s.Input))
+                    from email in Atom.With<string>()
+                    from profile in Atom.Func(s => _api.LoadProfile(email))
                     from tweets in Atom.Func(() => _api.RecentTweets(profile.TwitterHandle))
                         .Map(tweet => _api.PsychologicalAssessment(tweet.Input.Text))
                         .If(
